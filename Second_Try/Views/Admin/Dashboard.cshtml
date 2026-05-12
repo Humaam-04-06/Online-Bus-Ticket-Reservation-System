@@ -1,0 +1,161 @@
+@using Second_Try.Models
+@{
+    ViewData["Title"]      = "Dashboard";
+    ViewData["ActivePage"] = "Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    int totalCustomers   = ViewBag.TotalCustomers   ?? 0;
+    int totalEmployees   = ViewBag.TotalEmployees   ?? 0;
+    int totalBuses       = ViewBag.TotalBuses       ?? 0;
+    int totalRoutes      = ViewBag.TotalRoutes      ?? 0;
+    int totalRequests    = ViewBag.TotalRequests    ?? 0;
+    int pendingRequests  = ViewBag.PendingRequests  ?? 0;
+    int totalBookings    = ViewBag.TotalBookings    ?? 0;
+    decimal revenue      = ViewBag.RevenueThisMonth ?? 0m;
+    var recentRequests   = ViewBag.RecentRequests as List<BookingRequest> ?? new();
+    var admin            = ViewBag.Admin as Employee;
+}
+
+@if (TempData["SuccessMessage"] is string sm)
+{<div class="adm-toast adm-toast-success"><i class="fa-solid fa-circle-check"></i> @sm</div>}
+@if (TempData["ErrorMessage"]   is string em)
+{<div class="adm-toast adm-toast-error"><i class="fa-solid fa-triangle-exclamation"></i> @em</div>}
+
+<!-- Welcome Banner -->
+<div class="adm-welcome-banner">
+    <div>
+        <h1 class="adm-welcome-heading">
+            Good @(DateTime.Now.Hour < 12 ? "Morning" : DateTime.Now.Hour < 17 ? "Afternoon" : "Evening"),
+            @(admin?.FullName.Split(' ')[0] ?? "Admin")! 👋
+        </h1>
+        <p class="adm-welcome-sub">Here's the live system overview for SRC Travel — @DateTime.Now.ToString("dddd, MMMM dd yyyy")</p>
+    </div>
+    <a href="/Admin/ManageEmployees" class="adm-btn adm-btn-primary" style="color:#fff;">
+        <i class="fa-solid fa-user-plus"></i> Add Employee
+    </a>
+</div>
+
+<!-- Stat Cards -->
+<div class="adm-stats-grid">
+    <div class="adm-stat-card">
+        <div class="adm-stat-icon cyan"><i class="fa-solid fa-users"></i></div>
+        <div><div class="adm-stat-value">@totalCustomers</div><div class="adm-stat-label">Total Customers</div></div>
+    </div>
+    <div class="adm-stat-card">
+        <div class="adm-stat-icon navy"><i class="fa-solid fa-user-tie"></i></div>
+        <div><div class="adm-stat-value">@totalEmployees</div><div class="adm-stat-label">Employees</div></div>
+    </div>
+    <div class="adm-stat-card">
+        <div class="adm-stat-icon purple"><i class="fa-solid fa-bus"></i></div>
+        <div><div class="adm-stat-value">@totalBuses</div><div class="adm-stat-label">Active Buses</div></div>
+    </div>
+    <div class="adm-stat-card">
+        <div class="adm-stat-icon amber"><i class="fa-solid fa-hourglass-half"></i></div>
+        <div><div class="adm-stat-value">@pendingRequests</div><div class="adm-stat-label">Pending Requests</div></div>
+    </div>
+    <div class="adm-stat-card">
+        <div class="adm-stat-icon green"><i class="fa-solid fa-ticket"></i></div>
+        <div><div class="adm-stat-value">@totalBookings</div><div class="adm-stat-label">Tickets Issued</div></div>
+    </div>
+    <div class="adm-stat-card">
+        <div class="adm-stat-icon green"><i class="fa-solid fa-coins"></i></div>
+        <div><div class="adm-stat-value">@revenue.ToString("N0")</div><div class="adm-stat-label">Revenue This Month (PKR)</div></div>
+    </div>
+</div>
+
+<!-- Main Grid -->
+<div class="adm-dashboard-grid">
+
+    <!-- Recent Requests -->
+    <div class="adm-card">
+        <div class="adm-card-header">
+            <div class="adm-card-title"><i class="fa-solid fa-inbox"></i> Recent Booking Requests</div>
+            <a href="/Admin/BookingHistory" class="adm-btn adm-btn-outline adm-btn-sm">View All</a>
+        </div>
+
+        @if (recentRequests.Any())
+        {
+            @foreach (var req in recentRequests)
+            {
+                string init = string.Join("", (req.Customer?.FullName ?? "?").Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()));
+                string badgeCls = req.Status switch {
+                    BookingRequestStatus.Pending   => "adm-badge-pending",
+                    BookingRequestStatus.Accepted  => "adm-badge-accepted",
+                    BookingRequestStatus.Rejected  => "adm-badge-rejected",
+                    _                              => "adm-badge-cancelled"
+                };
+                <a href="/Employee/ProcessRequest/@req.Id" class="adm-recent-item">
+                    <div class="adm-recent-avatar">@init</div>
+                    <div>
+                        <p class="adm-recent-name">@(req.Customer?.FullName ?? "Unknown")</p>
+                        <p class="adm-recent-sub">@(req.Route?.Origin ?? "—") → @(req.Route?.Destination ?? "—") · @req.PreferredBusType</p>
+                    </div>
+                    <div class="adm-recent-meta">
+                        <span class="adm-badge @badgeCls">@req.Status</span>
+                        <p class="adm-recent-date">@req.TravelDate.ToString("MMM dd")</p>
+                    </div>
+                </a>
+            }
+        }
+        else
+        {
+            <div class="adm-empty-state">
+                <div class="adm-empty-icon"><i class="fa-solid fa-inbox"></i></div>
+                <p class="adm-empty-title">No Requests Yet</p>
+                <p class="adm-empty-sub">Booking requests from customers will appear here.</p>
+            </div>
+        }
+    </div>
+
+    <!-- Right panel -->
+    <div>
+        <!-- System Summary -->
+        <div class="adm-card" style="margin-bottom:1.25rem;">
+            <div class="adm-card-header">
+                <div class="adm-card-title"><i class="fa-solid fa-chart-simple"></i> System Overview</div>
+            </div>
+            <div class="adm-quick-stats">
+                <div class="adm-quick-row"><span>Total Requests</span><span>@totalRequests</span></div>
+                <div class="adm-quick-row"><span>Pending Queue</span><span style="color:var(--adm-pending);">@pendingRequests</span></div>
+                <div class="adm-quick-row"><span>Active Routes</span><span>@totalRoutes</span></div>
+                <div class="adm-quick-row"><span>Active Buses</span><span>@totalBuses</span></div>
+                <div class="adm-quick-row"><span>Total Customers</span><span>@totalCustomers</span></div>
+                <div class="adm-quick-row"><span>Monthly Revenue</span><span style="color:var(--adm-success);">PKR @revenue.ToString("N0")</span></div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="adm-card">
+            <div class="adm-card-header">
+                <div class="adm-card-title"><i class="fa-solid fa-bolt"></i> Quick Actions</div>
+            </div>
+            <div class="adm-qa-grid">
+                <a href="/Admin/ManageEmployees" class="adm-qa-btn">
+                    <div class="adm-qa-icon navy"><i class="fa-solid fa-user-tie"></i></div>
+                    <span>Employees</span>
+                </a>
+                <a href="/Admin/ManageBuses" class="adm-qa-btn">
+                    <div class="adm-qa-icon purple"><i class="fa-solid fa-bus"></i></div>
+                    <span>Buses</span>
+                </a>
+                <a href="/Admin/ManageRoutes" class="adm-qa-btn">
+                    <div class="adm-qa-icon amber"><i class="fa-solid fa-route"></i></div>
+                    <span>Routes</span>
+                </a>
+                <a href="/Admin/ManagePriceList" class="adm-qa-btn">
+                    <div class="adm-qa-icon green"><i class="fa-solid fa-tags"></i></div>
+                    <span>Price List</span>
+                </a>
+                <a href="/Admin/BookingHistory" class="adm-qa-btn">
+                    <div class="adm-qa-icon cyan"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <span>History</span>
+                </a>
+                <a href="/Admin/Reports" class="adm-qa-btn">
+                    <div class="adm-qa-icon red"><i class="fa-solid fa-chart-bar"></i></div>
+                    <span>Reports</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>

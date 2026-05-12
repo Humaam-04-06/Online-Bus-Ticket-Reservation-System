@@ -1,0 +1,90 @@
+@using Second_Try.Models
+@{
+    ViewData["Title"]      = "Booking History";
+    ViewData["ActivePage"] = "BookingHistory";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var bookings = ViewBag.Bookings as List<Booking> ?? new();
+    string search = ViewBag.Search ?? "";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/manage-employees.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin/booking-history.css" asp-append-version="true" />
+}
+@if (TempData["SuccessMessage"] is string sm) {<div class="adm-toast adm-toast-success"><i class="fa-solid fa-circle-check"></i> @sm</div>}
+
+<div class="adm-page-header">
+    <div>
+        <h2 class="adm-page-heading">Booking History</h2>
+        <p class="adm-page-sub">All confirmed bookings across the system. Total: <strong>@bookings.Count</strong></p>
+    </div>
+    <div class="adm-search-wrapper">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="hist-search" class="adm-search-input" placeholder="Search customer or bus..." value="@search" />
+    </div>
+</div>
+
+<div class="adm-card">
+    @if (bookings.Any())
+    {
+        <div class="adm-table-wrapper">
+            <table class="adm-table" id="hist-table">
+                <thead>
+                    <tr><th>BK #</th><th>Customer</th><th>Route</th><th>Travel Date</th><th>Bus</th><th>Seats</th><th>Fare (PKR)</th><th>Status</th><th>Confirmed</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var b in bookings)
+                    {
+                        string custName = b.BookingRequest?.Customer?.FullName ?? "—";
+                        string custInit = string.Join("", custName.Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()));
+                        string bStatusCls = b.Status switch {
+                            BookingStatus.Confirmed => "adm-badge-accepted",
+                            BookingStatus.Completed => "adm-badge-info",
+                            BookingStatus.Cancelled => "adm-badge-cancelled",
+                            _ => ""
+                        };
+                        <tr data-search="@custName @(b.Bus?.BusNumber ?? "")">
+                            <td><span class="adm-id-pill">BK-@b.Id.ToString("D4")</span></td>
+                            <td>
+                                <div class="adm-cell-avatar">
+                                    <div class="adm-cell-avatar-circle">@custInit</div>
+                                    <div>
+                                        <div class="adm-cell-name">@custName</div>
+                                        <div class="adm-cell-email">REQ-@b.BookingRequestId.ToString("D4")</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="font-weight:600;font-size:0.82rem;">
+                                @(b.BookingRequest?.Route?.Origin ?? "—") → @(b.BookingRequest?.Route?.Destination ?? "—")
+                            </td>
+                            <td class="muted">@(b.BookingRequest?.TravelDate.ToString("MMM dd, yyyy") ?? "—")</td>
+                            <td class="muted">@(b.Bus?.BusNumber ?? "—") <span class="adm-badge adm-badge-info" style="font-size:0.6rem;">@(b.Bus?.Type)</span></td>
+                            <td class="muted">@b.SeatNumbers</td>
+                            <td style="font-weight:700;color:var(--adm-success);">@b.TotalFare.ToString("N0")</td>
+                            <td><span class="adm-badge @bStatusCls">@b.Status</span></td>
+                            <td class="muted">@b.ConfirmedAt.ToString("MMM dd, yy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="adm-empty-state">
+            <div class="adm-empty-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <p class="adm-empty-title">No Bookings Yet</p>
+            <p class="adm-empty-sub">Confirmed bookings will appear here.</p>
+        </div>
+    }
+</div>
+
+@section Scripts {
+<script>
+    document.getElementById('hist-search')?.addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('#hist-table tbody tr').forEach(r => {
+            r.style.display = (r.dataset.search ?? '').toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+</script>
+}

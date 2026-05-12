@@ -1,0 +1,81 @@
+/* ============================================================
+   ADMIN PROFILE PAGE CSS
+   ============================================================ */
+
+/* ── Hero Card ── */
+.ap-hero-card {
+    border-radius: var(--adm-card-radius);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--adm-card-shadow);
+    margin-bottom: 1.25rem;
+    background: var(--adm-card-bg);
+}
+
+.ap-banner {
+    height: 160px;
+    background: linear-gradient(120deg, var(--adm-sidebar-dark) 0%, var(--adm-sidebar-bg) 60%, var(--adm-info) 100%);
+    background-size: cover; background-position: center;
+    position: relative; display: flex; align-items: flex-end; justify-content: flex-end;
+    padding: 0.75rem 1rem;
+}
+
+.ap-banner-edit-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.45rem 0.85rem; border-radius: 0.5rem;
+    background: rgba(0,0,0,0.45); color: #fff;
+    font-size: 0.78rem; font-weight: 600; cursor: pointer;
+    backdrop-filter: blur(4px); transition: background 0.2s;
+}
+.ap-banner-edit-btn:hover { background: rgba(0,0,0,0.65); }
+
+.ap-hero-body {
+    display: flex; align-items: center; gap: 1.25rem;
+    padding: 0 1.5rem 1.5rem; flex-wrap: wrap;
+    margin-top: -38px;
+}
+
+/* Avatar */
+.ap-avatar-wrapper { position: relative; flex-shrink: 0; }
+
+.ap-avatar-img, .ap-avatar-initials {
+    width: 76px; height: 76px; border-radius: 50%;
+    border: 3px solid var(--adm-card-bg);
+    object-fit: cover; display: flex; align-items: center; justify-content: center;
+}
+.ap-avatar-initials {
+    background: var(--adm-sidebar-bg); color: #fff;
+    font-size: 1.4rem; font-weight: 800;
+}
+
+.ap-avatar-edit-btn {
+    position: absolute; bottom: 2px; right: 2px;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--adm-sidebar-bg); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; cursor: pointer; border: 2px solid var(--adm-card-bg);
+    transition: background 0.2s;
+}
+.ap-avatar-edit-btn:hover { background: var(--adm-info); }
+
+/* Info */
+.ap-hero-info { flex: 1; padding-top: 2.4rem; }
+.ap-hero-name  { font-size: 1.15rem; font-weight: 800; color: var(--text-light); margin: 0 0 0.2rem; }
+.ap-hero-email { font-size: 0.82rem; color: var(--text-muted); margin: 0 0 0.4rem; }
+
+.ap-since { margin-left: auto; text-align: right; padding-top: 2.4rem; }
+.ap-since-label {
+    display: block; font-size: 0.67rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700;
+}
+.ap-since-val { font-size: 0.9rem; font-weight: 700; color: var(--text-light); }
+
+/* Grid */
+.ap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+
+@media (max-width: 768px) {
+    .ap-grid { grid-template-columns: 1fr; }
+    .ap-since { margin-left: 0; text-align: left; }
+    .ap-hero-body { margin-top: -28px; }
+}
+

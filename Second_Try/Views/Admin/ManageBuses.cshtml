@@ -1,0 +1,167 @@
+@using Second_Try.Models
+@{
+    ViewData["Title"]      = "Manage Buses";
+    ViewData["ActivePage"] = "ManageBuses";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var buses = ViewBag.Buses as List<Bus> ?? new();
+    var busTypes = Enum.GetValues<BusType>();
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/manage-employees.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin/manage-buses.css" asp-append-version="true" />
+}
+
+@if (TempData["SuccessMessage"] is string sm) {<div class="adm-toast adm-toast-success"><i class="fa-solid fa-circle-check"></i> @sm</div>}
+@if (TempData["ErrorMessage"]   is string em) {<div class="adm-toast adm-toast-error"><i class="fa-solid fa-triangle-exclamation"></i> @em</div>}
+
+<div class="adm-manage-grid">
+
+    <!-- Add Bus Form -->
+    <div class="adm-card">
+        <div class="adm-card-header">
+            <div class="adm-card-title"><i class="fa-solid fa-bus"></i> Add New Bus</div>
+        </div>
+        <form asp-controller="Admin" asp-action="CreateBus" method="POST">
+            @Html.AntiForgeryToken()
+            <div class="adm-form-group">
+                <label class="adm-label">Bus Number</label>
+                <input type="text" name="BusNumber" class="adm-input" placeholder="e.g. SRC-005" required />
+            </div>
+            <div class="adm-form-group">
+                <label class="adm-label">Bus Type</label>
+                <select name="Type" class="adm-select" required>
+                    @foreach (var t in busTypes)
+                    { <option value="@t">@t</option> }
+                </select>
+            </div>
+            <div class="adm-form-group">
+                <label class="adm-label">Seating Capacity</label>
+                <input type="number" name="Capacity" class="adm-input" min="10" max="100" placeholder="e.g. 45" required />
+            </div>
+            <div class="adm-form-group">
+                <label class="adm-label">Amenities <span style="font-weight:400;text-transform:none;">(optional)</span></label>
+                <input type="text" name="Amenities" class="adm-input" placeholder="e.g. AC, WiFi, Charging Ports" />
+            </div>
+            <button type="submit" class="adm-btn adm-btn-primary" style="width:100%;justify-content:center;">
+                <i class="fa-solid fa-plus"></i> Add Bus
+            </button>
+        </form>
+    </div>
+
+    <!-- Bus Table -->
+    <div class="adm-card">
+        <div class="adm-card-header">
+            <div class="adm-card-title"><i class="fa-solid fa-bus"></i> All Buses <span class="adm-badge adm-badge-info">@buses.Count</span></div>
+        </div>
+
+        @if (buses.Any())
+        {
+            <div class="adm-table-wrapper">
+                <table class="adm-table">
+                    <thead>
+                        <tr><th>Bus #</th><th>Type</th><th>Capacity</th><th>Amenities</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var bus in buses)
+                        {
+                            string typeBadge = bus.Type switch {
+                                BusType.Economy  => "adm-badge-info",
+                                BusType.Standard => "adm-badge-accepted",
+                                BusType.Luxury   => "adm-badge-admin",
+                                BusType.Express  => "adm-badge-pending",
+                                _                => "adm-badge-info"
+                            };
+                            <tr>
+                                <td><span class="adm-id-pill">@bus.BusNumber</span></td>
+                                <td><span class="adm-badge @typeBadge">@bus.Type</span></td>
+                                <td class="muted">@bus.Capacity seats</td>
+                                <td class="muted" style="max-width:200px;white-space:normal;">@(bus.Amenities ?? "—")</td>
+                                <td>
+                                    <span class="adm-badge @(bus.IsActive ? "adm-badge-active" : "adm-badge-inactive")">
+                                        @(bus.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="adm-action-group">
+                                        <button class="adm-btn adm-btn-outline adm-btn-sm"
+                                                onclick="openEditBus(@bus.Id,'@bus.BusNumber','@bus.Type',@bus.Capacity,'@(bus.Amenities ?? "")')">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+                                        <form asp-action="ToggleBus" method="POST" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@bus.Id" />
+                                            <button type="submit" class="adm-btn @(bus.IsActive ? "adm-btn-warning" : "adm-btn-success") adm-btn-sm">
+                                                <i class="fa-solid @(bus.IsActive ? "fa-ban" : "fa-check")"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="adm-empty-state">
+                <div class="adm-empty-icon"><i class="fa-solid fa-bus"></i></div>
+                <p class="adm-empty-title">No Buses Yet</p>
+                <p class="adm-empty-sub">Add your first bus using the form.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Edit Bus Modal -->
+<div class="adm-modal-overlay" id="edit-bus-modal">
+    <div class="adm-modal">
+        <div class="adm-modal-header">
+            <span class="adm-modal-title"><i class="fa-solid fa-pen"></i> Edit Bus</span>
+            <button class="adm-modal-close" onclick="closeModal('edit-bus-modal')"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form asp-controller="Admin" asp-action="EditBus" method="POST">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="edit-bus-id" />
+            <div class="adm-form-group">
+                <label class="adm-label">Bus Number</label>
+                <input type="text" name="BusNumber" id="edit-bus-num" class="adm-input" required />
+            </div>
+            <div class="adm-form-group">
+                <label class="adm-label">Bus Type</label>
+                <select name="Type" id="edit-bus-type" class="adm-select">
+                    @foreach (var t in busTypes) { <option value="@t">@t</option> }
+                </select>
+            </div>
+            <div class="adm-form-group">
+                <label class="adm-label">Capacity</label>
+                <input type="number" name="Capacity" id="edit-bus-cap" class="adm-input" min="10" max="100" required />
+            </div>
+            <div class="adm-form-group">
+                <label class="adm-label">Amenities</label>
+                <input type="text" name="Amenities" id="edit-bus-amen" class="adm-input" />
+            </div>
+            <div class="adm-modal-footer">
+                <button type="button" class="adm-btn adm-btn-outline" onclick="closeModal('edit-bus-modal')">Cancel</button>
+                <button type="submit" class="adm-btn adm-btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function openEditBus(id, num, type, cap, amen) {
+        document.getElementById('edit-bus-id').value   = id;
+        document.getElementById('edit-bus-num').value  = num;
+        document.getElementById('edit-bus-type').value = type;
+        document.getElementById('edit-bus-cap').value  = cap;
+        document.getElementById('edit-bus-amen').value = amen;
+        document.getElementById('edit-bus-modal').classList.add('open');
+    }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    document.getElementById('edit-bus-modal')?.addEventListener('click', function(e) {
+        if (e.target === this) closeModal('edit-bus-modal');
+    });
+</script>
+}

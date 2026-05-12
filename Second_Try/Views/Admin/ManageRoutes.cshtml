@@ -1,0 +1,113 @@
+@using Second_Try.Models
+@{
+    ViewData["Title"]      = "Manage Routes";
+    ViewData["ActivePage"] = "ManageRoutes";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var routes = ViewBag.Routes as List<Second_Try.Models.Route> ?? new();
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/manage-employees.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin/manage-routes.css" asp-append-version="true" />
+}
+
+@if (TempData["SuccessMessage"] is string sm) {<div class="adm-toast adm-toast-success"><i class="fa-solid fa-circle-check"></i> @sm</div>}
+@if (TempData["ErrorMessage"]   is string em) {<div class="adm-toast adm-toast-error"><i class="fa-solid fa-triangle-exclamation"></i> @em</div>}
+
+<div class="adm-manage-grid">
+    <!-- Add Route Form -->
+    <div class="adm-card">
+        <div class="adm-card-header">
+            <div class="adm-card-title"><i class="fa-solid fa-route"></i> Add New Route</div>
+        </div>
+        <form asp-controller="Admin" asp-action="CreateRoute" method="POST">
+            @Html.AntiForgeryToken()
+            @{
+                string[] cities = ["Karachi","Lahore","Islamabad","Peshawar","Quetta","Multan","Faisalabad","Rawalpindi","Hyderabad","Sialkot","Sukkur","Gujranwala"];
+            }
+            <div class="adm-form-group">
+                <label class="adm-label">Origin City</label>
+                <select name="Origin" class="adm-select" required>
+                    <option value="">— Select —</option>
+                    @foreach (var c in cities) { <option value="@c">@c</option> }
+                </select>
+            </div>
+            <div class="adm-form-group">
+                <label class="adm-label">Destination City</label>
+                <select name="Destination" class="adm-select" required>
+                    <option value="">— Select —</option>
+                    @foreach (var c in cities) { <option value="@c">@c</option> }
+                </select>
+            </div>
+            <div class="adm-form-group">
+                <label class="adm-label">Est. Duration (hours)</label>
+                <input type="number" name="EstimatedDurationHours" class="adm-input"
+                       step="0.5" min="0.5" max="48" placeholder="e.g. 12.5" required />
+            </div>
+            <button type="submit" class="adm-btn adm-btn-primary" style="width:100%;justify-content:center;">
+                <i class="fa-solid fa-plus"></i> Add Route
+            </button>
+        </form>
+    </div>
+
+    <!-- Routes Table -->
+    <div class="adm-card">
+        <div class="adm-card-header">
+            <div class="adm-card-title"><i class="fa-solid fa-route"></i> All Routes <span class="adm-badge adm-badge-info">@routes.Count</span></div>
+        </div>
+        @if (routes.Any())
+        {
+            <div class="adm-table-wrapper">
+                <table class="adm-table">
+                    <thead>
+                        <tr><th>ID</th><th>Route</th><th>Duration</th><th>Prices Set</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in routes)
+                        {
+                            <tr>
+                                <td><span class="adm-id-pill">RT-@r.Id.ToString("D3")</span></td>
+                                <td>
+                                    <span class="adm-route-pill">
+                                        @r.Origin <i class="fa-solid fa-arrow-right" style="font-size:0.6rem;"></i> @r.Destination
+                                    </span>
+                                </td>
+                                <td class="muted">@r.EstimatedDurationHours hrs</td>
+                                <td>
+                                    <span class="adm-badge adm-badge-info">@r.PriceLists.Count / 4 types</span>
+                                </td>
+                                <td>
+                                    <span class="adm-badge @(r.IsActive ? "adm-badge-active" : "adm-badge-inactive")">
+                                        @(r.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="adm-action-group">
+                                        <a href="/Admin/ManagePriceList" class="adm-btn adm-btn-outline adm-btn-sm">
+                                            <i class="fa-solid fa-tags"></i> Prices
+                                        </a>
+                                        <form asp-action="ToggleRoute" method="POST" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@r.Id" />
+                                            <button type="submit" class="adm-btn @(r.IsActive ? "adm-btn-warning" : "adm-btn-success") adm-btn-sm">
+                                                <i class="fa-solid @(r.IsActive ? "fa-ban" : "fa-check")"></i>
+                                                @(r.IsActive ? "Disable" : "Enable")
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="adm-empty-state">
+                <div class="adm-empty-icon"><i class="fa-solid fa-route"></i></div>
+                <p class="adm-empty-title">No Routes Yet</p>
+                <p class="adm-empty-sub">Add your first route using the form.</p>
+            </div>
+        }
+    </div>
+</div>

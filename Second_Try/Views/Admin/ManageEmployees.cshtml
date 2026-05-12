@@ -1,0 +1,138 @@
+@using Second_Try.Models
+@{
+    ViewData["Title"]      = "Manage Employees";
+    ViewData["ActivePage"] = "ManageEmployees";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var employees = ViewBag.Employees as List<Employee> ?? new();
+    string search = ViewBag.Search ?? "";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/manage-employees.css" asp-append-version="true" />
+}
+
+@if (TempData["SuccessMessage"] is string sm) {<div class="adm-toast adm-toast-success"><i class="fa-solid fa-circle-check"></i> @sm</div>}
+@if (TempData["ErrorMessage"]   is string em) {<div class="adm-toast adm-toast-error"><i class="fa-solid fa-triangle-exclamation"></i> @em</div>}
+
+<div class="adm-manage-grid">
+
+    <!-- Add Employee Form -->
+    <div class="adm-card">
+        <div class="adm-card-header">
+            <div class="adm-card-title"><i class="fa-solid fa-user-plus"></i> Add New Employee</div>
+        </div>
+        <form asp-controller="Admin" asp-action="CreateEmployee" method="POST">
+            @Html.AntiForgeryToken()
+            <div class="adm-form-group">
+                <label class="adm-label">Full Name</label>
+                <input type="text" name="FullName" class="adm-input" placeholder="e.g. John Doe" required />
+            </div>
+            <div class="adm-form-group">
+                <label class="adm-label">Email Address</label>
+                <input type="email" name="Email" class="adm-input" placeholder="employee@src.com" required />
+            </div>
+            <div class="adm-form-group">
+                <label class="adm-label">Password</label>
+                <input type="password" name="Password" class="adm-input" placeholder="Min 8 characters" required minlength="6" />
+            </div>
+            <div class="adm-form-group">
+                <label class="adm-label">Role</label>
+                <select name="Role" class="adm-select" required>
+                    <option value="@EmployeeRole.Standard">Standard Employee</option>
+                    <option value="@EmployeeRole.Admin">Administrator</option>
+                </select>
+            </div>
+            <button type="submit" class="adm-btn adm-btn-primary" style="width:100%;justify-content:center;">
+                <i class="fa-solid fa-plus"></i> Create Employee
+            </button>
+        </form>
+    </div>
+
+    <!-- Employee Table -->
+    <div class="adm-card">
+        <div class="adm-card-header">
+            <div class="adm-card-title"><i class="fa-solid fa-users"></i> All Employees <span class="adm-badge adm-badge-info">@employees.Count</span></div>
+            <div class="adm-search-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="emp-search" class="adm-search-input" placeholder="Search name or email..." value="@search" />
+            </div>
+        </div>
+
+        @if (employees.Any())
+        {
+            <div class="adm-table-wrapper">
+                <table class="adm-table" id="emp-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Employee</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var emp in employees)
+                        {
+                            string init = string.Join("", emp.FullName.Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()));
+                            <tr data-search="@emp.FullName @emp.Email">
+                                <td><span class="adm-id-pill">EMP-@emp.Id.ToString("D3")</span></td>
+                                <td>
+                                    <div class="adm-cell-avatar">
+                                        <div class="adm-cell-avatar-circle">@init</div>
+                                        <div><div class="adm-cell-name">@emp.FullName</div><div class="adm-cell-email">@emp.Email</div></div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="adm-badge @(emp.Role == EmployeeRole.Admin ? "adm-badge-admin" : "adm-badge-info")">
+                                        @(emp.Role == EmployeeRole.Admin ? "Admin" : "Standard")
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="adm-badge @(emp.IsActive ? "adm-badge-active" : "adm-badge-inactive")">
+                                        @(emp.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </td>
+                                <td class="muted">@emp.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <div class="adm-action-group">
+                                        <form asp-action="ToggleEmployee" method="POST" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@emp.Id" />
+                                            <button type="submit" class="adm-btn @(emp.IsActive ? "adm-btn-warning" : "adm-btn-success") adm-btn-sm">
+                                                <i class="fa-solid @(emp.IsActive ? "fa-ban" : "fa-check")"></i>
+                                                @(emp.IsActive ? "Deactivate" : "Activate")
+                                            </button>
+                                        </form>
+                                        <form asp-action="DeleteEmployee" method="POST" style="display:inline;"
+                                              onsubmit="return confirm('Delete @emp.FullName? This cannot be undone.')">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@emp.Id" />
+                                            <button type="submit" class="adm-btn adm-btn-danger adm-btn-sm">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="adm-empty-state">
+                <div class="adm-empty-icon"><i class="fa-solid fa-user-tie"></i></div>
+                <p class="adm-empty-title">No Employees Found</p>
+                <p class="adm-empty-sub">Add your first employee using the form.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.getElementById('emp-search')?.addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('#emp-table tbody tr').forEach(r => {
+            r.style.display = (r.dataset.search ?? '').toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+</script>
+}

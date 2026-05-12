@@ -1,0 +1,64 @@
+/* ============================================================
+   ADMIN DASHBOARD — Quick Actions Grid (added to admin-dashboard.css)
+   ============================================================ */
+
+.adm-qa-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.65rem;
+}
+
+.adm-qa-btn {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0.45rem; padding: 0.9rem 0.4rem;
+    border-radius: 0.75rem; background: var(--bg-primary);
+    text-decoration: none; transition: all 0.2s; text-align: center;
+}
+.adm-qa-btn:hover { background: rgba(92,126,143,0.12); transform: translateY(-2px); }
+.adm-qa-btn span  { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); }
+
+.adm-qa-icon {
+    width: 36px; height: 36px; border-radius: 0.55rem;
+    display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+}
+.adm-qa-icon.navy   { background: rgba(15,37,55,0.10);   color: var(--adm-sidebar-bg); }
+.adm-qa-icon.purple { background: rgba(139,92,246,0.12); color: var(--adm-purple); }
+.adm-qa-icon.amber  { background: rgba(245,158,11,0.12); color: var(--adm-pending); }
+.adm-qa-icon.green  { background: rgba(34,197,94,0.12);  color: var(--adm-success); }
+.adm-qa-icon.cyan   { background: rgba(92,126,143,0.12); color: var(--adm-info); }
+.adm-qa-icon.red    { background: rgba(239,68,68,0.12);  color: var(--adm-danger); }
+
+/* Manage page table ID pill */
+.adm-id-pill {
+    font-size: 0.72rem; font-weight: 700; color: var(--adm-info);
+    background: rgba(92,126,143,0.10); padding: 0.18rem 0.45rem;
+    border-radius: 0.35rem; font-family: monospace;
+}
+
+/* Manage page avatar cell */
+.adm-cell-avatar {
+    display: flex; align-items: center; gap: 0.6rem;
+}
+.adm-cell-avatar-circle {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(92,126,143,0.14); display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem; font-weight: 700; color: var(--adm-info); flex-shrink: 0;
+}
+.adm-cell-name  { font-size: 0.83rem; font-weight: 600; color: var(--text-light); }
+.adm-cell-email { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.05rem; }
+
+/* Action buttons in table */
+.adm-action-group { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+
+/* Section divider for manage pages with form + table */
+.adm-manage-grid {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 1.25rem;
+    align-items: start;
+}
+
+@media (max-width: 960px) {
+    .adm-manage-grid { grid-template-columns: 1fr; }
+    .adm-qa-grid { grid-template-columns: repeat(3, 1fr); }
+}

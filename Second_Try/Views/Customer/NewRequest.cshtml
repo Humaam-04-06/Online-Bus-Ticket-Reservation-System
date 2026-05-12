@@ -176,7 +176,7 @@
                     <div class="nr-fare-total">
                         <p class="nr-fare-label">Estimated Total</p>
                         <p class="nr-fare-value" id="sum-total">PKR —</p>
-                        <p class="nr-fare-note">Final fare confirmed by staff</p>
+                        <p class="nr-fare-note" id="sum-note">Final fare confirmed by staff</p>
                     </div>
                 </div>
             </div>
@@ -187,50 +187,90 @@
 
 @section Scripts {
 <script>
-    // Fare table: [origin][destination][busType] = pricePerSeat
-    const fares = {
-        'Karachi':    { 'Lahore': [2500,3500,5000], 'Islamabad':[3000,4200,6000], 'Multan':[1800,2600,3800], 'Peshawar':[3500,4800,6800], 'Quetta':[2200,3100,4500], 'Faisalabad':[2800,3900,5500] },
-        'Lahore':     { 'Karachi':[2500,3500,5000], 'Islamabad':[1000,1400,2000], 'Multan':[900,1300,1900], 'Peshawar':[1500,2100,3000], 'Quetta':[3000,4200,6000], 'Faisalabad':[600,900,1300] },
-        'Islamabad':  { 'Karachi':[3000,4200,6000], 'Lahore':[1000,1400,2000], 'Multan':[1200,1700,2500], 'Peshawar':[700,1000,1500], 'Quetta':[3500,4900,7000], 'Faisalabad':[1100,1600,2300] },
-        'Faisalabad': { 'Karachi':[2800,3900,5500], 'Lahore':[600,900,1300], 'Islamabad':[1100,1600,2300], 'Multan':[800,1150,1650], 'Peshawar':[1800,2500,3600], 'Quetta':[3200,4500,6400] },
-        'Multan':     { 'Karachi':[1800,2600,3800], 'Lahore':[900,1300,1900], 'Islamabad':[1200,1700,2500], 'Faisalabad':[800,1150,1650], 'Peshawar':[2000,2800,4000], 'Quetta':[2500,3500,5000] },
-        'Peshawar':   { 'Karachi':[3500,4800,6800], 'Lahore':[1500,2100,3000], 'Islamabad':[700,1000,1500], 'Faisalabad':[1800,2500,3600], 'Multan':[2000,2800,4000], 'Quetta':[4000,5600,8000] },
-        'Quetta':     { 'Karachi':[2200,3100,4500], 'Lahore':[3000,4200,6000], 'Islamabad':[3500,4900,7000], 'Faisalabad':[3200,4500,6400], 'Multan':[2500,3500,5000], 'Peshawar':[4000,5600,8000] }
-    };
-    const classNames = ['Economy', 'Standard', 'Luxury', 'Express'];
+    // ── Real Fare Engine ──────────────────────────────────────────────────
+    // Calls GET /api/fare?origin=X&destination=Y and returns live DB prices.
+    // Falls back to 0 / "—" when no PriceList entry exists for that route.
+
+    const classNames  = ['Economy', 'Standard', 'Luxury', 'Express'];
+    const classKeys   = ['economy', 'standard', 'luxury', 'express'];
+    let   liveFares   = { economy: 0, standard: 0, luxury: 0, express: 0, found: false };
+    let   fetchTimer  = null;
+
+    function getSelectedBusType() {
+        const checked = document.querySelector('input[name="PreferredBusType"]:checked');
+        return parseInt(checked?.value ?? 0);
+    }
+
+    async function fetchFares(origin, destination) {
+        const totalEl   = document.getElementById('sum-total');
+        const perSeatEl = document.getElementById('sum-per-seat');
+        totalEl.textContent   = 'Loading...';
+        perSeatEl.textContent = '...';
+
+        try {
+            const res  = await fetch(`/api/fare?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`);
+            const data = await res.json();
+            liveFares  = data;
+        } catch {
+            liveFares = { economy: 0, standard: 0, luxury: 0, express: 0, found: false };
+        }
+        updateSummary();
+    }
 
     function updateSummary() {
         const origin      = document.getElementById('origin').value;
         const destination = document.getElementById('destination').value;
         const dateVal     = document.getElementById('travel-date').value;
         const seats       = parseInt(document.getElementById('seats').value) || 1;
-        const busType     = parseInt(document.querySelector('input[name="PreferredBusType"]:checked')?.value ?? 0);
+        const busType     = getSelectedBusType();
 
         document.getElementById('sum-route').textContent =
             (origin && destination && origin !== destination) ? `${origin} → ${destination}` : '—';
         document.getElementById('sum-date').textContent =
             dateVal ? new Date(dateVal).toLocaleDateString('en-PK', {day:'numeric',month:'short',year:'numeric'}) : '—';
-        document.getElementById('sum-class').textContent = classNames[busType] ?? 'Standard';
+        document.getElementById('sum-class').textContent = classNames[busType] ?? 'Economy';
         document.getElementById('sum-seats').textContent = seats;
 
-        if (origin && destination && origin !== destination && fares[origin]?.[destination]) {
-            const pricePerSeat = fares[origin][destination][busType];
+        const key          = classKeys[busType] ?? 'economy';
+        const pricePerSeat = liveFares[key] ?? 0;
+
+        if (origin && destination && origin !== destination && pricePerSeat > 0) {
             const total = pricePerSeat * seats;
             document.getElementById('sum-per-seat').textContent = `PKR ${pricePerSeat.toLocaleString()}`;
-            document.getElementById('sum-total').textContent = `PKR ${total.toLocaleString()}`;
+            document.getElementById('sum-total').textContent    = `PKR ${total.toLocaleString()}`;
+            document.getElementById('sum-note').textContent     = liveFares.found ? '✅ Live fare from price list' : 'Final fare confirmed by staff';
         } else {
             document.getElementById('sum-per-seat').textContent = '—';
-            document.getElementById('sum-total').textContent = 'PKR —';
+            document.getElementById('sum-total').textContent    = 'PKR —';
+            document.getElementById('sum-note').textContent     = 'Final fare confirmed by staff';
         }
     }
 
-    // Prevent same origin & destination
-    document.getElementById('destination').addEventListener('change', function () {
-        if (this.value === document.getElementById('origin').value && this.value !== '') {
-            this.value = '';
+    function onRouteChange() {
+        const origin      = document.getElementById('origin').value;
+        const destination = document.getElementById('destination').value;
+
+        // Same-city guard
+        if (origin && destination && origin === destination) {
+            document.getElementById('destination').value = '';
             alert('Origin and destination cannot be the same city.');
+            return;
         }
+
         updateSummary();
-    });
+
+        // Debounce the API call — fetch only when both are selected
+        if (origin && destination && origin !== destination) {
+            clearTimeout(fetchTimer);
+            fetchTimer = setTimeout(() => fetchFares(origin, destination), 250);
+        }
+    }
+
+    document.getElementById('origin').addEventListener('change', onRouteChange);
+    document.getElementById('destination').addEventListener('change', onRouteChange);
+    document.getElementById('travel-date').addEventListener('change', updateSummary);
+    document.getElementById('seats').addEventListener('change', updateSummary);
+    document.querySelectorAll('input[name="PreferredBusType"]').forEach(r =>
+        r.addEventListener('change', updateSummary));
 </script>
 }

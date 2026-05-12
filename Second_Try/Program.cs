@@ -1,30 +1,46 @@
 using Microsoft.EntityFrameworkCore;
-
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
+using Second_Try.Data;
+using Second_Try.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// ── MVC + Views ───────────────────────────────────────────
 builder.Services.AddControllersWithViews();
 
+// ── Database ──────────────────────────────────────────────
 builder.Services.AddDbContext<Second_Try.Data.ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// ── Authentication: Cookie + Google OAuth ─────────────────
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Auth/Login";
+        options.LoginPath       = "/Auth/Login";
         options.AccessDeniedPath = "/Auth/Login";
-        options.ExpireTimeSpan = TimeSpan.FromDays(30);
+        options.ExpireTimeSpan  = TimeSpan.FromDays(30);
+    })
+    .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+    {
+        options.ClientId     = builder.Configuration["Authentication:Google:ClientId"]!;
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
+        options.CallbackPath = "/signin-google"; // must match Google Console redirect URI
     });
+
+// ── Application Services ──────────────────────────────────
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddHostedService<RequestExpiryService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ── Run DB seeder on startup ──────────────────────────────
+await DbSeeder.SeedAsync(app.Services);
+
+// ── Pipeline ──────────────────────────────────────────────
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -36,10 +52,12 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
+// ── API routes (FareController) ───────────────────────────
+app.MapControllers();
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();

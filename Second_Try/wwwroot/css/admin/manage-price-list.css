@@ -1,0 +1,8 @@
+/* manage-price-list.css */
+.adm-price-tip {
+    display: flex; align-items: flex-start; gap: 0.5rem;
+    padding: 0.75rem; background: rgba(92,126,143,0.06);
+    border: 1px solid rgba(92,126,143,0.18); border-radius: 0.6rem;
+    font-size: 0.78rem; color: var(--text-muted);
+}
+.adm-price-tip i { color: var(--adm-info); flex-shrink: 0; margin-top: 0.05rem; }

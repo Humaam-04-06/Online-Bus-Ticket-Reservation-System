@@ -4,197 +4,147 @@
     ViewData["Title"]      = "My Profile";
     ViewData["ActivePage"] = "EmployeeProfile";
     Layout = "~/Views/Shared/_EmployeeLayout.cshtml";
-
-    bool isAdmin = User.IsInRole("Admin");
+    string initials = string.Join("", Model.FullName.Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()));
 }
-
 @section Styles {
     <link rel="stylesheet" href="~/css/employee/emp-profile.css" asp-append-version="true" />
 }
+@if (TempData["SuccessMessage"] is string sm) {<div class="emp-toast emp-toast-success"><i class="fa-solid fa-circle-check"></i> @sm</div>}
+@if (TempData["ErrorMessage"]   is string em) {<div class="emp-toast emp-toast-error"><i class="fa-solid fa-triangle-exclamation"></i> @em</div>}
 
-@if (TempData["SuccessMessage"] is string sm)
-{
-    <div class="emp-toast emp-toast-success"><i class="fa-solid fa-circle-check"></i> @sm</div>
-}
-@if (TempData["ErrorMessage"] is string em)
-{
-    <div class="emp-toast emp-toast-error"><i class="fa-solid fa-triangle-exclamation"></i> @em</div>
-}
+<!-- ===== PROFILE HERO (Banner + Avatar) ===== -->
+<div class="ep-hero-card">
+    <!-- Banner -->
+    <div class="ep-banner" id="ep-banner"
+         style="@(!string.IsNullOrEmpty(Model.CoverPictureUrl) ? $"background-image:url('{Model.CoverPictureUrl}')" : "")">
+        <form asp-controller="Employee" asp-action="UploadBanner" method="POST"
+              enctype="multipart/form-data" id="banner-form">
+            @Html.AntiForgeryToken()
+            <label class="ep-banner-edit-btn" title="Change banner">
+                <i class="fa-solid fa-image"></i> Change Banner
+                <input type="file" name="banner" accept=".jpg,.jpeg,.png,.webp"
+                       style="display:none;" onchange="document.getElementById('banner-form').submit();" />
+            </label>
+        </form>
+    </div>
 
-<!-- Hero Card -->
-<div class="ep-hero">
-    <div class="ep-hero-avatar">
-        @string.Join("", (Model.FullName).Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()))
-    </div>
-    <div class="ep-hero-info">
-        <h2 class="ep-hero-name">@Model.FullName</h2>
-        <p class="ep-hero-email">@Model.Email</p>
-        <span class="emp-role-badge @(isAdmin ? "admin" : "standard")">
-            <i class="fa-solid @(isAdmin ? "fa-crown" : "fa-id-badge")" style="font-size:0.55rem;"></i>
-            @(isAdmin ? "Administrator" : "Standard Employee")
-        </span>
-    </div>
-    <div class="ep-hero-since">
-        <span class="ep-since-label">Member Since</span>
-        <span class="ep-since-val">@Model.CreatedAt.ToString("MMMM yyyy")</span>
+    <!-- Avatar + Info Row -->
+    <div class="ep-hero-body">
+        <div class="ep-avatar-wrapper">
+            @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
+            {
+                <img src="@Model.ProfilePictureUrl" class="ep-avatar-img" alt="Profile" />
+            }
+            else
+            {
+                <div class="ep-avatar-initials">@initials</div>
+            }
+            <form asp-controller="Employee" asp-action="UploadPicture" method="POST"
+                  enctype="multipart/form-data" id="pic-form">
+                @Html.AntiForgeryToken()
+                <label class="ep-avatar-edit-btn" title="Change photo">
+                    <i class="fa-solid fa-camera"></i>
+                    <input type="file" name="picture" accept=".jpg,.jpeg,.png,.webp"
+                           style="display:none;" onchange="document.getElementById('pic-form').submit();" />
+                </label>
+            </form>
+        </div>
+        <div class="ep-hero-info">
+            <h2 class="ep-hero-name">@Model.FullName</h2>
+            <p class="ep-hero-email">@Model.Email</p>
+            <span class="emp-badge @(Model.Role == EmployeeRole.Admin ? "emp-badge-admin" : "emp-badge-info")">
+                @(Model.Role == EmployeeRole.Admin ? "Administrator" : "Standard Employee")
+            </span>
+        </div>
+        <div class="ep-hero-meta">
+            <span class="ep-meta-label">Member Since</span>
+            <span class="ep-meta-val">@Model.CreatedAt.ToString("MMMM yyyy")</span>
+        </div>
     </div>
 </div>
 
-<!-- Two-column grid -->
-<div class="ep-grid">
-
-    <!-- LEFT: Update Profile -->
-    <div class="emp-card">
-        <div class="emp-card-header">
-            <div class="emp-card-title"><i class="fa-solid fa-user-pen"></i> Update Profile</div>
-        </div>
-
+<!-- ===== FORMS GRID ===== -->
+<div class="ep-forms-grid">
+    <!-- Update Info -->
+    <div class="ep-form-card">
+        <div class="ep-form-header"><i class="fa-solid fa-user-pen"></i> Update Profile</div>
         <form asp-controller="Employee" asp-action="UpdateEmployeeProfile" method="POST">
             @Html.AntiForgeryToken()
-
-            <div class="ep-form-group">
+            <div class="ep-field">
                 <label class="ep-label">Full Name</label>
-                <input type="text" name="FullName" class="ep-input"
-                       value="@Model.FullName" required />
+                <input type="text" name="FullName" class="ep-input" value="@Model.FullName" required />
             </div>
-
-            <div class="ep-form-group">
-                <label class="ep-label">Email Address</label>
+            <div class="ep-field">
+                <label class="ep-label">Email</label>
                 <input type="email" class="ep-input" value="@Model.Email" disabled />
-                <span class="ep-hint">Email cannot be changed. Contact Admin if needed.</span>
             </div>
-
-            <div class="ep-form-group">
+            <div class="ep-field">
                 <label class="ep-label">Role</label>
-                <input type="text" class="ep-input" value="@(isAdmin ? "Administrator" : "Standard Employee")" disabled />
+                <input type="text" class="ep-input" value="@Model.Role" disabled />
             </div>
-
-            <button type="submit" class="emp-btn emp-btn-primary ep-submit-btn">
+            <button type="submit" class="emp-btn emp-btn-primary" style="width:100%;justify-content:center;">
                 <i class="fa-solid fa-floppy-disk"></i> Save Changes
             </button>
         </form>
     </div>
 
-    <!-- RIGHT: Change Password -->
-    <div class="emp-card">
-        <div class="emp-card-header">
-            <div class="emp-card-title"><i class="fa-solid fa-shield-halved"></i> Change Password</div>
-        </div>
-
+    <!-- Change Password -->
+    <div class="ep-form-card">
+        <div class="ep-form-header"><i class="fa-solid fa-shield-halved"></i> Change Password</div>
         <form asp-controller="Employee" asp-action="ChangeEmployeePassword" method="POST">
             @Html.AntiForgeryToken()
-
-            <div class="ep-form-group">
+            <div class="ep-field ep-pwd-field">
                 <label class="ep-label">Current Password</label>
-                <div class="ep-input-wrapper">
-                    <input type="password" name="CurrentPassword" id="cur-pw" class="ep-input" required />
-                    <button type="button" class="ep-eye-btn" onclick="togglePw('cur-pw', this)">
-                        <i class="fa-regular fa-eye"></i>
-                    </button>
+                <div class="ep-pwd-wrap">
+                    <input type="password" name="CurrentPassword" class="ep-input" required id="ep-cur-pwd" />
+                    <button type="button" class="ep-eye" onclick="togglePwd('ep-cur-pwd',this)"><i class="fa-solid fa-eye"></i></button>
                 </div>
             </div>
-
-            <div class="ep-form-group">
+            <div class="ep-field ep-pwd-field">
                 <label class="ep-label">New Password</label>
-                <div class="ep-input-wrapper">
-                    <input type="password" name="NewPassword" id="new-pw" class="ep-input"
-                           oninput="checkStrength(this.value)" required />
-                    <button type="button" class="ep-eye-btn" onclick="togglePw('new-pw', this)">
-                        <i class="fa-regular fa-eye"></i>
-                    </button>
+                <div class="ep-pwd-wrap">
+                    <input type="password" name="NewPassword" class="ep-input" required id="ep-new-pwd" minlength="8" oninput="checkStrength(this.value)" />
+                    <button type="button" class="ep-eye" onclick="togglePwd('ep-new-pwd',this)"><i class="fa-solid fa-eye"></i></button>
                 </div>
-                <!-- Strength meter -->
-                <div class="ep-strength-bar-wrap">
-                    <div class="ep-strength-bar" id="ep-strength-fill"></div>
-                </div>
-                <span class="ep-strength-label" id="ep-strength-lbl"></span>
+                <div class="ep-strength-bar"><div class="ep-strength-fill" id="ep-str-fill"></div></div>
+                <div class="ep-strength-label" id="ep-str-label"></div>
             </div>
-
-            <div class="ep-form-group">
-                <label class="ep-label">Confirm New Password</label>
-                <div class="ep-input-wrapper">
-                    <input type="password" name="ConfirmPassword" id="conf-pw" class="ep-input" required />
-                    <button type="button" class="ep-eye-btn" onclick="togglePw('conf-pw', this)">
-                        <i class="fa-regular fa-eye"></i>
-                    </button>
+            <div class="ep-field ep-pwd-field">
+                <label class="ep-label">Confirm Password</label>
+                <div class="ep-pwd-wrap">
+                    <input type="password" name="ConfirmPassword" class="ep-input" required id="ep-con-pwd" minlength="8" />
+                    <button type="button" class="ep-eye" onclick="togglePwd('ep-con-pwd',this)"><i class="fa-solid fa-eye"></i></button>
                 </div>
             </div>
-
-            <button type="submit" class="emp-btn emp-btn-primary ep-submit-btn">
+            <button type="submit" class="emp-btn emp-btn-primary" style="width:100%;justify-content:center;">
                 <i class="fa-solid fa-key"></i> Update Password
             </button>
         </form>
-    </div>
-
-</div>
-
-<!-- Account Info Card -->
-<div class="emp-card ep-info-card">
-    <div class="emp-card-header">
-        <div class="emp-card-title"><i class="fa-solid fa-circle-info"></i> Account Information</div>
-    </div>
-    <div class="ep-info-rows">
-        <div class="ep-info-row">
-            <span class="ep-info-label">Employee ID</span>
-            <span class="ep-info-val">EMP-@Model.Id.ToString("D4")</span>
-        </div>
-        <div class="ep-info-row">
-            <span class="ep-info-label">Status</span>
-            <span class="emp-badge @(Model.IsActive ? "emp-badge-accepted" : "emp-badge-rejected")">
-                @(Model.IsActive ? "Active" : "Inactive")
-            </span>
-        </div>
-        <div class="ep-info-row">
-            <span class="ep-info-label">Role</span>
-            <span class="ep-info-val">@(isAdmin ? "Administrator" : "Standard Employee")</span>
-        </div>
-        <div class="ep-info-row">
-            <span class="ep-info-label">Account Created</span>
-            <span class="ep-info-val">@Model.CreatedAt.ToString("MMMM dd, yyyy")</span>
-        </div>
     </div>
 </div>
 
 @section Scripts {
 <script>
-    function togglePw(id, btn) {
-        const input = document.getElementById(id);
-        const isText = input.type === 'text';
-        input.type = isText ? 'password' : 'text';
-        btn.querySelector('i').className = isText ? 'fa-regular fa-eye' : 'fa-regular fa-eye-slash';
+    function togglePwd(id, btn) {
+        const inp = document.getElementById(id);
+        const isText = inp.type === 'text';
+        inp.type = isText ? 'password' : 'text';
+        btn.innerHTML = isText ? '<i class="fa-solid fa-eye"></i>' : '<i class="fa-solid fa-eye-slash"></i>';
     }
-
-    function checkStrength(pwd) {
-        const fill = document.getElementById('ep-strength-fill');
-        const lbl  = document.getElementById('ep-strength-lbl');
-        if (!fill || !lbl) return;
-
-        const levels = [
-            { pct: '20%', color: '#EF4444', text: 'Very Weak' },
-            { pct: '40%', color: '#F97316', text: 'Weak' },
-            { pct: '60%', color: '#EAB308', text: 'Fair' },
-            { pct: '80%', color: '#22C55E', text: 'Strong' },
-            { pct: '100%', color: '#16A34A', text: 'Very Strong' }
-        ];
-
+    function checkStrength(v) {
+        const fill = document.getElementById('ep-str-fill');
+        const label = document.getElementById('ep-str-label');
         let score = 0;
-        if (pwd.length >= 8)              score++;
-        if (/[A-Z]/.test(pwd))            score++;
-        if (/[a-z]/.test(pwd))            score++;
-        if (/\d/.test(pwd))               score++;
-        if (/[!@@#$%^&*]/.test(pwd))      score++;
-
-        if (pwd.length === 0) {
-            fill.style.width = '0%';
-            lbl.textContent = '';
-            return;
-        }
-
-        const lvl = levels[Math.max(0, score - 1)];
-        fill.style.width    = lvl.pct;
-        fill.style.background = lvl.color;
-        lbl.textContent     = lvl.text;
-        lbl.style.color     = lvl.color;
+        if (v.length >= 8) score++;
+        if (/[A-Z]/.test(v)) score++;
+        if (/[0-9]/.test(v)) score++;
+        if (/[^A-Za-z0-9]/.test(v)) score++;
+        const levels = ['','Weak','Fair','Good','Strong'];
+        const colors = ['','#EF4444','#F59E0B','#3B82F6','#22C55E'];
+        fill.style.width = (score * 25) + '%';
+        fill.style.background = colors[score];
+        label.textContent = levels[score];
+        label.style.color = colors[score];
     }
 </script>
 }

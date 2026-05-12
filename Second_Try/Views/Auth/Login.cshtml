@@ -223,8 +223,9 @@
                 <h2 style="font-size:1.75rem;font-weight:700;color:var(--text-light);margin-bottom:0.25rem;">Create Account</h2>
 
                 <div style="margin:0.5rem 0 0.25rem;" class="social-container">
-                    <a href="#" class="social-link"><i class="fab fa-google"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                    <a href="/Auth/GoogleLogin" class="social-link google-link" title="Sign up with Google">
+                        <i class="fab fa-google"></i>
+                    </a>
                 </div>
                 <span style="color:var(--text-muted);font-size:0.8rem;margin-bottom:0.75rem;display:block;">or use your email for registration</span>
 
@@ -270,8 +271,9 @@
                 <h2 style="font-size:1.75rem;font-weight:700;color:var(--text-light);margin-bottom:0.25rem;">Sign In</h2>
 
                 <div style="margin:0.5rem 0 0.25rem;">
-                    <a href="#" class="social-link"><i class="fab fa-google"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                    <a href="/Auth/GoogleLogin" class="social-link google-link" title="Sign in with Google">
+                        <i class="fab fa-google"></i>
+                    </a>
                 </div>
                 <span style="color:var(--text-muted);font-size:0.8rem;margin-bottom:0.75rem;display:block;">or use your account</span>
 
@@ -284,7 +286,8 @@
                        value="@Model.Login.Email" required />
                 <input type="password" name="Login.Password" placeholder="Password" class="auth-input" required />
 
-                <a href="#" style="color:var(--text-muted);font-size:0.8rem;margin-bottom:1rem;display:block;transition:color 0.2s;"
+                <a href="/Auth/ForgotPassword"
+                   style="color:var(--text-muted);font-size:0.8rem;margin-bottom:1rem;display:block;transition:color 0.2s;"
                    onmouseover="this.style.color='var(--accent-cyan)'" onmouseout="this.style.color='var(--text-muted)'">
                     Forgot your password?
                 </a>

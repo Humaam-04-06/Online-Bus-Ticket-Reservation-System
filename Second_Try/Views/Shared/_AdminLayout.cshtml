@@ -1,0 +1,131 @@
+@{
+    string adminName   = User.Identity?.Name ?? "Admin";
+    string initials    = string.Join("", adminName.Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()));
+    string currentPage = ViewData["ActivePage"]?.ToString() ?? "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — SRC Admin Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/variables.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin/admin-dashboard.css" asp-append-version="true" />
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+
+<div class="adm-overlay" id="adm-overlay"></div>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="adm-sidebar" id="adm-sidebar">
+
+    <a href="/Home/Index" class="adm-sidebar-logo">
+        <div class="adm-logo-icon"><i class="fa-solid fa-bus-simple"></i></div>
+        <div class="adm-logo-text">SRC Travel <span>Admin Portal</span></div>
+    </a>
+
+    <div class="adm-sidebar-user">
+        <div class="adm-user-avatar">@initials</div>
+        <div>
+            <div class="adm-user-name">@adminName</div>
+            <div class="adm-user-badge"><i class="fa-solid fa-crown" style="font-size:0.5rem;"></i> Super Admin</div>
+        </div>
+    </div>
+
+    <nav class="adm-nav">
+        <div class="adm-nav-label">Overview</div>
+        <a href="/Admin/Dashboard" class="@(currentPage=="Dashboard"?"active":"")">
+            <i class="fa-solid fa-gauge-high"></i> Dashboard
+        </a>
+
+        <div class="adm-nav-label">Management</div>
+        <a href="/Admin/ManageEmployees" class="@(currentPage=="ManageEmployees"?"active":"")">
+            <i class="fa-solid fa-user-tie"></i> Employees
+        </a>
+        <a href="/Admin/ManageBuses" class="@(currentPage=="ManageBuses"?"active":"")">
+            <i class="fa-solid fa-bus"></i> Buses
+        </a>
+        <a href="/Admin/ManageRoutes" class="@(currentPage=="ManageRoutes"?"active":"")">
+            <i class="fa-solid fa-route"></i> Routes
+        </a>
+        <a href="/Admin/ManagePriceList" class="@(currentPage=="ManagePriceList"?"active":"")">
+            <i class="fa-solid fa-tags"></i> Price List
+        </a>
+
+        <div class="adm-nav-label">Records</div>
+        <a href="/Admin/BookingHistory" class="@(currentPage=="BookingHistory"?"active":"")">
+            <i class="fa-solid fa-clock-rotate-left"></i> Booking History
+        </a>
+        <a href="/Admin/Reports" class="@(currentPage=="Reports"?"active":"")">
+            <i class="fa-solid fa-chart-bar"></i> Reports
+        </a>
+
+        <div class="adm-nav-label">Account</div>
+        <a href="/Admin/AdminProfile" class="@(currentPage=="AdminProfile"?"active":"")">
+            <i class="fa-solid fa-user-shield"></i> My Profile
+        </a>
+    </nav>
+
+    <div class="adm-sidebar-bottom">
+        <a href="/Auth/Logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </div>
+</aside>
+
+<!-- ===== TOPBAR ===== -->
+<header class="adm-topbar">
+    <div class="adm-topbar-left">
+        <button class="adm-hamburger" id="adm-hamburger"><i class="fa-solid fa-bars"></i></button>
+        <span class="adm-page-title">@ViewData["Title"]</span>
+    </div>
+    <div class="adm-topbar-right">
+        <div class="adm-avatar-wrapper">
+            <button class="adm-avatar-btn" id="adm-avatar-btn" aria-expanded="false">
+                <div class="adm-avatar-circle">@initials</div>
+                <span class="adm-avatar-name">@adminName.Split(' ')[0]</span>
+                <i class="fa-solid fa-chevron-down adm-avatar-chevron" id="adm-chevron"></i>
+            </button>
+            <div class="adm-avatar-dropdown" id="adm-avatar-dropdown">
+                <a href="/Admin/AdminProfile"><i class="fa-solid fa-user-shield"></i> My Profile</a>
+                <a href="/Auth/Logout" class="danger"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="adm-main">@RenderBody()</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar   = document.getElementById('adm-sidebar');
+        const overlay   = document.getElementById('adm-overlay');
+        const hamburger = document.getElementById('adm-hamburger');
+        const avatarBtn = document.getElementById('adm-avatar-btn');
+        const dropdown  = document.getElementById('adm-avatar-dropdown');
+        const chevron   = document.getElementById('adm-chevron');
+
+        hamburger?.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('open'); });
+        overlay?.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('open'); });
+
+        avatarBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const open = dropdown.classList.toggle('open');
+            avatarBtn.setAttribute('aria-expanded', open);
+            chevron.style.transform = open ? 'rotate(180deg)' : 'rotate(0)';
+        });
+
+        document.addEventListener('click', () => {
+            dropdown?.classList.remove('open');
+            chevron.style.transform = 'rotate(0)';
+        });
+
+        document.querySelectorAll('.adm-toast').forEach(t => {
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 4000);
+        });
+    });
+</script>
+@RenderSection("Scripts", required: false)
+</body>
+</html>

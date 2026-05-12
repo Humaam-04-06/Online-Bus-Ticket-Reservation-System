@@ -1,0 +1,112 @@
+@using Second_Try.Models
+@{
+    ViewData["Title"]      = "Manage Price List";
+    ViewData["ActivePage"] = "ManagePriceList";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var prices   = ViewBag.PriceLists as List<PriceList> ?? new();
+    var routes   = ViewBag.Routes as List<Second_Try.Models.Route> ?? new();
+    var busTypes = Enum.GetValues<BusType>();
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/manage-employees.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin/manage-price-list.css" asp-append-version="true" />
+}
+@if (TempData["SuccessMessage"] is string sm) {<div class="adm-toast adm-toast-success"><i class="fa-solid fa-circle-check"></i> @sm</div>}
+@if (TempData["ErrorMessage"]   is string em) {<div class="adm-toast adm-toast-error"><i class="fa-solid fa-triangle-exclamation"></i> @em</div>}
+
+<div class="adm-manage-grid">
+    <!-- Set Price Form -->
+    <div class="adm-card">
+        <div class="adm-card-header">
+            <div class="adm-card-title"><i class="fa-solid fa-tags"></i> Set / Update Fare</div>
+        </div>
+        @if (routes.Any())
+        {
+            <form asp-controller="Admin" asp-action="UpsertPrice" method="POST">
+                @Html.AntiForgeryToken()
+                <div class="adm-form-group">
+                    <label class="adm-label">Route</label>
+                    <select name="RouteId" class="adm-select" required>
+                        <option value="">— Select Route —</option>
+                        @foreach (var r in routes)
+                        { <option value="@r.Id">@r.Origin → @r.Destination</option> }
+                    </select>
+                </div>
+                <div class="adm-form-group">
+                    <label class="adm-label">Bus Class</label>
+                    <select name="BusType" class="adm-select" required>
+                        @foreach (var t in busTypes) { <option value="@t">@t</option> }
+                    </select>
+                </div>
+                <div class="adm-form-group">
+                    <label class="adm-label">Fare Amount (PKR)</label>
+                    <input type="number" name="FareAmount" class="adm-input" min="1" step="0.01" placeholder="e.g. 2500" required />
+                </div>
+                <div class="adm-price-tip">
+                    <i class="fa-solid fa-circle-info"></i>
+                    If a fare already exists for this route + class, it will be updated automatically.
+                </div>
+                <button type="submit" class="adm-btn adm-btn-primary" style="width:100%;justify-content:center;margin-top:0.75rem;">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Fare
+                </button>
+            </form>
+        }
+        else
+        {
+            <div class="adm-empty-state">
+                <div class="adm-empty-icon"><i class="fa-solid fa-route"></i></div>
+                <p class="adm-empty-title">No Routes Available</p>
+                <p class="adm-empty-sub">Add routes first from the Manage Routes page.</p>
+            </div>
+        }
+    </div>
+
+    <!-- Price List Table -->
+    <div class="adm-card">
+        <div class="adm-card-header">
+            <div class="adm-card-title"><i class="fa-solid fa-list"></i> Current Fares <span class="adm-badge adm-badge-info">@prices.Count</span></div>
+        </div>
+        @if (prices.Any())
+        {
+            <div class="adm-table-wrapper">
+                <table class="adm-table">
+                    <thead>
+                        <tr><th>Route</th><th>Bus Class</th><th>Fare (PKR)</th><th>Action</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in prices)
+                        {
+                            <tr>
+                                <td>
+                                    <span style="font-weight:600;color:var(--text-light);">
+                                        @(p.Route?.Origin ?? "—") <i class="fa-solid fa-arrow-right" style="font-size:0.6rem;"></i> @(p.Route?.Destination ?? "—")
+                                    </span>
+                                </td>
+                                <td><span class="adm-badge adm-badge-info">@p.BusType</span></td>
+                                <td style="font-weight:700;color:var(--adm-success);">PKR @p.FareAmount.ToString("N0")</td>
+                                <td>
+                                    <form asp-action="DeletePrice" method="POST" style="display:inline;"
+                                          onsubmit="return confirm('Delete this fare entry?')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@p.Id" />
+                                        <button type="submit" class="adm-btn adm-btn-danger adm-btn-sm">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="adm-empty-state">
+                <div class="adm-empty-icon"><i class="fa-solid fa-tags"></i></div>
+                <p class="adm-empty-title">No Fares Set</p>
+                <p class="adm-empty-sub">Set fares for each route and bus class using the form.</p>
+            </div>
+        }
+    </div>
+</div>

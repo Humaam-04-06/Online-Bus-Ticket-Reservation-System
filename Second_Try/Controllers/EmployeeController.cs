@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Second_Try.Data;
 using Second_Try.Models;
+using Second_Try.Services;
 using System.Security.Claims;
 
 namespace Second_Try.Controllers
@@ -11,10 +12,12 @@ namespace Second_Try.Controllers
     public class EmployeeController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IEmailService _email;
 
-        public EmployeeController(ApplicationDbContext context)
+        public EmployeeController(ApplicationDbContext context, IEmailService email)
         {
             _context = context;
+            _email   = email;
         }
 
         // ── Helper: get current employee ─────────────────────────
@@ -181,6 +184,17 @@ namespace Second_Try.Controllers
 
             await _context.SaveChangesAsync();
 
+            // 📧 Email customer (fire-and-forget)
+            if (request.Customer != null)
+            {
+                var route    = await _context.Routes.FindAsync(request.RouteId);
+                string routeStr = route != null ? $"{route.Origin} → {route.Destination}" : "N/A";
+                _ = _email.SendBookingConfirmedEmailAsync(
+                    request.Customer.Email, request.Customer.FullName,
+                    routeStr, request.TravelDate,
+                    request.NumberOfSeats, request.PreferredBusType.ToString());
+            }
+
             TempData["SuccessMessage"] = $"Request REQ-{request.Id:D4} accepted and ticket confirmed!";
             return RedirectToAction(nameof(BookingRequests));
         }
@@ -218,6 +232,16 @@ namespace Second_Try.Controllers
             });
 
             await _context.SaveChangesAsync();
+
+            // 📧 Email customer (fire-and-forget)
+            if (request.Customer != null)
+            {
+                var route    = await _context.Routes.FindAsync(request.RouteId);
+                string routeStr = route != null ? $"{route.Origin} → {route.Destination}" : "N/A";
+                _ = _email.SendBookingRejectedEmailAsync(
+                    request.Customer.Email, request.Customer.FullName,
+                    routeStr, request.TravelDate, remarks);
+            }
 
             TempData["SuccessMessage"] = $"Request REQ-{request.Id:D4} has been rejected.";
             return RedirectToAction(nameof(BookingRequests));
@@ -334,6 +358,108 @@ namespace Second_Try.Controllers
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Password changed successfully!";
+            return RedirectToAction(nameof(EmployeeProfile));
+        }
+
+        // ── E-06: Upload Profile Picture (POST) ──────────────────
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadPicture(IFormFile picture)
+        {
+            var employee = await GetCurrentEmployeeAsync();
+            if (employee == null) return RedirectToAction("Logout", "Auth");
+
+            if (picture == null || picture.Length == 0)
+            {
+                TempData["ErrorMessage"] = "Please select an image file.";
+                return RedirectToAction(nameof(EmployeeProfile));
+            }
+
+            string[] allowed = [".jpg", ".jpeg", ".png", ".webp"];
+            string ext = Path.GetExtension(picture.FileName).ToLowerInvariant();
+            if (!allowed.Contains(ext))
+            {
+                TempData["ErrorMessage"] = "Only JPG, PNG, or WebP images are allowed.";
+                return RedirectToAction(nameof(EmployeeProfile));
+            }
+
+            if (picture.Length > 3 * 1024 * 1024)
+            {
+                TempData["ErrorMessage"] = "Image must be smaller than 3 MB.";
+                return RedirectToAction(nameof(EmployeeProfile));
+            }
+
+            string uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
+            Directory.CreateDirectory(uploadsDir);
+
+            if (!string.IsNullOrEmpty(employee.ProfilePictureUrl))
+            {
+                string oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot",
+                    employee.ProfilePictureUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+            }
+
+            string fileName = $"emp_{employee.Id}_{DateTime.UtcNow.Ticks}{ext}";
+            string filePath = Path.Combine(uploadsDir, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+                await picture.CopyToAsync(stream);
+
+            employee.ProfilePictureUrl = $"/uploads/profiles/{fileName}";
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Profile picture updated!";
+            return RedirectToAction(nameof(EmployeeProfile));
+        }
+
+        // ── E-06: Upload Banner (POST) ────────────────────────────
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadBanner(IFormFile banner)
+        {
+            var employee = await GetCurrentEmployeeAsync();
+            if (employee == null) return RedirectToAction("Logout", "Auth");
+
+            if (banner == null || banner.Length == 0)
+            {
+                TempData["ErrorMessage"] = "Please select an image file.";
+                return RedirectToAction(nameof(EmployeeProfile));
+            }
+
+            string[] allowed = [".jpg", ".jpeg", ".png", ".webp"];
+            string ext = Path.GetExtension(banner.FileName).ToLowerInvariant();
+            if (!allowed.Contains(ext))
+            {
+                TempData["ErrorMessage"] = "Only JPG, PNG, or WebP images are allowed.";
+                return RedirectToAction(nameof(EmployeeProfile));
+            }
+
+            if (banner.Length > 5 * 1024 * 1024)
+            {
+                TempData["ErrorMessage"] = "Banner must be smaller than 5 MB.";
+                return RedirectToAction(nameof(EmployeeProfile));
+            }
+
+            string uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "banners");
+            Directory.CreateDirectory(uploadsDir);
+
+            if (!string.IsNullOrEmpty(employee.CoverPictureUrl))
+            {
+                string oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot",
+                    employee.CoverPictureUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+            }
+
+            string fileName = $"emp_banner_{employee.Id}_{DateTime.UtcNow.Ticks}{ext}";
+            string filePath = Path.Combine(uploadsDir, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+                await banner.CopyToAsync(stream);
+
+            employee.CoverPictureUrl = $"/uploads/banners/{fileName}";
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Cover banner updated!";
             return RedirectToAction(nameof(EmployeeProfile));
         }
     }

@@ -1,0 +1,111 @@
+@using Second_Try.Models
+@model Employee
+@{
+    ViewData["Title"]      = "My Profile";
+    ViewData["ActivePage"] = "AdminProfile";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    string initials = string.Join("", Model.FullName.Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()));
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/admin-profile.css" asp-append-version="true" />
+}
+@if (TempData["SuccessMessage"] is string sm) {<div class="adm-toast adm-toast-success"><i class="fa-solid fa-circle-check"></i> @sm</div>}
+@if (TempData["ErrorMessage"]   is string em) {<div class="adm-toast adm-toast-error"><i class="fa-solid fa-triangle-exclamation"></i> @em</div>}
+
+<!-- ===== PROFILE HERO (Banner + Avatar) ===== -->
+<div class="ap-hero-card">
+    <!-- Banner -->
+    <div class="ap-banner" id="ap-banner"
+         style="@(!string.IsNullOrEmpty(Model.CoverPictureUrl) ? $"background-image:url('{Model.CoverPictureUrl}')" : "")">
+        <form asp-controller="Admin" asp-action="UploadBanner" method="POST"
+              enctype="multipart/form-data" id="adm-banner-form">
+            @Html.AntiForgeryToken()
+            <label class="ap-banner-edit-btn" title="Change banner">
+                <i class="fa-solid fa-image"></i> Change Banner
+                <input type="file" name="banner" accept=".jpg,.jpeg,.png,.webp"
+                       style="display:none;" onchange="document.getElementById('adm-banner-form').submit();" />
+            </label>
+        </form>
+    </div>
+
+    <!-- Avatar + Info Row -->
+    <div class="ap-hero-body">
+        <div class="ap-avatar-wrapper">
+            @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
+            {
+                <img src="@Model.ProfilePictureUrl" class="ap-avatar-img" alt="Profile" />
+            }
+            else
+            {
+                <div class="ap-avatar-initials">@initials</div>
+            }
+            <form asp-controller="Admin" asp-action="UploadPicture" method="POST"
+                  enctype="multipart/form-data" id="adm-pic-form">
+                @Html.AntiForgeryToken()
+                <label class="ap-avatar-edit-btn" title="Change photo">
+                    <i class="fa-solid fa-camera"></i>
+                    <input type="file" name="picture" accept=".jpg,.jpeg,.png,.webp"
+                           style="display:none;" onchange="document.getElementById('adm-pic-form').submit();" />
+                </label>
+            </form>
+        </div>
+        <div class="ap-hero-info">
+            <h2 class="ap-hero-name">@Model.FullName</h2>
+            <p class="ap-hero-email">@Model.Email</p>
+            <span class="adm-badge adm-badge-admin"><i class="fa-solid fa-crown" style="font-size:0.55rem;"></i> Super Administrator</span>
+        </div>
+        <div class="ap-since">
+            <span class="ap-since-label">Admin Since</span>
+            <span class="ap-since-val">@Model.CreatedAt.ToString("MMMM yyyy")</span>
+        </div>
+    </div>
+</div>
+
+<!-- ===== FORMS GRID ===== -->
+<div class="ap-grid">
+    <!-- Update Name -->
+    <div class="adm-card">
+        <div class="adm-card-header">
+            <div class="adm-card-title"><i class="fa-solid fa-user-pen"></i> Update Profile</div>
+        </div>
+        <form asp-controller="Admin" asp-action="UpdateAdminProfile" method="POST">
+            @Html.AntiForgeryToken()
+            <div class="adm-form-group">
+                <label class="adm-label">Full Name</label>
+                <input type="text" name="FullName" class="adm-input" value="@Model.FullName" required />
+            </div>
+            <div class="adm-form-group">
+                <label class="adm-label">Email</label>
+                <input type="email" class="adm-input" value="@Model.Email" disabled />
+            </div>
+            <button type="submit" class="adm-btn adm-btn-primary" style="width:100%;justify-content:center;">
+                <i class="fa-solid fa-floppy-disk"></i> Save Changes
+            </button>
+        </form>
+    </div>
+
+    <!-- Change Password -->
+    <div class="adm-card">
+        <div class="adm-card-header">
+            <div class="adm-card-title"><i class="fa-solid fa-shield-halved"></i> Change Password</div>
+        </div>
+        <form asp-controller="Admin" asp-action="ChangeAdminPassword" method="POST">
+            @Html.AntiForgeryToken()
+            <div class="adm-form-group">
+                <label class="adm-label">Current Password</label>
+                <input type="password" name="CurrentPassword" class="adm-input" required />
+            </div>
+            <div class="adm-form-group">
+                <label class="adm-label">New Password</label>
+                <input type="password" name="NewPassword" class="adm-input" required minlength="6" />
+            </div>
+            <div class="adm-form-group">
+                <label class="adm-label">Confirm Password</label>
+                <input type="password" name="ConfirmPassword" class="adm-input" required />
+            </div>
+            <button type="submit" class="adm-btn adm-btn-primary" style="width:100%;justify-content:center;">
+                <i class="fa-solid fa-key"></i> Update Password
+            </button>
+        </form>
+    </div>
+</div>

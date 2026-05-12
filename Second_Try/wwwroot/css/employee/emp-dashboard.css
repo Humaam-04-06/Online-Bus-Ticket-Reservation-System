@@ -7,14 +7,14 @@
 :root {
     --emp-sidebar-width:   260px;
     --emp-topbar-height:   64px;
-    --emp-sidebar-bg:      #1e3a47;
-    --emp-sidebar-darker:  #162e3a;
+    --emp-sidebar-bg:      #5C7E8F;
+    --emp-sidebar-darker:  #4a6878;
     --emp-sidebar-text:    #ffffff;
-    --emp-sidebar-muted:   rgba(255,255,255,0.60);
-    --emp-sidebar-hover:   rgba(255,255,255,0.10);
-    --emp-sidebar-active:  rgba(255,255,255,0.20);
+    --emp-sidebar-muted:   rgba(255,255,255,0.65);
+    --emp-sidebar-hover:   rgba(255,255,255,0.12);
+    --emp-sidebar-active:  rgba(255,255,255,0.22);
     --emp-card-bg:         var(--bg-secondary);
-    --emp-card-shadow:     0 4px 24px rgba(30,58,71,0.10);
+    --emp-card-shadow:     0 4px 24px rgba(92,126,143,0.10);
     --emp-card-radius:     1.1rem;
     --emp-pending-color:   #F59E0B;
     --emp-accepted-color:  #22C55E;

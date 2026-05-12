@@ -30,6 +30,10 @@ namespace Second_Try.Models
 
         public bool IsActive { get; set; } = true;
 
+        public string? ProfilePictureUrl { get; set; }
+
+        public string? CoverPictureUrl { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

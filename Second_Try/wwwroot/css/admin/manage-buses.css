@@ -1,0 +1,5 @@
+/* manage-buses.css — extend adm variables */
+.adm-bus-type-economy  { background: rgba(92,126,143,0.10); color: var(--adm-info); }
+.adm-bus-type-standard { background: rgba(34,197,94,0.10);  color: var(--adm-success); }
+.adm-bus-type-luxury   { background: rgba(245,158,11,0.12); color: var(--adm-pending); }
+.adm-bus-type-express  { background: rgba(139,92,246,0.12); color: var(--adm-purple); }

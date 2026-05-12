@@ -1,0 +1,104 @@
+@{
+    ViewData["Title"]      = "Reports";
+    ViewData["ActivePage"] = "Reports";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    decimal totalRevenue     = ViewBag.TotalRevenue     ?? 0m;
+    decimal revenueThisMonth = ViewBag.RevenueThisMonth ?? 0m;
+    int totalBookings        = ViewBag.TotalBookings     ?? 0;
+    int totalCustomers       = ViewBag.TotalCustomers    ?? 0;
+    int pendingCount         = ViewBag.PendingCount      ?? 0;
+    int acceptedCount        = ViewBag.AcceptedCount     ?? 0;
+    int rejectedCount        = ViewBag.RejectedCount     ?? 0;
+    var topRoutes            = ViewBag.TopRoutes as dynamic ?? null;
+    int totalProcessed       = acceptedCount + rejectedCount;
+    double acceptRate        = totalProcessed > 0 ? Math.Round((double)acceptedCount / totalProcessed * 100, 1) : 0;
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin/reports.css" asp-append-version="true" />
+}
+
+<!-- Stats Row -->
+<div class="adm-stats-grid" style="margin-bottom:1.5rem;">
+    <div class="adm-stat-card">
+        <div class="adm-stat-icon green"><i class="fa-solid fa-coins"></i></div>
+        <div><div class="adm-stat-value" style="font-size:1.3rem;">@totalRevenue.ToString("N0")</div><div class="adm-stat-label">Total Revenue (PKR)</div></div>
+    </div>
+    <div class="adm-stat-card">
+        <div class="adm-stat-icon cyan"><i class="fa-solid fa-calendar-check"></i></div>
+        <div><div class="adm-stat-value" style="font-size:1.3rem;">@revenueThisMonth.ToString("N0")</div><div class="adm-stat-label">This Month (PKR)</div></div>
+    </div>
+    <div class="adm-stat-card">
+        <div class="adm-stat-icon purple"><i class="fa-solid fa-ticket"></i></div>
+        <div><div class="adm-stat-value">@totalBookings</div><div class="adm-stat-label">Total Tickets Issued</div></div>
+    </div>
+    <div class="adm-stat-card">
+        <div class="adm-stat-icon navy"><i class="fa-solid fa-users"></i></div>
+        <div><div class="adm-stat-value">@totalCustomers</div><div class="adm-stat-label">Registered Customers</div></div>
+    </div>
+</div>
+
+<div class="rpt-grid">
+    <!-- Request Breakdown -->
+    <div class="adm-card">
+        <div class="adm-card-header">
+            <div class="adm-card-title"><i class="fa-solid fa-chart-pie"></i> Request Breakdown</div>
+        </div>
+        <div class="rpt-breakdown">
+            <div class="rpt-break-item">
+                <div class="rpt-break-label">Accepted</div>
+                <div class="rpt-break-bar-wrap">
+                    <div class="rpt-break-bar rpt-bar-green" style="width:@(totalProcessed>0?(int)((double)acceptedCount/totalProcessed*100):0)%"></div>
+                </div>
+                <div class="rpt-break-val accepted">@acceptedCount</div>
+            </div>
+            <div class="rpt-break-item">
+                <div class="rpt-break-label">Rejected</div>
+                <div class="rpt-break-bar-wrap">
+                    <div class="rpt-break-bar rpt-bar-red" style="width:@(totalProcessed>0?(int)((double)rejectedCount/totalProcessed*100):0)%"></div>
+                </div>
+                <div class="rpt-break-val rejected">@rejectedCount</div>
+            </div>
+            <div class="rpt-break-item">
+                <div class="rpt-break-label">Pending</div>
+                <div class="rpt-break-bar-wrap">
+                    <div class="rpt-break-bar rpt-bar-amber" style="width:@(totalProcessed>0?Math.Min(100,(int)((double)pendingCount/Math.Max(totalProcessed,1)*100)):100)%"></div>
+                </div>
+                <div class="rpt-break-val pending">@pendingCount</div>
+            </div>
+        </div>
+        <div class="rpt-accept-rate">
+            <span>Acceptance Rate</span>
+            <strong style="color:var(--adm-success);">@acceptRate%</strong>
+        </div>
+    </div>
+
+    <!-- Top Routes -->
+    <div class="adm-card">
+        <div class="adm-card-header">
+            <div class="adm-card-title"><i class="fa-solid fa-fire"></i> Top Routes by Bookings</div>
+        </div>
+        @if (topRoutes != null)
+        {
+            int rank = 1;
+            foreach (var tr in topRoutes)
+            {
+                <div class="rpt-route-row">
+                    <div class="rpt-rank">#@rank</div>
+                    <div class="rpt-route-info">
+                        <div class="rpt-route-name">@tr.Route</div>
+                        <div class="rpt-route-count">@tr.Count bookings</div>
+                    </div>
+                    <div class="rpt-route-rev">PKR @((decimal)tr.Revenue).ToString("N0")</div>
+                </div>
+                rank++;
+            }
+        }
+        else
+        {
+            <div class="adm-empty-state">
+                <p class="adm-empty-title">No Booking Data</p>
+            </div>
+        }
+    </div>
+</div>
