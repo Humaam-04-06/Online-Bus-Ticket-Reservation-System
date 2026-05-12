@@ -1,0 +1,206 @@
+@using Second_Try.Models
+@{
+    ViewData["Title"] = "My Requests";
+    ViewData["ActivePage"] = "MyRequests";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+    var requests = ViewBag.Requests as List<BookingRequest> ?? new List<BookingRequest>();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/customer/my-requests.css" asp-append-version="true" />
+}
+
+<div class="cp-shell-content">
+
+    <!-- Page Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;">
+        <div>
+            <h2 style="font-size:1.4rem;font-weight:800;color:var(--text-light);margin:0 0 0.25rem;">
+                <i class="fa-solid fa-list-check" style="color:var(--accent-cyan);margin-right:0.5rem;"></i>My Requests
+            </h2>
+            <p style="color:var(--text-muted);font-size:0.875rem;margin:0;">
+                Track the status of all your booking requests.
+            </p>
+        </div>
+        <a href="/Customer/NewRequest" class="cp-btn cp-btn-primary">
+            <i class="fa-solid fa-plus"></i> New Request
+        </a>
+    </div>
+
+    <!-- Filter + Search bar -->
+    <div class="mr-filter-bar">
+        <button class="mr-filter-btn active" onclick="filterRequests('all', this)">All</button>
+        <button class="mr-filter-btn" onclick="filterRequests('pending', this)">
+            <i class="fa-solid fa-circle" style="font-size:0.5rem;color:#F59E0B;"></i> Pending
+        </button>
+        <button class="mr-filter-btn" onclick="filterRequests('accepted', this)">
+            <i class="fa-solid fa-circle" style="font-size:0.5rem;color:#22C55E;"></i> Accepted
+        </button>
+        <button class="mr-filter-btn" onclick="filterRequests('rejected', this)">
+            <i class="fa-solid fa-circle" style="font-size:0.5rem;color:#EF4444;"></i> Rejected
+        </button>
+        <button class="mr-filter-btn" onclick="filterRequests('expired', this)">
+            <i class="fa-solid fa-circle" style="font-size:0.5rem;color:#9CA3AF;"></i> Expired
+        </button>
+        <div class="mr-search-wrap" style="margin-left:auto;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" class="mr-search" id="mr-search" placeholder="Search by ID or route..." oninput="searchRequests(this.value)" />
+        </div>
+    </div>
+
+    <!-- Request cards list -->
+    <div id="requests-list">
+        @if (!requests.Any())
+        {
+            <!-- Empty state -->
+            <div class="mr-empty">
+                <div class="mr-empty-icon"><i class="fa-solid fa-ticket"></i></div>
+                <p class="mr-empty-title">No Booking Requests Yet</p>
+                <p class="mr-empty-sub">You haven't submitted any booking requests. Start by submitting your first one!</p>
+                <a href="/Customer/NewRequest" class="cp-btn cp-btn-primary">
+                    <i class="fa-solid fa-plus"></i> Submit First Request
+                </a>
+            </div>
+        }
+        else
+        {
+            @foreach (var req in requests)
+            {
+                string statusClass = req.Status.ToString().ToLower();
+                string badgeClass = statusClass switch {
+                    "pending"           => "cp-badge-pending",
+                    "accepted"          => "cp-badge-accepted",
+                    "rejected"          => "cp-badge-rejected",
+                    "expired"           => "cp-badge-expired",
+                    "cancelledbycustomer" => "cp-badge-cancelled",
+                    _                   => "cp-badge-expired"
+                };
+
+                <div class="mr-card status-@statusClass" data-status="@statusClass" data-id="@req.Id">
+                    <div class="mr-card-header">
+                        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+                            <span class="mr-req-id">REQ-@req.Id.ToString("D4")</span>
+                            <span class="cp-badge @badgeClass">
+                                @req.Status.ToString()
+                            </span>
+                        </div>
+                        <span class="mr-req-date">
+                            <i class="fa-regular fa-calendar"></i>
+                            Submitted: @req.RequestDate.ToString("dd MMM yyyy")
+                        </span>
+                    </div>
+
+                    <div class="mr-card-body">
+                        <div class="mr-detail-item">
+                            <i class="fa-solid fa-route"></i>
+                            <span><strong>@(req.Route?.Origin ?? "—")</strong> → <strong>@(req.Route?.Destination ?? "—")</strong></span>
+                        </div>
+                        <div class="mr-detail-item">
+                            <i class="fa-solid fa-calendar-day"></i>
+                            <span>Travel: @req.TravelDate.ToString("dd MMM yyyy")</span>
+                        </div>
+                        <div class="mr-detail-item">
+                            <i class="fa-solid fa-bus"></i>
+                            <span>@req.PreferredBusType.ToString() Class</span>
+                        </div>
+                        <div class="mr-detail-item">
+                            <i class="fa-solid fa-users"></i>
+                            <span>@req.NumberOfSeats seat(s)</span>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(req.AdminRemarks))
+                    {
+                        <div class="mr-remarks">
+                            <i class="fa-solid fa-comment-dots"></i>
+                            <span><strong>Staff Remark:</strong> @req.AdminRemarks</span>
+                        </div>
+                    }
+
+                    <div class="mr-card-footer">
+                        <span style="font-size:0.78rem;color:var(--text-muted);">
+                            <i class="fa-regular fa-clock"></i> Updated @req.RequestDate.ToString("dd MMM yyyy, hh:mm tt")
+                        </span>
+                        <div style="display:flex;gap:0.5rem;">
+                            @if (req.Status.ToString() == "Pending")
+                            {
+                                <button class="cp-btn cp-btn-danger"
+                                        onclick="openCancelModal(@req.Id, 'REQ-@req.Id.ToString("D4")')">
+                                    <i class="fa-solid fa-xmark"></i> Cancel Request
+                                </button>
+                            }
+                            @if (req.Status.ToString() == "Accepted" && req.AssignedBooking != null)
+                            {
+                                <a href="/Employee/PrintTicket/@req.AssignedBooking.Id" target="_blank" class="cp-btn cp-btn-outline">
+                                    <i class="fa-solid fa-print"></i> View Ticket
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<!-- Cancel Confirmation Modal -->
+<div class="mr-modal-overlay" id="cancel-modal">
+    <div class="mr-modal">
+        <div class="mr-modal-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <p class="mr-modal-title">Cancel This Request?</p>
+        <p class="mr-modal-msg">
+            Are you sure you want to cancel request <strong id="modal-req-id"></strong>?
+            This action cannot be undone. You will be able to submit a new request afterwards.
+        </p>
+        <div class="mr-modal-btns">
+            <button class="cp-btn cp-btn-outline" onclick="closeCancelModal()">
+                <i class="fa-solid fa-arrow-left"></i> Go Back
+            </button>
+            <form id="cancel-form" asp-controller="Customer" asp-action="CancelRequest" method="POST">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="requestId" id="cancel-request-id" />
+                <button type="submit" class="cp-btn cp-btn-danger">
+                    <i class="fa-solid fa-xmark"></i> Yes, Cancel It
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Filter by status
+    function filterRequests(status, btn) {
+        document.querySelectorAll('.mr-filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.mr-card').forEach(card => {
+            card.style.display = (status === 'all' || card.dataset.status === status) ? '' : 'none';
+        });
+    }
+
+    // Search
+    function searchRequests(q) {
+        q = q.toLowerCase();
+        document.querySelectorAll('.mr-card').forEach(card => {
+            const text = card.textContent.toLowerCase();
+            card.style.display = text.includes(q) ? '' : 'none';
+        });
+    }
+
+    // Cancel modal
+    function openCancelModal(id, label) {
+        document.getElementById('modal-req-id').textContent = label;
+        document.getElementById('cancel-request-id').value = id;
+        document.getElementById('cancel-modal').classList.add('open');
+    }
+
+    function closeCancelModal() {
+        document.getElementById('cancel-modal').classList.remove('open');
+    }
+
+    // Close modal on overlay click
+    document.getElementById('cancel-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeCancelModal();
+    });
+</script>
+}

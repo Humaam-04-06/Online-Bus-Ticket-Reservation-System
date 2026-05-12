@@ -1,0 +1,51 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Second_Try.Models
+{
+    public enum BookingRequestStatus
+    {
+        Pending,
+        Accepted,
+        Rejected,
+        Cancelled
+    }
+
+    public class BookingRequest
+    {
+        [Key]
+        public int Id { get; set; }
+
+        [Required]
+        public int CustomerId { get; set; }
+
+        [Required]
+        public int RouteId { get; set; }
+
+        [Required]
+        public BusType PreferredBusType { get; set; }
+
+        [Required]
+        public DateTime TravelDate { get; set; }
+
+        [Required]
+        [Range(1, 10)]
+        public int NumberOfSeats { get; set; } = 1;
+
+        [Required]
+        public BookingRequestStatus Status { get; set; } = BookingRequestStatus.Pending;
+
+        public DateTime RequestDate { get; set; } = DateTime.UtcNow;
+
+        public string? AdminRemarks { get; set; } // e.g., Reason if rejected
+
+        // Navigation Properties
+        [ForeignKey(nameof(CustomerId))]
+        public Customer? Customer { get; set; }
+
+        [ForeignKey(nameof(RouteId))]
+        public Route? Route { get; set; }
+
+        public Booking? AssignedBooking { get; set; } // Will be populated if accepted
+    }
+}

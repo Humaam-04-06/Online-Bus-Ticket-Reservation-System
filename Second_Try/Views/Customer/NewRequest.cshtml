@@ -1,0 +1,236 @@
+@{
+    ViewData["Title"] = "New Booking Request";
+    ViewData["ActivePage"] = "NewRequest";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/customer/new-request.css" asp-append-version="true" />
+}
+
+<div class="cp-shell-content">
+
+    <!-- Page header -->
+    <div style="margin-bottom:1.5rem;">
+        <h2 style="font-size:1.4rem;font-weight:800;color:var(--text-light);margin:0 0 0.25rem;">
+            <i class="fa-solid fa-ticket" style="color:var(--accent-cyan);margin-right:0.5rem;"></i>New Booking Request
+        </h2>
+        <p style="color:var(--text-muted);font-size:0.875rem;margin:0;">
+            Fill in the details below and we'll assign a bus and seat for your trip.
+        </p>
+    </div>
+
+    <!-- Pending request warning (shown if customer already has a Pending/Accepted request) -->
+    @if (ViewBag.HasActiveRequest == true)
+    {
+        <div class="nr-alert nr-alert-warning" style="margin-bottom:1.5rem;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div>
+                <strong>You already have an active request.</strong>
+                You cannot submit a new request until your current one is resolved (accepted, rejected, or cancelled).
+                <a href="/Customer/MyRequests" style="color:var(--accent-cyan);font-weight:600;">View My Requests →</a>
+            </div>
+        </div>
+    }
+
+    <!-- 60/40 grid -->
+    <div class="nr-grid">
+
+        <!-- LEFT: Form -->
+        <div class="cp-card">
+            <div class="cp-card-header">
+                <div class="cp-card-title"><i class="fa-solid fa-route"></i> Trip Details</div>
+            </div>
+
+            <form id="booking-form" asp-controller="Customer" asp-action="NewRequest" method="POST">
+                @Html.AntiForgeryToken()
+
+                <div class="nr-row">
+                    <div class="nr-form-group">
+                        <label class="nr-label" for="origin">Origin City <span>*</span></label>
+                        <select class="nr-select" id="origin" name="Origin" required onchange="updateSummary()">
+                            <option value="">— Select Origin —</option>
+                            <option value="Karachi">Karachi</option>
+                            <option value="Lahore">Lahore</option>
+                            <option value="Islamabad">Islamabad</option>
+                            <option value="Faisalabad">Faisalabad</option>
+                            <option value="Multan">Multan</option>
+                            <option value="Peshawar">Peshawar</option>
+                            <option value="Quetta">Quetta</option>
+                        </select>
+                    </div>
+                    <div class="nr-form-group">
+                        <label class="nr-label" for="destination">Destination City <span>*</span></label>
+                        <select class="nr-select" id="destination" name="Destination" required onchange="updateSummary()">
+                            <option value="">— Select Destination —</option>
+                            <option value="Karachi">Karachi</option>
+                            <option value="Lahore">Lahore</option>
+                            <option value="Islamabad">Islamabad</option>
+                            <option value="Faisalabad">Faisalabad</option>
+                            <option value="Multan">Multan</option>
+                            <option value="Peshawar">Peshawar</option>
+                            <option value="Quetta">Quetta</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="nr-row">
+                    <div class="nr-form-group">
+                        <label class="nr-label" for="travel-date">Travel Date <span>*</span></label>
+                        <input type="date" class="nr-input" id="travel-date" name="TravelDate"
+                               min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" required
+                               onchange="updateSummary()" />
+                    </div>
+                    <div class="nr-form-group">
+                        <label class="nr-label" for="seats">Number of Seats <span>*</span></label>
+                        <input type="number" class="nr-input" id="seats" name="NumberOfSeats"
+                               min="1" max="10" value="1" required onchange="updateSummary()" />
+                    </div>
+                </div>
+
+                <!-- Bus type selector -->
+                <div class="nr-form-group">
+                    <label class="nr-label">Bus Class <span>*</span></label>
+                    <div class="nr-bus-type-grid">
+                        <label class="nr-bus-type-card">
+                            <input type="radio" name="PreferredBusType" value="0" checked onchange="updateSummary()" />
+                            <div class="nr-bus-type-label">
+                                <i class="fa-solid fa-bus"></i>
+                                <span class="nr-bus-type-name">Economy</span>
+                            </div>
+                        </label>
+                        <label class="nr-bus-type-card">
+                            <input type="radio" name="PreferredBusType" value="1" onchange="updateSummary()" />
+                            <div class="nr-bus-type-label">
+                                <i class="fa-solid fa-couch"></i>
+                                <span class="nr-bus-type-name">Standard</span>
+                            </div>
+                        </label>
+                        <label class="nr-bus-type-card">
+                            <input type="radio" name="PreferredBusType" value="2" onchange="updateSummary()" />
+                            <div class="nr-bus-type-label">
+                                <i class="fa-solid fa-gem"></i>
+                                <span class="nr-bus-type-name">Luxury</span>
+                            </div>
+                        </label>
+                        <label class="nr-bus-type-card">
+                            <input type="radio" name="PreferredBusType" value="3" onchange="updateSummary()" />
+                            <div class="nr-bus-type-label">
+                                <i class="fa-solid fa-bolt"></i>
+                                <span class="nr-bus-type-name">Express</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Remarks -->
+                <div class="nr-form-group">
+                    <label class="nr-label" for="remarks">Special Remarks <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+                    <textarea class="nr-input" id="remarks" name="Remarks" rows="3"
+                              placeholder="Any special requirements, seat preferences, accessibility needs..." style="resize:vertical;"></textarea>
+                </div>
+
+                <!-- Info note -->
+                <div class="nr-alert nr-alert-warning">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <div>Seat assignment and final confirmation will be done by our booking staff.
+                    Payment is made at the counter on the day of travel.</div>
+                </div>
+
+                <button type="submit" class="cp-btn cp-btn-primary nr-submit-btn"
+                        @(ViewBag.HasActiveRequest == true ? "disabled" : "")>
+                    <i class="fa-solid fa-paper-plane"></i> Submit Booking Request
+                </button>
+            </form>
+        </div>
+
+        <!-- RIGHT: Fare Summary -->
+        <div>
+            <div class="nr-summary-card">
+                <div class="nr-summary-header">
+                    <p class="nr-summary-title"><i class="fa-solid fa-calculator"></i> Fare Estimate</p>
+                    <p class="nr-summary-sub">Prices are indicative and may vary</p>
+                </div>
+                <div class="nr-summary-body">
+                    <div class="nr-summary-row">
+                        <span class="nr-summary-row-label">Route</span>
+                        <span class="nr-summary-row-value" id="sum-route">—</span>
+                    </div>
+                    <div class="nr-summary-row">
+                        <span class="nr-summary-row-label">Travel Date</span>
+                        <span class="nr-summary-row-value" id="sum-date">—</span>
+                    </div>
+                    <div class="nr-summary-row">
+                        <span class="nr-summary-row-label">Bus Class</span>
+                        <span class="nr-summary-row-value" id="sum-class">Standard</span>
+                    </div>
+                    <div class="nr-summary-row">
+                        <span class="nr-summary-row-label">Seats</span>
+                        <span class="nr-summary-row-value" id="sum-seats">1</span>
+                    </div>
+                    <div class="nr-summary-row">
+                        <span class="nr-summary-row-label">Price / Seat</span>
+                        <span class="nr-summary-row-value" id="sum-per-seat">—</span>
+                    </div>
+
+                    <div class="nr-fare-total">
+                        <p class="nr-fare-label">Estimated Total</p>
+                        <p class="nr-fare-value" id="sum-total">PKR —</p>
+                        <p class="nr-fare-note">Final fare confirmed by staff</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Fare table: [origin][destination][busType] = pricePerSeat
+    const fares = {
+        'Karachi':    { 'Lahore': [2500,3500,5000], 'Islamabad':[3000,4200,6000], 'Multan':[1800,2600,3800], 'Peshawar':[3500,4800,6800], 'Quetta':[2200,3100,4500], 'Faisalabad':[2800,3900,5500] },
+        'Lahore':     { 'Karachi':[2500,3500,5000], 'Islamabad':[1000,1400,2000], 'Multan':[900,1300,1900], 'Peshawar':[1500,2100,3000], 'Quetta':[3000,4200,6000], 'Faisalabad':[600,900,1300] },
+        'Islamabad':  { 'Karachi':[3000,4200,6000], 'Lahore':[1000,1400,2000], 'Multan':[1200,1700,2500], 'Peshawar':[700,1000,1500], 'Quetta':[3500,4900,7000], 'Faisalabad':[1100,1600,2300] },
+        'Faisalabad': { 'Karachi':[2800,3900,5500], 'Lahore':[600,900,1300], 'Islamabad':[1100,1600,2300], 'Multan':[800,1150,1650], 'Peshawar':[1800,2500,3600], 'Quetta':[3200,4500,6400] },
+        'Multan':     { 'Karachi':[1800,2600,3800], 'Lahore':[900,1300,1900], 'Islamabad':[1200,1700,2500], 'Faisalabad':[800,1150,1650], 'Peshawar':[2000,2800,4000], 'Quetta':[2500,3500,5000] },
+        'Peshawar':   { 'Karachi':[3500,4800,6800], 'Lahore':[1500,2100,3000], 'Islamabad':[700,1000,1500], 'Faisalabad':[1800,2500,3600], 'Multan':[2000,2800,4000], 'Quetta':[4000,5600,8000] },
+        'Quetta':     { 'Karachi':[2200,3100,4500], 'Lahore':[3000,4200,6000], 'Islamabad':[3500,4900,7000], 'Faisalabad':[3200,4500,6400], 'Multan':[2500,3500,5000], 'Peshawar':[4000,5600,8000] }
+    };
+    const classNames = ['Economy', 'Standard', 'Luxury', 'Express'];
+
+    function updateSummary() {
+        const origin      = document.getElementById('origin').value;
+        const destination = document.getElementById('destination').value;
+        const dateVal     = document.getElementById('travel-date').value;
+        const seats       = parseInt(document.getElementById('seats').value) || 1;
+        const busType     = parseInt(document.querySelector('input[name="PreferredBusType"]:checked')?.value ?? 0);
+
+        document.getElementById('sum-route').textContent =
+            (origin && destination && origin !== destination) ? `${origin} → ${destination}` : '—';
+        document.getElementById('sum-date').textContent =
+            dateVal ? new Date(dateVal).toLocaleDateString('en-PK', {day:'numeric',month:'short',year:'numeric'}) : '—';
+        document.getElementById('sum-class').textContent = classNames[busType] ?? 'Standard';
+        document.getElementById('sum-seats').textContent = seats;
+
+        if (origin && destination && origin !== destination && fares[origin]?.[destination]) {
+            const pricePerSeat = fares[origin][destination][busType];
+            const total = pricePerSeat * seats;
+            document.getElementById('sum-per-seat').textContent = `PKR ${pricePerSeat.toLocaleString()}`;
+            document.getElementById('sum-total').textContent = `PKR ${total.toLocaleString()}`;
+        } else {
+            document.getElementById('sum-per-seat').textContent = '—';
+            document.getElementById('sum-total').textContent = 'PKR —';
+        }
+    }
+
+    // Prevent same origin & destination
+    document.getElementById('destination').addEventListener('change', function () {
+        if (this.value === document.getElementById('origin').value && this.value !== '') {
+            this.value = '';
+            alert('Origin and destination cannot be the same city.');
+        }
+        updateSummary();
+    });
+</script>
+}

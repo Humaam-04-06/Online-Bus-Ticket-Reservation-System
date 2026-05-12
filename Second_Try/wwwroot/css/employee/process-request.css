@@ -1,0 +1,189 @@
+/* ============================================================
+   EMPLOYEE PORTAL — Process Request Page
+   ============================================================ */
+
+/* Top row: back button + REQ ID + badge */
+.pr-toprow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.pr-req-id {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--accent-cyan);
+    font-family: monospace;
+    background: rgba(92,126,143,0.1);
+    padding: 0.3rem 0.75rem;
+    border-radius: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+/* 2-column grid */
+.pr-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 1.25rem;
+    align-items: start;
+}
+
+/* Section spacing */
+.pr-section { margin-bottom: 1.25rem; }
+.pr-section:last-child { margin-bottom: 0; }
+
+/* Info rows */
+.pr-info-rows { display: flex; flex-direction: column; gap: 0; }
+
+.pr-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid rgba(162,162,162,0.15);
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.pr-info-row:last-child { border-bottom: none; }
+
+.pr-info-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.pr-info-val {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-light);
+    text-align: right;
+}
+
+.pr-remarks {
+    font-style: italic;
+    color: var(--emp-rejected-color);
+}
+
+.pr-fare {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--emp-accepted-color);
+}
+
+/* Confirmed booking card */
+.pr-confirmed-card {
+    border: 1.5px solid rgba(34,197,94,0.25);
+    background: rgba(34,197,94,0.02);
+}
+
+/* Accept card */
+.pr-accept-card {
+    border: 1.5px solid rgba(34,197,94,0.2);
+}
+
+/* Reject card */
+.pr-reject-card {
+    border: 1.5px solid rgba(239,68,68,0.15);
+}
+
+/* Processed card */
+.pr-processed-card {
+    background: var(--bg-primary);
+    text-align: center;
+}
+
+.pr-processed-msg {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* No buses warning */
+.pr-no-buses {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.25);
+    border-radius: 0.6rem;
+    font-size: 0.82rem;
+    color: #92400E;
+}
+
+/* Form elements */
+.pr-form-group { margin-bottom: 1rem; }
+.pr-form-group:last-child { margin-bottom: 0; }
+
+.pr-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.pr-optional {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--border-color);
+}
+
+.pr-hint {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+}
+
+.pr-input,
+.pr-select,
+.pr-textarea {
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    border: 1.5px solid var(--border-color);
+    border-radius: 0.6rem;
+    background: var(--bg-secondary);
+    color: var(--text-light);
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.pr-input:focus,
+.pr-select:focus,
+.pr-textarea:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 3px rgba(92,126,143,0.12);
+}
+
+.pr-textarea { resize: vertical; min-height: 80px; }
+
+.pr-submit-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.7rem;
+    font-size: 0.88rem;
+    margin-top: 0.5rem;
+}
+
+.pr-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .pr-grid { grid-template-columns: 1fr; }
+}

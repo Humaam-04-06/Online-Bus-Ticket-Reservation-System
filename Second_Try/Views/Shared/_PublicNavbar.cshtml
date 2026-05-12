@@ -1,0 +1,191 @@
+@using Microsoft.AspNetCore.Identity
+@{
+    var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+    // isAuthenticated = true; // UNCOMMENT THIS LINE TO TEST LOGGED-IN NAVBAR VIEW
+}
+
+<nav class="fixed w-full z-50 glass-panel border-b border-border transition-all duration-300 shadow-lg" id="navbar">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+            
+            <!-- 1. Logo Area (Left) -->
+            <div class="flex-shrink-0 flex items-center">
+                <a href="@Url.Action("Index", "Home")" class="text-2xl font-bold flex items-center gap-3 group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan to-blue flex items-center justify-center text-primary shadow-[0_0_15px_var(--accent-cyan)] group-hover:shadow-[0_0_25px_var(--accent-cyan)] transition-all duration-300">
+                        <i class="fa-solid fa-bus"></i>
+                    </div>
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-light to-cyan tracking-wide">SRC Travel</span>
+                </a>
+            </div>
+
+            <!-- 2. Center Area (Running Name - Always Visible) -->
+            <div class="hidden md:flex flex-1 justify-center px-8 overflow-hidden h-full items-center">
+                <!-- Running Name Animation -->
+                <div class="w-full max-w-lg overflow-hidden relative flex items-center">
+                    <div class="absolute left-0 w-16 h-full bg-gradient-to-r from-[#02040A] to-transparent z-10 opacity-90"></div>
+                    <span class="animate-running-text text-cyan font-bold text-[13px] tracking-widest uppercase py-2 drop-shadow-[0_0_5px_rgba(0,209,255,0.4)]">
+                        <i class="fa-solid fa-bolt text-purple mr-2"></i>
+                        Online Bus Ticket Reservation System • Your Journey, Our Priority
+                        <i class="fa-solid fa-bolt text-purple ml-2"></i>
+                    </span>
+                    <div class="absolute right-0 w-16 h-full bg-gradient-to-l from-[#02040A] to-transparent z-10 opacity-90"></div>
+                </div>
+            </div>
+
+            <!-- 3. Actions Area (Right) -->
+            <div class="hidden md:flex items-center space-x-6">
+                @if (isAuthenticated)
+                {
+                    <!-- Track Order Link -->
+                    <a href="@Url.Action("MyRequests", "Customer")" class="text-light hover:text-cyan transition-colors flex items-center gap-2 group px-3 py-1.5 rounded-lg hover:bg-secondary/50 border border-transparent hover:border-border">
+                        <i class="fa-solid fa-route text-purple group-hover:animate-bounce"></i>
+                        <span class="font-medium text-sm">Track Order</span>
+                    </a>
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="relative ml-2" id="profileDropdownContainer">
+                        <button type="button" class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-cyan transition-all" id="user-menu-button" aria-expanded="false" aria-haspopup="true" onclick="toggleDropdown()">
+                            <img class="h-10 w-10 rounded-full object-cover border-2 border-border hover:border-cyan shadow-[0_0_10px_rgba(110,86,207,0.3)] transition-all" src="https://ui-avatars.com/api/?name=User&background=6E56CF&color=fff&bold=true" alt="Profile">
+                            <span class="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-success ring-2 ring-primary"></span>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div class="origin-top-right absolute right-0 mt-3 w-56 rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.6)] bg-secondary/95 backdrop-blur-md border border-border divide-y divide-border hidden transform transition-all opacity-0 scale-95 z-50" id="profileDropdown" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
+                            <div class="px-4 py-3 bg-primary/30 rounded-t-xl">
+                                <p class="text-xs text-muted font-medium">Signed in as</p>
+                                <p class="text-sm font-bold text-light truncate mt-0.5">user@example.com</p>
+                            </div>
+                            <div class="py-1" role="none">
+                                <a href="@Url.Action("Dashboard", "Customer")" class="group flex items-center px-4 py-2.5 text-sm text-muted hover:text-light hover:bg-primary/50 transition-colors" role="menuitem">
+                                    <i class="fa-solid fa-table-columns w-5 mr-3 text-purple group-hover:text-cyan transition-colors"></i> Dashboard
+                                </a>
+                                <a href="@Url.Action("MyRequests", "Customer")" class="group flex items-center px-4 py-2.5 text-sm text-muted hover:text-light hover:bg-primary/50 transition-colors" role="menuitem">
+                                    <i class="fa-solid fa-ticket w-5 mr-3 text-purple group-hover:text-cyan transition-colors"></i> My Requests
+                                </a>
+                                <a href="#" class="group flex items-center px-4 py-2.5 text-sm text-muted hover:text-light hover:bg-primary/50 transition-colors" role="menuitem">
+                                    <i class="fa-solid fa-bell w-5 mr-3 text-purple group-hover:text-cyan transition-colors"></i> Notifications
+                                    <span class="ml-auto bg-danger text-light text-[10px] font-bold px-2 py-0.5 rounded-full">3</span>
+                                </a>
+                                <a href="#" class="group flex items-center px-4 py-2.5 text-sm text-muted hover:text-light hover:bg-primary/50 transition-colors" role="menuitem">
+                                    <i class="fa-solid fa-gear w-5 mr-3 text-purple group-hover:text-cyan transition-colors"></i> Settings
+                                </a>
+                            </div>
+                            <div class="py-1" role="none">
+                                <form method="post" action="@Url.Action("Logout", "Auth")" class="block">
+                                    <button type="submit" class="group flex w-full items-center px-4 py-2.5 text-sm text-danger hover:bg-danger/10 transition-colors rounded-b-xl" role="menuitem">
+                                        <i class="fa-solid fa-right-from-bracket w-5 mr-3 group-hover:-translate-x-1 transition-transform"></i> Sign out
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <a href="@Url.Action("Login", "Auth")" class="text-light hover:text-cyan font-medium transition-colors text-sm">Log in</a>
+                    <a href="@Url.Action("Login", "Customer")" class="relative inline-flex items-center justify-center px-5 py-2 overflow-hidden font-bold text-primary bg-gradient-to-r from-cyan to-blue rounded-lg shadow-[0_0_15px_var(--accent-blue)] hover:shadow-[0_0_25px_var(--accent-cyan)] transition-all group hover:-translate-y-0.5">
+                        <span class="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-20"></span>
+                        <span class="relative flex items-center gap-2 text-sm"><i class="fa-brands fa-google text-primary"></i> Sign In</span>
+                    </a>
+                }
+            </div>
+
+            <!-- Mobile menu button -->
+            <div class="flex items-center md:hidden">
+                <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-muted hover:text-light hover:bg-secondary/50 focus:outline-none transition-colors" aria-controls="mobile-menu" aria-expanded="false" onclick="toggleMobileMenu()">
+                    <span class="sr-only">Open main menu</span>
+                    <i class="fa-solid fa-bars text-xl" id="menu-icon"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div class="hidden md:hidden bg-secondary border-t border-border shadow-xl absolute w-full" id="mobile-menu">
+        <div class="px-2 pt-2 pb-4 space-y-1">
+            <div class="text-center py-3 mb-2 border-b border-border/50 bg-primary/30 mx-2 rounded-lg">
+                <span class="animate-pulse text-cyan font-semibold text-xs tracking-widest uppercase">
+                    Online Bus Ticket Reservation System
+                </span>
+            </div>
+            @if (isAuthenticated)
+            {
+                <div class="flex items-center px-4 py-4 border-b border-border/50 mb-2 bg-primary/30 rounded-lg mx-2">
+                    <div class="flex-shrink-0">
+                        <img class="h-10 w-10 rounded-full border-2 border-cyan" src="https://ui-avatars.com/api/?name=User&background=6E56CF&color=fff" alt="Profile">
+                    </div>
+                    <div class="ml-3">
+                        <div class="text-base font-medium text-light">User Name</div>
+                        <div class="text-sm font-medium text-cyan">user@example.com</div>
+                    </div>
+                </div>
+                <a href="@Url.Action("MyRequests", "Customer")" class="block px-4 py-3 rounded-lg text-base font-medium text-light hover:bg-primary/50 transition-colors mx-2"><i class="fa-solid fa-route w-6 text-purple"></i> Track Order</a>
+                <a href="@Url.Action("Dashboard", "Customer")" class="block px-4 py-3 rounded-lg text-base font-medium text-light hover:bg-primary/50 transition-colors mx-2"><i class="fa-solid fa-table-columns w-6 text-purple"></i> Dashboard</a>
+                <a href="#" class="block px-4 py-3 rounded-lg text-base font-medium text-light hover:bg-primary/50 transition-colors mx-2"><i class="fa-solid fa-bell w-6 text-purple"></i> Notifications</a>
+                <a href="#" class="block px-4 py-3 rounded-lg text-base font-medium text-light hover:bg-primary/50 transition-colors mx-2"><i class="fa-solid fa-gear w-6 text-purple"></i> Settings</a>
+                <form method="post" action="@Url.Action("Logout", "Auth")" class="block mt-4 mx-2">
+                    <button type="submit" class="w-full text-left px-4 py-3 rounded-lg text-base font-medium text-danger hover:bg-danger/10 transition-colors"><i class="fa-solid fa-right-from-bracket w-6"></i> Sign out</button>
+                </form>
+            }
+            else
+            {
+                <div class="mt-4 flex flex-col gap-3 mx-2 pb-2">
+                    <a href="@Url.Action("Login", "Auth")" class="block text-center px-4 py-3 rounded-lg text-base font-medium text-light border border-border hover:bg-primary/50 transition-colors">Log in</a>
+                    <a href="@Url.Action("Login", "Customer")" class="block text-center px-4 py-3 rounded-lg text-base font-medium text-primary bg-gradient-to-r from-cyan to-blue shadow-[0_0_15px_var(--accent-blue)]">Sign in with Google</a>
+                </div>
+            }
+        </div>
+    </div>
+</nav>
+
+<script>
+    function toggleDropdown() {
+        const menu = document.getElementById('profileDropdown');
+        if (menu.classList.contains('hidden')) {
+            menu.classList.remove('hidden');
+            setTimeout(() => {
+                menu.classList.remove('opacity-0', 'scale-95');
+                menu.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        } else {
+            menu.classList.remove('opacity-100', 'scale-100');
+            menu.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                menu.classList.add('hidden');
+            }, 150); 
+        }
+    }
+
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobile-menu');
+        const icon = document.getElementById('menu-icon');
+        if (menu.classList.contains('hidden')) {
+            menu.classList.remove('hidden');
+            icon.classList.remove('fa-bars');
+            icon.classList.add('fa-xmark');
+        } else {
+            menu.classList.add('hidden');
+            icon.classList.remove('fa-xmark');
+            icon.classList.add('fa-bars');
+        }
+    }
+
+    document.addEventListener('click', function(event) {
+        const dropdownContainer = document.getElementById('profileDropdownContainer');
+        const profileDropdown = document.getElementById('profileDropdown');
+        if (dropdownContainer && !dropdownContainer.contains(event.target) && profileDropdown && !profileDropdown.classList.contains('hidden')) {
+            toggleDropdown();
+        }
+    });
+
+    window.addEventListener('scroll', function() {
+        const nav = document.getElementById('navbar');
+        if (window.scrollY > 10) {
+            nav.classList.add('bg-secondary/80', 'backdrop-blur-xl');
+            nav.classList.remove('glass-panel');
+        } else {
+            nav.classList.remove('bg-secondary/80', 'backdrop-blur-xl');
+            nav.classList.add('glass-panel');
+        }
+    });
+</script>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SRC Travel</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Tailwind CSS (via CDN for development, using requested color variables) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: 'var(--bg-primary)',
+                        secondary: 'var(--bg-secondary)',
+                        cyan: 'var(--accent-cyan)',
+                        purple: 'var(--accent-purple)',
+                        blue: 'var(--accent-blue)',
+                        light: 'var(--text-light)',
+                        muted: 'var(--text-muted)',
+                        border: 'var(--border-color)',
+                        success: 'var(--success)',
+                        danger: 'var(--danger)'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="~/css/variables.css" asp-append-version="true" />
+</head>
+<body class="bg-primary text-light font-sans antialiased overflow-x-hidden selection:bg-cyan selection:text-primary">
+    <!-- Preloader Overlay -->
+    <div id="src-preloader" class="fixed inset-0 z-[99999] bg-[#02040A] flex flex-col items-center justify-center overflow-hidden">
+        <!-- Background Glows -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan/10 rounded-full blur-[120px] animate-pulse"></div>
+
+        <!-- The Road -->
+        <div class="absolute top-[55%] left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan/40 to-transparent"></div>
+        
+        <!-- The Bus Container -->
+        <div id="preloader-bus" class="relative z-10 -translate-x-[100vw] mb-4 flex flex-col items-center drop-shadow-[0_10px_20px_rgba(0,209,255,0.3)]">
+            <!-- Modern 2D Bus Design -->
+            <div class="relative w-40 h-16 bg-gradient-to-r from-cyan to-blue rounded-xl flex flex-col justify-between p-2 border border-cyan/50">
+                <!-- Windows -->
+                <div class="flex gap-2 w-full h-7 px-1">
+                    <div class="flex-1 bg-[#02040A] rounded-md border border-cyan/30 shadow-inner"></div>
+                    <div class="flex-1 bg-[#02040A] rounded-md border border-cyan/30 shadow-inner"></div>
+                    <div class="flex-1 bg-[#02040A] rounded-md border border-cyan/30 shadow-inner"></div>
+                    <div class="w-8 bg-[#02040A] rounded-r-md border border-cyan/30 shadow-inner"></div> <!-- Front window -->
+                </div>
+                <!-- Body Line -->
+                <div class="w-full h-[2px] bg-white/20 mt-1"></div>
+                
+                <!-- Wheels -->
+                <div class="wheel absolute -bottom-3 left-4 w-7 h-7 rounded-full bg-[#161B22] border-2 border-cyan flex items-center justify-center shadow-[0_0_10px_var(--accent-cyan)]" style="animation: spin 1s linear infinite;">
+                    <div class="w-2 h-2 rounded-full bg-cyan"></div>
+                </div>
+                <div class="wheel absolute -bottom-3 right-4 w-7 h-7 rounded-full bg-[#161B22] border-2 border-cyan flex items-center justify-center shadow-[0_0_10px_var(--accent-cyan)]" style="animation: spin 1s linear infinite;">
+                    <div class="w-2 h-2 rounded-full bg-cyan"></div>
+                </div>
+                
+                <!-- Headlights -->
+                <div class="absolute top-[35px] -right-[15px] w-12 h-[2px] bg-white shadow-[0_0_20px_2px_#fff] opacity-90"></div>
+                <div class="absolute top-[35px] -right-[5px] w-2 h-2 rounded-full bg-white shadow-[0_0_10px_#fff]"></div>
+            </div>
+        </div>
+        
+        <!-- Loading Text -->
+        <div id="preloader-text" class="absolute top-[60%] text-cyan font-bold tracking-[0.4em] text-xs uppercase opacity-0 flex items-center gap-3">
+            <i class="fa-solid fa-circle-notch animate-spin text-lg"></i> System Initializing...
+        </div>
+    </div>
+
+    <!-- Navbar Component -->
+    @await Html.PartialAsync("_PublicNavbar")
+
+    <!-- Main Content -->
+    <main role="main" class="flex-grow pt-16">
+        @RenderBody()
+    </main>
+
+    <!-- Footer Component -->
+    @await Html.PartialAsync("_Footer")
+
+    <!-- JS Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <script>
+        // Preloader Animation Sequence
+        document.addEventListener("DOMContentLoaded", () => {
+            const preloader = document.getElementById('src-preloader');
+            
+            // Check if preloader was already shown this session
+            if (sessionStorage.getItem('preloaderShown') === 'true') {
+                preloader.style.display = 'none';
+                return; // Stop animation completely
+            }
+            
+            // Mark as shown for future page loads
+            sessionStorage.setItem('preloaderShown', 'true');
+
+            const bus = document.getElementById('preloader-bus');
+            const text = document.getElementById('preloader-text');
+            const wheels = document.querySelectorAll('.wheel');
+            
+            // 1. Bus drives in from the left
+            let tl = gsap.timeline();
+            
+            tl.to(bus, {
+                x: 0, 
+                duration: 1.5,
+                ease: "power2.out",
+                onComplete: () => {
+                    // Pause wheels when stopped
+                    wheels.forEach(w => w.style.animationPlayState = 'paused');
+                }
+            })
+            .to(text, {
+                opacity: 1,
+                duration: 0.5
+            });
+
+            // 2. Wait for window load to drive off
+            window.addEventListener('load', () => {
+                // Add a small delay so the animation feels deliberate
+                setTimeout(() => {
+                    let outTl = gsap.timeline();
+                    
+                    // Resume wheels
+                    wheels.forEach(w => w.style.animationPlayState = 'running');
+                    
+                    // Text fades out
+                    outTl.to(text, { opacity: 0, duration: 0.3 })
+                    // Bus speeds off to the right
+                    .to(bus, {
+                        x: "100vw",
+                        duration: 1,
+                        ease: "power2.in"
+                    })
+                    // Preloader fades out
+                    .to(preloader, {
+                        opacity: 0,
+                        duration: 0.6,
+                        ease: "power2.inOut",
+                        onComplete: () => {
+                            preloader.style.display = 'none';
+                            // Refresh ScrollTrigger since layout is now visible
+                            if(typeof ScrollTrigger !== 'undefined') ScrollTrigger.refresh();
+                        }
+                    }, "-=0.4");
+                }, 1000);
+            });
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,56 @@
+:root {
+    --bg-primary: #D4DDE2;
+    --bg-secondary: #FFFFFF;
+    --accent-cyan: #5C7E8F;
+    --accent-purple: #5C7E8F;
+    --accent-blue: #5C7E8F;
+    --text-light: #1F2937;
+    --text-muted: #4B5563;
+    --border-color: #A2A2A2;
+    --success: #3FB950;
+    --danger: #F85149;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-light);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Scrollbar styling for a premium feel */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-purple);
+}
+
+/* Animations */
+@keyframes running-text {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+.animate-running-text {
+    display: inline-block;
+    white-space: nowrap;
+    animation: running-text 15s linear infinite;
+}
+
+.glass-panel {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}

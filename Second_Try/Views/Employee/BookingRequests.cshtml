@@ -1,0 +1,175 @@
+@using Second_Try.Models
+@{
+    ViewData["Title"]      = "Booking Requests";
+    ViewData["ActivePage"] = "BookingRequests";
+    Layout = "~/Views/Shared/_EmployeeLayout.cshtml";
+
+    var requests     = ViewBag.Requests     as List<BookingRequest> ?? new List<BookingRequest>();
+    string currFilter = ViewBag.StatusFilter ?? "All";
+    string currSearch = ViewBag.Search       ?? "";
+
+    int countAll       = ViewBag.CountAll       ?? 0;
+    int countPending   = ViewBag.CountPending   ?? 0;
+    int countAccepted  = ViewBag.CountAccepted  ?? 0;
+    int countRejected  = ViewBag.CountRejected  ?? 0;
+    int countCancelled = ViewBag.CountCancelled ?? 0;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/employee/emp-booking-requests.css" asp-append-version="true" />
+}
+
+<!-- Toasts -->
+@if (TempData["SuccessMessage"] is string sm)
+{
+    <div class="emp-toast emp-toast-success"><i class="fa-solid fa-circle-check"></i> @sm</div>
+}
+@if (TempData["ErrorMessage"] is string em)
+{
+    <div class="emp-toast emp-toast-error"><i class="fa-solid fa-triangle-exclamation"></i> @em</div>
+}
+
+<!-- Page Header -->
+<div class="emp-page-header">
+    <div>
+        <h2 class="emp-page-heading">Booking Requests</h2>
+        <p class="emp-page-sub">Review, accept or reject customer booking requests.</p>
+    </div>
+</div>
+
+<!-- Filter + Search Bar -->
+<div class="emp-card" style="margin-bottom:1.25rem;">
+    <div class="emp-toolbar">
+        <!-- Filter Tabs -->
+        <div class="emp-filter-tabs">
+            <a href="/Employee/BookingRequests" class="emp-filter-tab @(currFilter == "All" ? "active" : "")">
+                All <span class="emp-tab-count">@countAll</span>
+            </a>
+            <a href="/Employee/BookingRequests?status=Pending" class="emp-filter-tab @(currFilter == "Pending" ? "active" : "")">
+                <i class="fa-solid fa-hourglass-half"></i> Pending <span class="emp-tab-count">@countPending</span>
+            </a>
+            <a href="/Employee/BookingRequests?status=Accepted" class="emp-filter-tab @(currFilter == "Accepted" ? "active" : "")">
+                <i class="fa-solid fa-circle-check"></i> Accepted <span class="emp-tab-count">@countAccepted</span>
+            </a>
+            <a href="/Employee/BookingRequests?status=Rejected" class="emp-filter-tab @(currFilter == "Rejected" ? "active" : "")">
+                <i class="fa-solid fa-circle-xmark"></i> Rejected <span class="emp-tab-count">@countRejected</span>
+            </a>
+            <a href="/Employee/BookingRequests?status=Cancelled" class="emp-filter-tab @(currFilter == "Cancelled" ? "active" : "")">
+                <i class="fa-solid fa-ban"></i> Cancelled <span class="emp-tab-count">@countCancelled</span>
+            </a>
+        </div>
+
+        <!-- Search -->
+        <div class="emp-search-wrapper">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text"
+                   id="req-search"
+                   class="emp-search-input"
+                   placeholder="Search customer or route..."
+                   value="@currSearch" />
+        </div>
+    </div>
+</div>
+
+<!-- Requests Table -->
+<div class="emp-card">
+    @if (requests.Any())
+    {
+        <div class="emp-table-wrapper">
+            <table class="emp-table" id="requests-table">
+                <thead>
+                    <tr>
+                        <th>REQ #</th>
+                        <th>Customer</th>
+                        <th>Route</th>
+                        <th>Travel Date</th>
+                        <th>Bus Class</th>
+                        <th>Seats</th>
+                        <th>Submitted</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var req in requests)
+                    {
+                        string badgeCls = req.Status switch
+                        {
+                            BookingRequestStatus.Pending   => "emp-badge-pending",
+                            BookingRequestStatus.Accepted  => "emp-badge-accepted",
+                            BookingRequestStatus.Rejected  => "emp-badge-rejected",
+                            BookingRequestStatus.Cancelled => "emp-badge-cancelled",
+                            _ => ""
+                        };
+                        <tr class="req-row" data-search="@((req.Customer?.FullName ?? "") + " " + (req.Route?.Origin ?? "") + " " + (req.Route?.Destination ?? ""))">
+                            <td><span class="emp-req-id">REQ-@req.Id.ToString("D4")</span></td>
+                            <td>
+                                <div class="emp-customer-cell">
+                                    <div class="emp-customer-avatar">
+                                        @string.Join("", (req.Customer?.FullName ?? "?").Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()))
+                                    </div>
+                                    <div>
+                                        <div class="emp-customer-name">@(req.Customer?.FullName ?? "—")</div>
+                                        <div class="emp-customer-email">@(req.Customer?.Email ?? "—")</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="emp-route-cell">
+                                    @(req.Route?.Origin ?? "—") <i class="fa-solid fa-arrow-right" style="font-size:0.6rem;"></i> @(req.Route?.Destination ?? "—")
+                                </span>
+                            </td>
+                            <td class="muted">@req.TravelDate.ToString("MMM dd, yyyy")</td>
+                            <td><span class="emp-badge emp-badge-info">@req.PreferredBusType</span></td>
+                            <td class="muted">@req.NumberOfSeats</td>
+                            <td class="muted">@req.RequestDate.ToString("MMM dd")</td>
+                            <td><span class="emp-badge @badgeCls">@req.Status</span></td>
+                            <td>
+                                <a href="/Employee/ProcessRequest/@req.Id" class="emp-btn emp-btn-outline emp-btn-sm">
+                                    @if (req.Status == BookingRequestStatus.Pending)
+                                    {
+                                        <i class="fa-solid fa-gear"></i><text> Process</text>
+                                    }
+                                    else
+                                    {
+                                        <i class="fa-solid fa-eye"></i><text> View</text>
+                                    }
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="emp-empty-state">
+            <div class="emp-empty-icon"><i class="fa-solid fa-inbox"></i></div>
+            <p class="emp-empty-title">No Requests Found</p>
+            <p class="emp-empty-sub">No booking requests match the current filter.</p>
+        </div>
+    }
+</div>
+
+@section Scripts {
+<script>
+    // Live client-side search
+    const searchInput = document.getElementById('req-search');
+    searchInput?.addEventListener('input', function () {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('.req-row').forEach(row => {
+            const text = row.dataset.search?.toLowerCase() ?? '';
+            row.style.display = text.includes(q) ? '' : 'none';
+        });
+    });
+
+    // Trigger search on Enter for server-side
+    searchInput?.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const status = new URLSearchParams(window.location.search).get('status') ?? '';
+            window.location.href = `/Employee/BookingRequests?status=${status}&search=${encodeURIComponent(this.value)}`;
+        }
+    });
+</script>
+}

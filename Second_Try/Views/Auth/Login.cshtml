@@ -1,0 +1,378 @@
+@using Second_Try.Models.ViewModels
+@model AuthPageViewModel
+@{
+    ViewData["Title"] = "Sign In or Sign Up";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+    bool showRegister = TempData["ShowRegister"] is bool sr && sr;
+}
+
+<style>
+    .auth-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 64px);
+        padding: 2rem;
+        background-color: var(--bg-primary);
+    }
+
+    .auth-container {
+        position: relative;
+        width: 100%;
+        max-width: 1000px;
+        min-height: 600px;
+        background-color: var(--bg-secondary);
+        border-radius: 2rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+    }
+
+    .form-container {
+        position: absolute;
+        top: 0;
+        height: 100%;
+        transition: all 0.6s ease-in-out;
+        background-color: var(--bg-secondary);
+    }
+
+    .sign-in-container {
+        left: 0;
+        width: 50%;
+        z-index: 2;
+    }
+
+    .sign-up-container {
+        left: 0;
+        width: 50%;
+        opacity: 0;
+        z-index: 1;
+    }
+
+    .overlay-container {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 50%;
+        height: 100%;
+        overflow: hidden;
+        transition: transform 0.6s ease-in-out;
+        z-index: 100;
+    }
+
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 200%;
+        height: 100%;
+        transition: transform 0.6s ease-in-out;
+    }
+
+    .overlay::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2069&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        z-index: -2;
+    }
+
+    .overlay::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to right, rgba(92, 126, 143, 0.88), rgba(92, 126, 143, 0.96));
+        z-index: -1;
+    }
+
+    .overlay-panel {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 0 40px;
+        text-align: center;
+        top: 0;
+        height: 100%;
+        width: 50%;
+        transition: transform 0.6s ease-in-out;
+    }
+
+    .overlay-left  { transform: translateX(-20%); }
+    .overlay-right { right: 0; transform: translateX(0); }
+
+    /* Active (Sign Up Mode) */
+    .auth-container.right-panel-active .sign-in-container {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    .auth-container.right-panel-active .sign-up-container {
+        transform: translateX(100%);
+        opacity: 1;
+        z-index: 5;
+        animation: show 0.6s;
+    }
+    .auth-container.right-panel-active .overlay-container { transform: translateX(-100%); }
+    .auth-container.right-panel-active .overlay           { transform: translateX(50%); }
+    .auth-container.right-panel-active .overlay-left      { transform: translateX(0); }
+    .auth-container.right-panel-active .overlay-right     { transform: translateX(20%); }
+
+    @@keyframes show {
+        0%, 49.99% { opacity: 0; z-index: 1; }
+        50%, 100%  { opacity: 1; z-index: 5; }
+    }
+
+    .auth-form {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 0 40px;
+        height: 100%;
+        text-align: center;
+    }
+
+    .auth-input {
+        width: 100%;
+        background: #F5F7FA;
+        border: 1.5px solid var(--border-color);
+        border-radius: 0.6rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.75rem;
+        color: var(--text-light);
+        font-size: 0.9rem;
+        transition: border-color 0.2s;
+        outline: none;
+    }
+    .auth-input:focus { border-color: var(--accent-cyan); }
+
+    .auth-btn {
+        background: var(--accent-cyan);
+        color: white;
+        border: none;
+        border-radius: 9999px;
+        padding: 0.75rem 3rem;
+        font-weight: 700;
+        font-size: 0.85rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 0.5rem;
+    }
+    .auth-btn:hover { box-shadow: 0 0 15px rgba(92,126,143,0.5); transform: translateY(-2px); }
+
+    .overlay-btn {
+        background: transparent;
+        color: white;
+        border: 2px solid white;
+        border-radius: 9999px;
+        padding: 0.75rem 3rem;
+        font-weight: 700;
+        font-size: 0.85rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .overlay-btn:hover { background: white; color: var(--accent-cyan); }
+
+    .social-link {
+        border: 1px solid var(--border-color);
+        border-radius: 50%;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 5px;
+        height: 38px;
+        width: 38px;
+        color: var(--text-light);
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    .social-link:hover { background: var(--accent-cyan); color: white; border-color: var(--accent-cyan); }
+
+    /* Password strength bar */
+    .strength-bar-wrapper { width: 100%; margin-bottom: 0.5rem; }
+    .strength-bar-track {
+        height: 4px;
+        background: #e5e7eb;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+    .strength-bar-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 2px;
+        transition: width 0.3s, background 0.3s;
+    }
+    .strength-label { font-size: 0.72rem; text-align: left; margin-top: 3px; }
+
+    .field-error { color: #ef4444; font-size: 0.72rem; margin-top: -0.5rem; margin-bottom: 0.5rem; text-align: left; width: 100%; }
+</style>
+
+<div class="auth-wrapper">
+    <div class="auth-container @(showRegister ? "right-panel-active" : "")" id="auth-container">
+
+        <!-- ===== SIGN UP FORM ===== -->
+        <div class="form-container sign-up-container">
+            <form class="auth-form" asp-controller="Auth" asp-action="Register" method="POST">
+                @Html.AntiForgeryToken()
+                <h2 style="font-size:1.75rem;font-weight:700;color:var(--text-light);margin-bottom:0.25rem;">Create Account</h2>
+
+                <div style="margin:0.5rem 0 0.25rem;" class="social-container">
+                    <a href="#" class="social-link"><i class="fab fa-google"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                </div>
+                <span style="color:var(--text-muted);font-size:0.8rem;margin-bottom:0.75rem;display:block;">or use your email for registration</span>
+
+                @if (!ViewData.ModelState.IsValid && ViewData.ModelState["Register.Email"]?.Errors.Count > 0)
+                {
+                    <p class="field-error">@ViewData.ModelState["Register.Email"]!.Errors[0].ErrorMessage</p>
+                }
+
+                <input type="text" name="Register.FullName" placeholder="Full Name" class="auth-input"
+                       value="@Model.Register.FullName" required />
+                @if (ViewData.ModelState["Register.FullName"]?.Errors.Count > 0)
+                {
+                    <p class="field-error">@ViewData.ModelState["Register.FullName"]!.Errors[0].ErrorMessage</p>
+                }
+
+                <input type="email" name="Register.Email" placeholder="Email Address" class="auth-input"
+                       value="@Model.Register.Email" required />
+
+                <input type="password" id="reg-password" name="Register.Password" placeholder="Password (min 8 chars)"
+                       class="auth-input" required />
+
+                <!-- Live Password Strength Bar -->
+                <div class="strength-bar-wrapper">
+                    <div class="strength-bar-track">
+                        <div class="strength-bar-fill" id="strength-fill"></div>
+                    </div>
+                    <p class="strength-label" id="strength-label" style="color:var(--text-muted);">Enter a password</p>
+                </div>
+
+                @if (ViewData.ModelState["Register.Password"]?.Errors.Count > 0)
+                {
+                    <p class="field-error">@ViewData.ModelState["Register.Password"]!.Errors[0].ErrorMessage</p>
+                }
+
+                <button type="submit" class="auth-btn" id="reg-submit-btn">Sign Up</button>
+            </form>
+        </div>
+
+        <!-- ===== SIGN IN FORM ===== -->
+        <div class="form-container sign-in-container">
+            <form class="auth-form" asp-controller="Auth" asp-action="Login" method="POST">
+                @Html.AntiForgeryToken()
+                <h2 style="font-size:1.75rem;font-weight:700;color:var(--text-light);margin-bottom:0.25rem;">Sign In</h2>
+
+                <div style="margin:0.5rem 0 0.25rem;">
+                    <a href="#" class="social-link"><i class="fab fa-google"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                </div>
+                <span style="color:var(--text-muted);font-size:0.8rem;margin-bottom:0.75rem;display:block;">or use your account</span>
+
+                @if (!ViewData.ModelState.IsValid && ViewData.ModelState["Login.Email"]?.Errors.Count > 0)
+                {
+                    <p class="field-error" style="text-align:center;">@ViewData.ModelState["Login.Email"]!.Errors[0].ErrorMessage</p>
+                }
+
+                <input type="email" name="Login.Email" placeholder="Email Address" class="auth-input"
+                       value="@Model.Login.Email" required />
+                <input type="password" name="Login.Password" placeholder="Password" class="auth-input" required />
+
+                <a href="#" style="color:var(--text-muted);font-size:0.8rem;margin-bottom:1rem;display:block;transition:color 0.2s;"
+                   onmouseover="this.style.color='var(--accent-cyan)'" onmouseout="this.style.color='var(--text-muted)'">
+                    Forgot your password?
+                </a>
+
+                <button type="submit" class="auth-btn">Sign In</button>
+            </form>
+        </div>
+
+        <!-- ===== SLIDING IMAGE OVERLAY ===== -->
+        <div class="overlay-container">
+            <div class="overlay">
+                <!-- Left panel (shown when sign-up is active) -->
+                <div class="overlay-panel overlay-left">
+                    <div style="width:64px;height:64px;border-radius:50%;border:2px solid rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;font-size:1.75rem;margin-bottom:1.5rem;color:white;">
+                        <i class="fa-solid fa-bus"></i>
+                    </div>
+                    <h1 style="color:white;font-size:2rem;font-weight:700;margin-bottom:1rem;">Welcome Back!</h1>
+                    <p style="color:rgba(255,255,255,0.8);font-size:1rem;margin-bottom:2rem;line-height:1.6;">
+                        To keep connected with us please login with your personal info.
+                    </p>
+                    <button class="overlay-btn" id="signInBtn">Sign In</button>
+                </div>
+
+                <!-- Right panel (shown when sign-in is active) -->
+                <div class="overlay-panel overlay-right">
+                    <div style="width:64px;height:64px;border-radius:50%;border:2px solid rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;font-size:1.75rem;margin-bottom:1.5rem;color:white;">
+                        <i class="fa-solid fa-route"></i>
+                    </div>
+                    <h1 style="color:white;font-size:2rem;font-weight:700;margin-bottom:1rem;">Hello, Traveler!</h1>
+                    <p style="color:rgba(255,255,255,0.8);font-size:1rem;margin-bottom:2rem;line-height:1.6;">
+                        Enter your personal details and start your journey with us today.
+                    </p>
+                    <button class="overlay-btn" id="signUpBtn">Sign Up</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Panel toggle
+    document.addEventListener("DOMContentLoaded", () => {
+        const container = document.getElementById('auth-container');
+        document.getElementById('signUpBtn').addEventListener('click', () => container.classList.add("right-panel-active"));
+        document.getElementById('signInBtn').addEventListener('click', () => container.classList.remove("right-panel-active"));
+
+        // Real-time password strength meter
+        const passwordInput = document.getElementById('reg-password');
+        const fill = document.getElementById('strength-fill');
+        const label = document.getElementById('strength-label');
+        const submitBtn = document.getElementById('reg-submit-btn');
+
+        function checkStrength(pwd) {
+            let score = 0;
+            if (pwd.length >= 8) score++;
+            if (/[A-Z]/.test(pwd)) score++;
+            if (/[a-z]/.test(pwd)) score++;
+            if (/\d/.test(pwd)) score++;
+            if (/[!@@#$%^&*()_+\-=\[\]{}|;':",./<>?]/.test(pwd)) score++;
+            return score;
+        }
+
+        const levels = [
+            { color: '#ef4444', text: 'Too weak', pct: '15%' },
+            { color: '#f97316', text: 'Weak',     pct: '30%' },
+            { color: '#eab308', text: 'Fair',     pct: '55%' },
+            { color: '#22c55e', text: 'Good',     pct: '75%' },
+            { color: '#16a34a', text: 'Strong ✓', pct: '100%' }
+        ];
+
+        passwordInput.addEventListener('input', () => {
+            const pwd = passwordInput.value;
+            if (!pwd) {
+                fill.style.width = '0%';
+                label.textContent = 'Enter a password';
+                label.style.color = 'var(--text-muted)';
+                submitBtn.disabled = false;
+                return;
+            }
+            const score = checkStrength(pwd) - 1;
+            const lvl = levels[Math.max(0, score)];
+            fill.style.width = lvl.pct;
+            fill.style.background = lvl.color;
+            label.textContent = lvl.text;
+            label.style.color = lvl.color;
+
+            // Prevent submission if not strong enough (score < 4 = less than 5/5)
+            submitBtn.disabled = (score < 3);
+        });
+    });
+</script>

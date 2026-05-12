@@ -1,0 +1,238 @@
+@using Second_Try.Models
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["ActivePage"] = "Dashboard";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+    int total    = ViewBag.TotalRequests ?? 0;
+    int pending  = ViewBag.PendingCount  ?? 0;
+    int accepted = ViewBag.AcceptedCount ?? 0;
+    int rejected = ViewBag.RejectedCount ?? 0;
+    var activeReq = ViewBag.ActiveRequest as BookingRequest;
+    var notifications = ViewBag.Notifications as List<Notification> ?? new List<Notification>();
+}
+
+<div class="cp-shell-content">
+
+    @if (TempData["SuccessMessage"] is string successMsg)
+    {
+        <div class="cp-toast cp-toast-success">
+            <i class="fa-solid fa-circle-check"></i> @successMsg
+        </div>
+    }
+    @if (TempData["ErrorMessage"] is string errMsg)
+    {
+        <div class="cp-toast cp-toast-error">
+            <i class="fa-solid fa-triangle-exclamation"></i> @errMsg
+        </div>
+    }
+
+    <!-- Welcome Banner -->
+    <div class="cp-welcome-banner">
+        <div class="cp-welcome-text">
+            <h1 class="cp-welcome-heading">Welcome back, @(User.Identity!.Name!.Split(' ')[0])! 👋</h1>
+            <p class="cp-welcome-sub">Here's a summary of your travel activity with SRC Travel.</p>
+        </div>
+        <a href="/Customer/NewRequest" class="cp-btn cp-btn-primary" style="z-index:1;">
+            <i class="fa-solid fa-plus"></i> New Booking Request
+        </a>
+    </div>
+
+    <!-- Stat Cards Grid -->
+    <div class="cp-stats-grid">
+        <div class="cp-stat-card">
+            <div class="cp-stat-icon cyan"><i class="fa-solid fa-ticket"></i></div>
+            <div>
+                <div class="cp-stat-value">@total</div>
+                <div class="cp-stat-label">Total Requests</div>
+            </div>
+        </div>
+        <div class="cp-stat-card">
+            <div class="cp-stat-icon amber"><i class="fa-solid fa-hourglass-half"></i></div>
+            <div>
+                <div class="cp-stat-value">@pending</div>
+                <div class="cp-stat-label">Pending</div>
+            </div>
+        </div>
+        <div class="cp-stat-card">
+            <div class="cp-stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
+            <div>
+                <div class="cp-stat-value">@accepted</div>
+                <div class="cp-stat-label">Accepted</div>
+            </div>
+        </div>
+        <div class="cp-stat-card">
+            <div class="cp-stat-icon red"><i class="fa-solid fa-circle-xmark"></i></div>
+            <div>
+                <div class="cp-stat-value">@rejected</div>
+                <div class="cp-stat-label">Rejected / Cancelled</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main 70/30 Grid -->
+    <div class="cp-dashboard-grid">
+
+        <!-- LEFT: Active Request Status -->
+        <div>
+            <div class="cp-card">
+                <div class="cp-card-header">
+                    <div class="cp-card-title"><i class="fa-solid fa-circle-info"></i> Active Request Status</div>
+                    <a href="/Customer/MyRequests" class="cp-btn cp-btn-outline" style="padding:0.4rem 1rem;font-size:0.8rem;">View All</a>
+                </div>
+
+                @if (activeReq != null)
+                {
+                    <!-- Active request details -->
+                    <div style="padding:1rem 0;">
+                        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;">
+                            @{
+                                string badgeClass = activeReq.Status == BookingRequestStatus.Pending ? "cp-badge-pending" : "cp-badge-accepted";
+                                string statusIcon = activeReq.Status == BookingRequestStatus.Pending ? "fa-hourglass-half" : "fa-circle-check";
+                            }
+                            <span class="cp-badge @badgeClass">
+                                <i class="fa-solid @statusIcon" style="font-size:0.55rem;"></i>
+                                @activeReq.Status.ToString().ToUpper()
+                            </span>
+                            <span style="font-size:0.8rem;color:var(--text-muted);">REQ-@activeReq.Id.ToString("D4")</span>
+                        </div>
+
+                        <div style="display:flex;flex-direction:column;gap:0.6rem;">
+                            <div style="display:flex;justify-content:space-between;font-size:0.875rem;padding:0.5rem 0;border-bottom:1px solid var(--border-color);">
+                                <span style="color:var(--text-muted);">Route</span>
+                                <span style="font-weight:600;color:var(--text-light);">
+                                    @(activeReq.Route?.Origin ?? "—") → @(activeReq.Route?.Destination ?? "—")
+                                </span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:0.875rem;padding:0.5rem 0;border-bottom:1px solid var(--border-color);">
+                                <span style="color:var(--text-muted);">Travel Date</span>
+                                <span style="font-weight:600;color:var(--text-light);">@activeReq.TravelDate.ToString("ddd, MMM dd yyyy")</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:0.875rem;padding:0.5rem 0;border-bottom:1px solid var(--border-color);">
+                                <span style="color:var(--text-muted);">Bus Class</span>
+                                <span style="font-weight:600;color:var(--text-light);">@activeReq.PreferredBusType.ToString()</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;font-size:0.875rem;padding:0.5rem 0;">
+                                <span style="color:var(--text-muted);">Seats</span>
+                                <span style="font-weight:600;color:var(--text-light);">@activeReq.NumberOfSeats</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:1rem;">
+                            <a href="/Customer/MyRequests" class="cp-btn cp-btn-outline" style="width:100%;justify-content:center;">
+                                <i class="fa-solid fa-arrow-right"></i> View Full Details
+                            </a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- Empty state -->
+                    <div class="cp-empty-state">
+                        <div class="cp-empty-icon"><i class="fa-solid fa-inbox"></i></div>
+                        <p class="cp-empty-title">No Active Request</p>
+                        <p class="cp-empty-sub">You don't have any pending booking request right now.</p>
+                        <a href="/Customer/NewRequest" class="cp-btn cp-btn-primary" style="margin-top:1rem;">
+                            <i class="fa-solid fa-plus"></i> Submit a New Request
+                        </a>
+                    </div>
+                }
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="cp-card" style="margin-top:1.25rem;">
+                <div class="cp-card-header">
+                    <div class="cp-card-title"><i class="fa-solid fa-bolt"></i> Quick Actions</div>
+                </div>
+                <div class="cp-quick-actions">
+                    <a href="/Customer/NewRequest" class="cp-quick-action-btn">
+                        <div class="cp-qa-icon cyan"><i class="fa-solid fa-ticket"></i></div>
+                        <span>Book a Trip</span>
+                    </a>
+                    <a href="/Customer/MyRequests" class="cp-quick-action-btn">
+                        <div class="cp-qa-icon amber"><i class="fa-solid fa-list-check"></i></div>
+                        <span>My Requests</span>
+                    </a>
+                    <a href="/Customer/Profile" class="cp-quick-action-btn">
+                        <div class="cp-qa-icon green"><i class="fa-solid fa-user-pen"></i></div>
+                        <span>Edit Profile</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Notifications Panel -->
+        <div>
+            <div class="cp-card">
+                <div class="cp-card-header">
+                    <div class="cp-card-title"><i class="fa-solid fa-bell"></i> Notifications</div>
+                    @{
+                        int unread = notifications.Count(n => !n.IsRead);
+                    }
+                    @if (unread > 0)
+                    {
+                        <span class="cp-badge cp-badge-pending">@unread New</span>
+                    }
+                    else
+                    {
+                        <span style="font-size:0.75rem;color:var(--text-muted);">All caught up</span>
+                    }
+                </div>
+
+                <div class="cp-notif-list">
+                    @if (notifications.Any())
+                    {
+                        foreach (var notif in notifications)
+                        {
+                            <div class="cp-notif-item @(notif.IsRead ? "" : "unread")">
+                                <div class="cp-notif-dot @(notif.IsRead ? "grey" : "pending")"></div>
+                                <div class="cp-notif-body">
+                                    <p class="cp-notif-msg">@notif.Message</p>
+                                    <span class="cp-notif-time">
+                                        <i class="fa-regular fa-clock"></i>
+                                        @{
+                                            var diff = DateTime.UtcNow - notif.CreatedAt;
+                                            string timeAgo = diff.TotalMinutes < 1 ? "Just now"
+                                                : diff.TotalHours < 1 ? $"{(int)diff.TotalMinutes}m ago"
+                                                : diff.TotalDays < 1 ? $"{(int)diff.TotalHours}h ago"
+                                                : diff.TotalDays < 7 ? $"{(int)diff.TotalDays}d ago"
+                                                : notif.CreatedAt.ToString("MMM dd");
+                                        }
+                                        @timeAgo
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="cp-empty-state" style="padding:1.5rem 0;">
+                            <div class="cp-empty-icon" style="font-size:1.5rem;"><i class="fa-regular fa-bell-slash"></i></div>
+                            <p class="cp-empty-title" style="font-size:0.95rem;">No Notifications</p>
+                            <p class="cp-empty-sub" style="font-size:0.8rem;">You're all caught up!</p>
+                        </div>
+                    }
+                </div>
+
+                @if (notifications.Any())
+                {
+                    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border-color);">
+                        <a href="/Customer/MyRequests" class="cp-btn cp-btn-outline" style="width:100%;justify-content:center;">
+                            View All Requests
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.cp-toast').forEach(t => {
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 4000);
+        });
+    });
+</script>
+}

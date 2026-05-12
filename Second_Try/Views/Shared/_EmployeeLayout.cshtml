@@ -1,0 +1,152 @@
+@using System.Security.Claims
+@{
+    string empName     = User.Identity?.Name ?? "Employee";
+    string initials    = string.Join("", empName.Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()));
+    string currentPage = ViewData["ActivePage"]?.ToString() ?? "";
+    bool   isAdmin     = User.IsInRole("Admin");
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — SRC Employee Portal</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- CSS Variables -->
+    <link rel="stylesheet" href="~/css/variables.css" asp-append-version="true" />
+    <!-- Employee Portal CSS -->
+    <link rel="stylesheet" href="~/css/employee/emp-dashboard.css" asp-append-version="true" />
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+
+<!-- Mobile overlay -->
+<div class="emp-overlay" id="emp-overlay"></div>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="emp-sidebar" id="emp-sidebar">
+
+    <!-- Logo -->
+    <a href="/Home/Index" class="emp-sidebar-logo">
+        <div class="emp-sidebar-logo-icon"><i class="fa-solid fa-bus"></i></div>
+        <div class="emp-sidebar-logo-text">
+            SRC Travel
+            <span>Employee Portal</span>
+        </div>
+    </a>
+
+    <!-- User card -->
+    <div class="emp-sidebar-user">
+        <div class="emp-sidebar-avatar">@initials</div>
+        <div>
+            <div class="emp-sidebar-user-name">@empName</div>
+            <div class="emp-role-badge @(isAdmin ? "admin" : "standard")">
+                <i class="fa-solid @(isAdmin ? "fa-crown" : "fa-id-badge")" style="font-size:0.55rem;"></i>
+                @(isAdmin ? "Admin" : "Employee")
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="emp-nav">
+        <div class="emp-nav-label">Main Menu</div>
+        <a href="/Employee/Dashboard" class="@(currentPage == "Dashboard" ? "active" : "")">
+            <i class="fa-solid fa-gauge-high"></i> Dashboard
+        </a>
+        <a href="/Employee/BookingRequests" class="@(currentPage == "BookingRequests" ? "active" : "")">
+            <i class="fa-solid fa-inbox"></i> Booking Requests
+        </a>
+        <a href="/Employee/BookingHistory" class="@(currentPage == "BookingHistory" ? "active" : "")">
+            <i class="fa-solid fa-clock-rotate-left"></i> Booking History
+        </a>
+
+        <div class="emp-nav-label">Account</div>
+        <a href="/Employee/EmployeeProfile" class="@(currentPage == "EmployeeProfile" ? "active" : "")">
+            <i class="fa-solid fa-user-tie"></i> My Profile
+        </a>
+    </nav>
+
+    <!-- Logout -->
+    <div class="emp-sidebar-bottom">
+        <a href="/Auth/Logout">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </a>
+    </div>
+
+</aside>
+
+<!-- ===== TOPBAR ===== -->
+<header class="emp-topbar" id="emp-topbar">
+    <div class="emp-topbar-left">
+        <button class="emp-hamburger" id="emp-hamburger" aria-label="Toggle menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <span class="emp-page-title">@ViewData["Title"]</span>
+    </div>
+
+    <div class="emp-topbar-right">
+        <!-- Avatar dropdown -->
+        <div class="emp-avatar-wrapper">
+            <button class="emp-avatar-btn" id="emp-avatar-btn" aria-expanded="false">
+                <div class="emp-avatar-circle">@initials</div>
+                <span class="emp-avatar-name">@empName.Split(' ')[0]</span>
+                <i class="fa-solid fa-chevron-down emp-avatar-chevron" id="emp-chevron"></i>
+            </button>
+            <div class="emp-avatar-dropdown" id="emp-avatar-dropdown">
+                <a href="/Employee/EmployeeProfile"><i class="fa-solid fa-user-tie"></i> My Profile</a>
+                <a href="/Auth/Logout" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="emp-main" id="emp-main">
+    @RenderBody()
+</main>
+
+<!-- ===== SCRIPTS ===== -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar   = document.getElementById('emp-sidebar');
+        const overlay   = document.getElementById('emp-overlay');
+        const hamburger = document.getElementById('emp-hamburger');
+        const avatarBtn = document.getElementById('emp-avatar-btn');
+        const dropdown  = document.getElementById('emp-avatar-dropdown');
+        const chevron   = document.getElementById('emp-chevron');
+
+        hamburger?.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        });
+
+        overlay?.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+        });
+
+        avatarBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = dropdown.classList.toggle('open');
+            avatarBtn.setAttribute('aria-expanded', isOpen);
+            chevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0)';
+        });
+
+        document.addEventListener('click', () => {
+            dropdown?.classList.remove('open');
+            chevron.style.transform = 'rotate(0)';
+        });
+
+        // Auto-dismiss toasts
+        document.querySelectorAll('.emp-toast').forEach(t => {
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 4000);
+        });
+    });
+</script>
+@RenderSection("Scripts", required: false)
+</body>
+</html>

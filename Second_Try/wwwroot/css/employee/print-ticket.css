@@ -1,0 +1,248 @@
+/* ============================================================
+   EMPLOYEE PORTAL — Print Ticket Page
+   ============================================================ */
+
+.pt-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Ticket wrapper — centers ticket on screen */
+.pt-ticket-wrapper {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 2rem;
+}
+
+/* Main ticket card */
+.pt-ticket {
+    width: 100%;
+    max-width: 720px;
+    background: var(--bg-secondary);
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 40px rgba(30,58,71,0.18);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+/* ── Header stripe ──────────────────────────────────────── */
+.pt-header {
+    background: linear-gradient(120deg, #1e3a47 0%, var(--accent-cyan) 100%);
+    padding: 1.5rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.pt-header-left { display: flex; align-items: center; gap: 0.85rem; }
+
+.pt-logo-icon {
+    width: 44px; height: 44px;
+    border-radius: 0.75rem;
+    background: rgba(255,255,255,0.18);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 1.15rem;
+}
+
+.pt-company {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #fff;
+}
+
+.pt-company-sub {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.7);
+    margin-top: 0.1rem;
+}
+
+.pt-header-right { text-align: right; }
+
+.pt-booking-ref {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #fff;
+    font-family: monospace;
+    letter-spacing: 0.05em;
+}
+
+.pt-status-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #86efac;
+    margin-top: 0.3rem;
+}
+
+/* ── Route Banner ───────────────────────────────────────── */
+.pt-route-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 1.75rem;
+    background: var(--bg-primary);
+    gap: 1rem;
+}
+
+.pt-route-city {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-light);
+}
+
+.pt-route-arrow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.pt-route-line {
+    flex: 1;
+    height: 2px;
+    background: var(--border-color);
+}
+
+.pt-route-bus-icon {
+    font-size: 1.1rem;
+    color: var(--accent-cyan);
+}
+
+/* ── Tear line ──────────────────────────────────────────── */
+.pt-tear-line {
+    display: flex;
+    align-items: center;
+    position: relative;
+    margin: 0;
+}
+
+.pt-tear-circle {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--bg-primary);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.pt-tear-circle.left  { margin-left: -11px; }
+.pt-tear-circle.right { margin-right: -11px; }
+
+.pt-tear-dashes {
+    flex: 1;
+    height: 1px;
+    border-top: 2px dashed var(--border-color);
+    margin: 0;
+}
+
+/* ── Ticket Body ────────────────────────────────────────── */
+.pt-body {
+    display: flex;
+    gap: 0;
+    padding: 1.5rem 1.75rem;
+}
+
+.pt-col { flex: 1; display: flex; flex-direction: column; gap: 1rem; }
+
+.pt-divider-v {
+    width: 1px;
+    background: var(--border-color);
+    margin: 0 1.5rem;
+    align-self: stretch;
+}
+
+.pt-field { display: flex; flex-direction: column; gap: 0.2rem; }
+
+.pt-field-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.pt-field-val {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.pt-highlight {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--accent-cyan);
+}
+
+.pt-fare {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #16A34A;
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
+.pt-footer {
+    background: var(--bg-primary);
+    padding: 0.9rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--border-color);
+}
+
+.pt-footer-label {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+    margin-bottom: 0.1rem;
+}
+
+.pt-footer-val {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-light);
+    font-family: monospace;
+}
+
+/* ── Print Media Query ──────────────────────────────────── */
+@media print {
+    .no-print { display: none !important; }
+
+    body {
+        background: #fff !important;
+        margin: 0;
+        padding: 0;
+    }
+
+    .emp-sidebar,
+    .emp-topbar,
+    .emp-main > *:not(.pt-ticket-wrapper) {
+        display: none !important;
+    }
+
+    .emp-main {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .pt-ticket-wrapper { padding: 0; }
+
+    .pt-ticket {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        border-radius: 0;
+        max-width: 100%;
+    }
+}

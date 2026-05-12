@@ -1,0 +1,487 @@
+@{
+    ViewData["Title"] = "Home Page";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+}
+
+<style>
+    /* Background Image Slider Animation */
+    @@keyframes bg-slider {
+        0%, 16% { opacity: 1; transform: scale(1); }
+        20%, 96% { opacity: 0; transform: scale(1.05); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+    .bg-slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        opacity: 0;
+        animation: bg-slider 25s infinite;
+        transition: transform 5s linear;
+    }
+    .bg-slide::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(2, 4, 10, 0.75), rgba(2, 4, 10, 0.98));
+    }
+    .bg-slide:nth-child(1) { animation-delay: 0s; background-image: url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2069&auto=format&fit=crop'); }
+    .bg-slide:nth-child(2) { animation-delay: 5s; background-image: url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop'); }
+    .bg-slide:nth-child(3) { animation-delay: 10s; background-image: url('https://images.unsplash.com/photo-1570125909232-eb263c188f7e?q=80&w=2071&auto=format&fit=crop'); }
+    .bg-slide:nth-child(4) { animation-delay: 15s; background-image: url('https://images.unsplash.com/photo-1494515843206-f3117d3f51b7?q=80&w=2072&auto=format&fit=crop'); }
+    .bg-slide:nth-child(5) { animation-delay: 20s; background-image: url('https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?q=80&w=2070&auto=format&fit=crop'); }
+
+    /* Sticky Stacking wrapper adjustments */
+    .stack-container {
+        position: relative;
+        width: 100%;
+    }
+    .stack-section {
+        position: sticky;
+        top: 64px; /* Matches navbar height */
+        width: 100%;
+        min-height: calc(100vh - 64px); 
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    /* Hide scrollbar for tracks */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
+
+<div class="stack-container">
+    
+    <!-- Section 1: Hero Section (z-0) - STICKY STACK -->
+    <div class="stack-section z-[0] bg-primary border-b border-border">
+        <!-- Image Slider Background -->
+        <div class="absolute inset-0 z-0">
+            <div class="bg-slide"></div>
+            <div class="bg-slide"></div>
+            <div class="bg-slide"></div>
+            <div class="bg-slide"></div>
+            <div class="bg-slide"></div>
+        </div>
+        
+        <!-- Premium Glow Effects -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-cyan/15 rounded-full blur-[120px] pointer-events-none z-0"></div>
+        <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
+        
+        <div class="text-center z-10 px-4 max-w-5xl mx-auto w-full py-20">
+            <!-- Status Pill -->
+            <div class="inline-flex items-center gap-3 px-5 py-2.5 rounded-full border border-border bg-secondary/40 backdrop-blur-md mb-8 shadow-lg">
+                <span class="relative flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-cyan"></span>
+                </span>
+                <span class="text-sm font-semibold tracking-wide text-light">Next-Gen Booking Engine</span>
+            </div>
+            
+            <!-- Main Heading -->
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-6 leading-tight drop-shadow-2xl">
+                Redefining Your <br />
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan via-blue to-purple pb-2 inline-block drop-shadow-[0_0_15px_rgba(0,209,255,0.4)]">Travel Experience</span>
+            </h1>
+            
+            <!-- Subtitle -->
+            <p class="text-light/80 text-lg md:text-2xl mx-auto mb-12 leading-relaxed max-w-3xl font-light">
+                Book your journey seamlessly. With our premium modern platform, discovering routes and tracking buses is faster and easier than ever before.
+            </p>
+            
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                <a href="#features" class="w-full sm:w-auto px-10 py-4 rounded-xl bg-gradient-to-r from-cyan to-blue text-primary font-bold text-lg shadow-[0_0_20px_var(--accent-blue)] hover:shadow-[0_0_35px_var(--accent-cyan)] hover:-translate-y-1 transition-all duration-300">
+                    <i class="fa-solid fa-magnifying-glass mr-2"></i> Find Routes
+                </a>
+                <a href="@Url.Action("Login", "Customer")" class="w-full sm:w-auto px-10 py-4 rounded-xl glass-panel border border-border text-light font-bold text-lg hover:border-cyan hover:bg-secondary/60 shadow-lg transition-all duration-300 flex items-center justify-center group">
+                    Customer Portal 
+                    <div class="w-8 h-8 rounded-full bg-primary/50 flex items-center justify-center ml-3 group-hover:bg-cyan group-hover:text-primary transition-colors border border-border group-hover:border-transparent">
+                        <i class="fa-solid fa-arrow-right group-hover:translate-x-0.5 transition-transform"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: The SRC Advantage (z-10) - STICKY STACK -->
+    <div class="stack-section z-[10] bg-primary border-t border-border rounded-t-[3rem] shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full">
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center gap-3 px-5 py-2.5 rounded-full border border-cyan/30 bg-cyan/10 mb-8 shadow-lg">
+                    <i class="fa-solid fa-bolt text-cyan"></i>
+                    <span class="text-sm font-semibold tracking-wide text-cyan">Why Choose Us</span>
+                </div>
+                <h2 class="text-4xl md:text-6xl font-bold text-light mb-6 tracking-tight">The SRC Advantage</h2>
+                <p class="text-muted text-xl max-w-2xl mx-auto">Discover why thousands of passengers trust us for their daily commute and long-distance journeys.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="glass-panel rounded-3xl p-10 border border-border bg-secondary/30 hover:bg-secondary/60 transition-all duration-300 group">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan to-blue p-[2px] mb-8">
+                        <div class="w-full h-full bg-primary rounded-[14px] flex items-center justify-center text-cyan text-3xl group-hover:scale-110 transition-transform shadow-inner">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-light mb-4">Lightning Fast Booking</h3>
+                    <p class="text-muted leading-relaxed">Book your tickets in under 60 seconds with our optimized process. Say goodbye to long queues.</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="glass-panel rounded-3xl p-10 border border-border bg-secondary/30 hover:bg-secondary/60 transition-all duration-300 group">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple to-blue p-[2px] mb-8">
+                        <div class="w-full h-full bg-primary rounded-[14px] flex items-center justify-center text-purple text-3xl group-hover:scale-110 transition-transform shadow-inner">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-light mb-4">Secure & Reliable</h3>
+                    <p class="text-muted leading-relaxed">Your data and journeys are secure. We prioritize privacy with encryption and vetted operators.</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="glass-panel rounded-3xl p-10 border border-border bg-secondary/30 hover:bg-secondary/60 transition-all duration-300 group">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue to-cyan p-[2px] mb-8">
+                        <div class="w-full h-full bg-primary rounded-[14px] flex items-center justify-center text-blue text-3xl group-hover:scale-110 transition-transform shadow-inner">
+                            <i class="fa-solid fa-map-location-dot"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-light mb-4">Real-time Tracking</h3>
+                    <p class="text-muted leading-relaxed">Never miss your bus. Track your assigned bus in real-time from your customer dashboard.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: How It Works (z-20) - STICKY STACK -->
+    <div class="stack-section z-[20] bg-[#0a0d14] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] border-t border-border rounded-t-[3rem]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full relative z-10">
+            <div class="text-center mb-20">
+                <h2 class="text-3xl md:text-5xl font-bold text-light mb-4 tracking-tight">Your Journey in 4 Simple Steps</h2>
+                <p class="text-muted text-lg max-w-2xl mx-auto">We've removed all the friction. Booking your premium travel is now incredibly effortless.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+                <!-- Connecting Line for Desktop -->
+                <div class="hidden md:block absolute top-10 left-[12%] right-[12%] h-[2px] bg-gradient-to-r from-cyan via-purple to-success opacity-30 z-0"></div>
+
+                <!-- Step 1 -->
+                <div class="relative z-10 text-center group">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-[#0a0d14] border-2 border-cyan flex items-center justify-center text-3xl font-black text-cyan mb-6 shadow-[0_0_20px_rgba(0,209,255,0.2)] group-hover:bg-cyan group-hover:text-primary transition-all duration-300">
+                        1
+                    </div>
+                    <h3 class="text-xl font-bold text-light mb-2">Search Route</h3>
+                    <p class="text-muted text-sm px-4">Enter your origin, destination, and travel date to find available luxury buses.</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="relative z-10 text-center group">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-[#0a0d14] border-2 border-purple flex items-center justify-center text-3xl font-black text-purple mb-6 shadow-[0_0_20px_rgba(110,86,207,0.2)] group-hover:bg-purple group-hover:text-primary transition-all duration-300">
+                        2
+                    </div>
+                    <h3 class="text-xl font-bold text-light mb-2">Select Bus</h3>
+                    <p class="text-muted text-sm px-4">Compare fares, view amenities, and choose the perfect schedule for your trip.</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="relative z-10 text-center group">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-[#0a0d14] border-2 border-blue flex items-center justify-center text-3xl font-black text-blue mb-6 shadow-[0_0_20px_rgba(46,91,255,0.2)] group-hover:bg-blue group-hover:text-primary transition-all duration-300">
+                        3
+                    </div>
+                    <h3 class="text-xl font-bold text-light mb-2">Confirm Request</h3>
+                    <p class="text-muted text-sm px-4">Submit your booking request instantly. Our agents review and confirm in minutes.</p>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="relative z-10 text-center group">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-[#0a0d14] border-2 border-success flex items-center justify-center text-3xl font-black text-success mb-6 shadow-[0_0_20px_rgba(63,185,80,0.2)] group-hover:bg-success group-hover:text-primary transition-all duration-300">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-light mb-2">Ready to Travel</h3>
+                    <p class="text-muted text-sm px-4">Pay at the counter on the travel day and enjoy our premium amenities.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: Premium Fleet Amenities (z-30) - STICKY STACK -->
+    <div class="stack-section z-[30] bg-primary shadow-[0_-20px_50px_rgba(0,0,0,0.8)] border-t border-border rounded-t-[3rem]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full relative z-10">
+            <div class="absolute -left-40 top-20 w-[500px] h-[500px] bg-cyan/5 rounded-full blur-[100px] pointer-events-none"></div>
+            <div class="absolute -right-40 bottom-20 w-[500px] h-[500px] bg-blue/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <!-- Left: Text & Grid -->
+                <div>
+                    <h2 class="text-4xl md:text-5xl font-bold text-light mb-6 tracking-tight">Travel in Absolute Comfort</h2>
+                    <p class="text-muted text-xl mb-12 leading-relaxed">Our modern fleet is equipped with state-of-the-art facilities to ensure your journey is relaxing, productive, and memorable.</p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="glass-panel p-6 rounded-3xl border border-border flex flex-col gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-primary border border-border flex items-center justify-center text-cyan shadow-inner text-xl">
+                                <i class="fa-solid fa-wifi"></i>
+                            </div>
+                            <h4 class="text-light font-bold">High-Speed Wi-Fi</h4>
+                        </div>
+                        <div class="glass-panel p-6 rounded-3xl border border-border flex flex-col gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-primary border border-border flex items-center justify-center text-purple shadow-inner text-xl">
+                                <i class="fa-solid fa-chair"></i>
+                            </div>
+                            <h4 class="text-light font-bold">Reclining Seats</h4>
+                        </div>
+                        <div class="glass-panel p-6 rounded-3xl border border-border flex flex-col gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-primary border border-border flex items-center justify-center text-blue shadow-inner text-xl">
+                                <i class="fa-solid fa-plug"></i>
+                            </div>
+                            <h4 class="text-light font-bold">Power Outlets</h4>
+                        </div>
+                        <div class="glass-panel p-6 rounded-3xl border border-border flex flex-col gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-primary border border-border flex items-center justify-center text-success shadow-inner text-xl">
+                                <i class="fa-solid fa-snowflake"></i>
+                            </div>
+                            <h4 class="text-light font-bold">Climate Control</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Image -->
+                <div class="relative rounded-[2.5rem] overflow-hidden border-2 border-border shadow-2xl glass-panel p-3 w-full aspect-square md:aspect-[4/3]">
+                    <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=1000&auto=format&fit=crop" alt="Premium Bus Interior" class="w-full h-full object-cover rounded-[2rem]">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#02040A] via-transparent to-transparent pointer-events-none rounded-[2rem]"></div>
+                    <div class="absolute bottom-8 left-8 right-8 glass-panel p-6 rounded-3xl border border-border/50 backdrop-blur-xl flex justify-between items-center">
+                        <div>
+                            <h4 class="text-light font-bold text-xl mb-1">Luxury Coach</h4>
+                            <p class="text-cyan text-sm">Available on intercity routes</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-r from-cyan to-blue flex items-center justify-center text-primary text-xl">
+                            <i class="fa-solid fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 5: SRC Elite Membership (z-40) - STICKY STACK -->
+    <div class="stack-section z-[40] bg-[#0a0d14] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] border-t border-border rounded-t-[3rem]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full relative">
+            <div class="absolute right-0 top-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-l from-cyan/10 to-transparent rounded-full blur-[100px] pointer-events-none"></div>
+
+            <div class="glass-panel border border-cyan/30 rounded-3xl p-1 lg:p-2 bg-gradient-to-r from-secondary/80 to-[#0a0d14]/80 backdrop-blur-xl relative overflow-hidden group shadow-2xl">
+                <div class="absolute inset-0 bg-gradient-to-r from-cyan/20 via-blue/10 to-purple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-0 items-center">
+                    <!-- Left: Card / Badge -->
+                    <div class="lg:col-span-2 p-8 md:p-12 relative flex justify-center">
+                        <div class="w-full max-w-sm aspect-[1.6/1] rounded-2xl bg-gradient-to-br from-[#1a1c29] to-[#0a0c16] border border-cyan/50 shadow-[0_0_30px_rgba(0,209,255,0.2)] relative overflow-hidden flex flex-col justify-between p-6 transform -rotate-3 hover:rotate-0 transition-transform duration-500 hover:scale-105 z-10">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-cyan/20 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                            <div class="flex justify-between items-start">
+                                <i class="fa-solid fa-crown text-3xl text-cyan drop-shadow-[0_0_10px_rgba(0,209,255,0.8)]"></i>
+                                <span class="text-xs font-bold tracking-widest text-muted uppercase">Elite Tier</span>
+                            </div>
+                            <div>
+                                <div class="font-mono text-light/80 tracking-widest text-lg mb-1">•••• •••• •••• 8923</div>
+                                <div class="flex justify-between items-end">
+                                    <span class="font-bold text-light uppercase tracking-widest">VIP Member</span>
+                                    <i class="fa-brands fa-nfc-symbol text-2xl text-cyan/70"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Content -->
+                    <div class="lg:col-span-3 p-8 md:p-12 border-t lg:border-t-0 lg:border-l border-border/50 relative z-10">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan/10 text-cyan text-sm font-semibold tracking-wide border border-cyan/20 mb-6">
+                            <i class="fa-solid fa-star"></i> Introducing SRC Elite
+                        </div>
+                        <h2 class="text-3xl md:text-5xl font-bold text-light mb-6 tracking-tight">Unlock Premium Perks</h2>
+                        <p class="text-muted text-lg mb-8 leading-relaxed max-w-2xl">
+                            Join our exclusive loyalty program and elevate your travel experience. Earn points on every journey, get priority boarding, and enjoy complimentary lounge access at major terminals.
+                        </p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-cyan/10 flex items-center justify-center text-cyan border border-cyan/30 shadow-[0_0_10px_rgba(0,209,255,0.2)]">
+                                    <i class="fa-solid fa-gem text-sm"></i>
+                                </div>
+                                <span class="text-light font-medium">Double Reward Points</span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-purple/10 flex items-center justify-center text-purple border border-purple/30 shadow-[0_0_10px_rgba(110,86,207,0.2)]">
+                                    <i class="fa-solid fa-couch text-sm"></i>
+                                </div>
+                                <span class="text-light font-medium">Priority Seat Selection</span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-blue/10 flex items-center justify-center text-blue border border-blue/30 shadow-[0_0_10px_rgba(46,91,255,0.2)]">
+                                    <i class="fa-solid fa-mug-hot text-sm"></i>
+                                </div>
+                                <span class="text-light font-medium">Free Lounge Access</span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center text-success border border-success/30 shadow-[0_0_10px_rgba(63,185,80,0.2)]">
+                                    <i class="fa-solid fa-percent text-sm"></i>
+                                </div>
+                                <span class="text-light font-medium">Exclusive Discounts</span>
+                            </div>
+                        </div>
+                        
+                        <button class="px-8 py-4 rounded-xl bg-gradient-to-r from-cyan to-blue text-primary font-bold shadow-[0_0_20px_var(--accent-cyan)] hover:shadow-[0_0_30px_var(--accent-blue)] transition-all flex items-center gap-3 hover:-translate-y-1">
+                            Join SRC Elite <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 6: Mobile Experience (z-50) - STICKY STACK -->
+    <div class="stack-section z-[50] bg-primary shadow-[0_-20px_50px_rgba(0,0,0,0.8)] border-t border-border rounded-t-[3rem]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full">
+            <div class="glass-panel rounded-3xl border border-border p-10 md:p-16 relative overflow-hidden shadow-2xl">
+                <!-- Glows -->
+                <div class="absolute top-0 right-0 w-[400px] h-[400px] bg-blue/20 rounded-full blur-[80px] pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 w-[300px] h-[300px] bg-cyan/20 rounded-full blur-[80px] pointer-events-none"></div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative z-10">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-cyan/30 bg-cyan/10 mb-6 text-cyan text-sm font-semibold tracking-wide shadow-inner">
+                            <i class="fa-solid fa-mobile-screen-button"></i> Customer Portal 2.0
+                        </div>
+                        <h2 class="text-3xl md:text-5xl font-bold text-light mb-6 tracking-tight">Your Journey, in Your Pocket</h2>
+                        <p class="text-muted text-lg mb-8 leading-relaxed">
+                            Access our web portal from any device. Track your bus in real-time, manage booking requests, receive instant notifications, and view travel history with our highly responsive interface.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="@Url.Action("Login", "Customer")" class="px-8 py-4 rounded-xl bg-primary border border-border text-light font-semibold hover:border-cyan hover:bg-secondary transition-all flex items-center justify-center group shadow-lg">
+                                <i class="fa-brands fa-google text-cyan mr-3 text-xl"></i> Sign in with Google
+                            </a>
+                        </div>
+                    </div>
+                    <div class="relative flex justify-center py-6">
+                        <!-- Abstract Mobile Mockup -->
+                        <div class="w-64 h-[480px] rounded-[3rem] border-8 border-secondary bg-primary shadow-[0_0_40px_rgba(0,0,0,0.5)] relative overflow-hidden flex flex-col transform rotate-2 hover:rotate-0 transition-transform duration-500">
+                            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-secondary rounded-b-xl z-20"></div>
+                            
+                            <div class="flex-1 p-5 flex flex-col pt-10">
+                                <div class="flex justify-between items-center mb-6">
+                                    <i class="fa-solid fa-bars text-muted text-lg"></i>
+                                    <div class="w-8 h-8 rounded-full bg-cyan/20 text-cyan flex items-center justify-center text-xs border border-cyan/50"><i class="fa-solid fa-user"></i></div>
+                                </div>
+                                <div class="w-full h-28 rounded-2xl bg-gradient-to-br from-cyan to-blue mb-4 shadow-[0_0_15px_rgba(0,209,255,0.3)] relative overflow-hidden p-4 flex flex-col justify-between">
+                                    <div class="text-primary/80 text-xs font-bold uppercase tracking-wider">Upcoming Trip</div>
+                                    <div>
+                                        <div class="text-primary font-black text-xl leading-tight">City A</div>
+                                        <div class="text-primary/70 text-xs mt-1"><i class="fa-solid fa-arrow-down"></i></div>
+                                        <div class="text-primary font-black text-xl leading-tight">City B</div>
+                                    </div>
+                                </div>
+                                <div class="w-full h-12 rounded-xl bg-secondary border border-border mb-3 animate-pulse"></div>
+                                <div class="w-full h-12 rounded-xl bg-secondary border border-border mb-4"></div>
+                                <div class="w-full h-32 rounded-xl bg-secondary border border-border relative overflow-hidden flex items-center justify-center">
+                                    <i class="fa-solid fa-location-dot text-danger text-4xl opacity-50 drop-shadow-lg"></i>
+                                    <div class="absolute bottom-3 text-xs text-muted font-mono bg-primary px-2 py-1 rounded">Tracking Live...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 7: Popular Routes (z-60) - STICKY STACK -->
+    <div class="stack-section z-[60] bg-[#0a0d14] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] border-t border-border rounded-t-[3rem]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+                <div>
+                    <h2 class="text-3xl md:text-5xl font-bold text-light mb-4 tracking-tight">Popular Routes</h2>
+                    <p class="text-muted text-lg">Our most frequently traveled destinations across the country.</p>
+                </div>
+                <a href="#" class="text-cyan hover:text-light transition-colors font-semibold flex items-center gap-2 group border border-border px-6 py-3 rounded-xl glass-panel hover:bg-cyan/10">
+                    View All Routes <i class="fa-solid fa-arrow-right-long group-hover:translate-x-2 transition-transform"></i>
+                </a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Route 1 -->
+                <div class="group relative rounded-2xl overflow-hidden border border-border aspect-[4/5] cursor-pointer shadow-lg">
+                    <img src="https://images.unsplash.com/photo-1546412414-e1885259563a?q=80&w=1000&auto=format&fit=crop" alt="Cityscape" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#02040A] via-[#02040A]/50 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 p-6 w-full">
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-cyan text-sm font-bold mb-1 uppercase tracking-wider">Express</p>
+                                <h3 class="text-2xl font-bold text-light leading-tight">City A <br/><span class="text-muted text-lg font-medium">to</span> City B</h3>
+                            </div>
+                            <div class="w-10 h-10 rounded-full glass-panel border border-border flex items-center justify-center text-light group-hover:bg-cyan group-hover:text-primary group-hover:border-transparent transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+                                <i class="fa-solid fa-arrow-right -rotate-45"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Route 2 -->
+                <div class="group relative rounded-2xl overflow-hidden border border-border aspect-[4/5] cursor-pointer shadow-lg">
+                    <img src="https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=1000&auto=format&fit=crop" alt="Cityscape" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#02040A] via-[#02040A]/50 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 p-6 w-full">
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-purple text-sm font-bold mb-1 uppercase tracking-wider">Luxury</p>
+                                <h3 class="text-2xl font-bold text-light leading-tight">City C <br/><span class="text-muted text-lg font-medium">to</span> City D</h3>
+                            </div>
+                            <div class="w-10 h-10 rounded-full glass-panel border border-border flex items-center justify-center text-light group-hover:bg-purple group-hover:text-primary group-hover:border-transparent transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+                                <i class="fa-solid fa-arrow-right -rotate-45"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Route 3 -->
+                <div class="group relative rounded-2xl overflow-hidden border border-border aspect-[4/5] cursor-pointer shadow-lg">
+                    <img src="https://images.unsplash.com/photo-1518398046578-8cca57782e17?q=80&w=1000&auto=format&fit=crop" alt="Cityscape" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#02040A] via-[#02040A]/50 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 p-6 w-full">
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-blue text-sm font-bold mb-1 uppercase tracking-wider">Standard</p>
+                                <h3 class="text-2xl font-bold text-light leading-tight">City E <br/><span class="text-muted text-lg font-medium">to</span> City F</h3>
+                            </div>
+                            <div class="w-10 h-10 rounded-full glass-panel border border-border flex items-center justify-center text-light group-hover:bg-blue group-hover:text-primary group-hover:border-transparent transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+                                <i class="fa-solid fa-arrow-right -rotate-45"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Route 4 -->
+                <div class="group relative rounded-2xl overflow-hidden border border-border aspect-[4/5] cursor-pointer shadow-lg">
+                    <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=1000&auto=format&fit=crop" alt="Cityscape" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#02040A] via-[#02040A]/50 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 p-6 w-full">
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-success text-sm font-bold mb-1 uppercase tracking-wider">Economy</p>
+                                <h3 class="text-2xl font-bold text-light leading-tight">City G <br/><span class="text-muted text-lg font-medium">to</span> City H</h3>
+                            </div>
+                            <div class="w-10 h-10 rounded-full glass-panel border border-border flex items-center justify-center text-light group-hover:bg-success group-hover:text-primary group-hover:border-transparent transition-all shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+                                <i class="fa-solid fa-arrow-right -rotate-45"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

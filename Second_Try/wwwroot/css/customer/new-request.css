@@ -1,0 +1,246 @@
+/* ============================================================
+   NEW BOOKING REQUEST PAGE
+   ============================================================ */
+
+/* 60/40 grid layout */
+.nr-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 1.25rem;
+    align-items: start;
+}
+
+@media (max-width: 1100px) {
+    .nr-grid { grid-template-columns: 1fr; }
+}
+
+/* Form fields */
+.nr-form-group {
+    margin-bottom: 1.25rem;
+}
+
+.nr-label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.02em;
+}
+
+.nr-label span {
+    color: var(--danger);
+    margin-left: 2px;
+}
+
+.nr-input,
+.nr-select {
+    width: 100%;
+    background: var(--bg-primary);
+    border: 1.5px solid var(--border-color);
+    border-radius: 0.6rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.nr-input:focus,
+.nr-select:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 3px rgba(92,126,143,0.12);
+}
+
+.nr-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%234B5563'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+    cursor: pointer;
+}
+
+.nr-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 640px) {
+    .nr-row { grid-template-columns: 1fr; }
+}
+
+/* Bus type selector cards */
+.nr-bus-type-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+    .nr-bus-type-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.nr-bus-type-card {
+    position: relative;
+    cursor: pointer;
+}
+
+.nr-bus-type-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.nr-bus-type-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 0.5rem;
+    border-radius: 0.75rem;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    text-align: center;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.nr-bus-type-card input:checked + .nr-bus-type-label {
+    border-color: var(--accent-cyan);
+    background: rgba(92,126,143,0.08);
+    color: var(--accent-cyan);
+}
+
+.nr-bus-type-label i {
+    font-size: 1.4rem;
+    color: var(--text-muted);
+    transition: color 0.2s;
+}
+
+.nr-bus-type-card input:checked + .nr-bus-type-label i {
+    color: var(--accent-cyan);
+}
+
+.nr-bus-type-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.nr-bus-type-card input:checked + .nr-bus-type-label .nr-bus-type-name {
+    color: var(--accent-cyan);
+}
+
+/* Fare Summary Card */
+.nr-summary-card {
+    background: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(162,162,162,0.15);
+    overflow: hidden;
+    position: sticky;
+    top: calc(var(--topbar-height) + 1.5rem);
+}
+
+.nr-summary-header {
+    background: linear-gradient(135deg, var(--accent-cyan), #3d6677);
+    padding: 1.25rem 1.5rem;
+    color: white;
+}
+
+.nr-summary-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 0.2rem;
+}
+
+.nr-summary-sub {
+    font-size: 0.78rem;
+    opacity: 0.8;
+    margin: 0;
+}
+
+.nr-summary-body {
+    padding: 1.25rem 1.5rem;
+}
+
+.nr-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.85rem;
+}
+
+.nr-summary-row:last-of-type {
+    border-bottom: none;
+}
+
+.nr-summary-row-label {
+    color: var(--text-muted);
+}
+
+.nr-summary-row-value {
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.nr-fare-total {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-primary);
+    border-radius: 0.75rem;
+    text-align: center;
+}
+
+.nr-fare-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.2rem;
+}
+
+.nr-fare-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent-cyan);
+}
+
+.nr-fare-note {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+}
+
+.nr-submit-btn {
+    width: 100%;
+    margin-top: 1rem;
+    justify-content: center;
+    padding: 0.9rem;
+    font-size: 0.95rem;
+}
+
+/* Alert box */
+.nr-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.85rem;
+}
+
+.nr-alert-warning {
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    color: #92400E;
+}
+
+.nr-alert-warning i { color: #F59E0B; margin-top: 1px; }

@@ -1,0 +1,193 @@
+@using Second_Try.Models
+@{
+    ViewData["Title"]      = "Dashboard";
+    ViewData["ActivePage"] = "Dashboard";
+    Layout = "~/Views/Shared/_EmployeeLayout.cshtml";
+
+    int totalPending      = ViewBag.TotalPending      ?? 0;
+    int todayPending      = ViewBag.TodayPending      ?? 0;
+    int acceptedThisMonth = ViewBag.AcceptedThisMonth ?? 0;
+    int rejectedThisMonth = ViewBag.RejectedThisMonth ?? 0;
+    int totalBookings     = ViewBag.TotalBookings     ?? 0;
+
+    var recentPending = ViewBag.RecentPending as List<BookingRequest>
+                        ?? new List<BookingRequest>();
+    var employee = ViewBag.Employee as Employee;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/employee/emp-dashboard.css" asp-append-version="true" />
+}
+
+<!-- Toasts -->
+@if (TempData["SuccessMessage"] is string sm)
+{
+    <div class="emp-toast emp-toast-success">
+        <i class="fa-solid fa-circle-check"></i> @sm
+    </div>
+}
+@if (TempData["ErrorMessage"] is string em)
+{
+    <div class="emp-toast emp-toast-error">
+        <i class="fa-solid fa-triangle-exclamation"></i> @em
+    </div>
+}
+
+<!-- Welcome Banner -->
+<div class="emp-welcome-banner">
+    <div class="emp-welcome-text">
+        <h1 class="emp-welcome-heading">
+            Good @(DateTime.Now.Hour < 12 ? "Morning" : DateTime.Now.Hour < 17 ? "Afternoon" : "Evening"),
+            @(employee?.FullName.Split(' ')[0] ?? "Employee")! 👋
+        </h1>
+        <p class="emp-welcome-sub">Here's today's overview of SRC Travel booking operations.</p>
+    </div>
+    <a href="/Employee/BookingRequests?status=Pending" class="emp-btn emp-btn-primary">
+        <i class="fa-solid fa-inbox"></i> View Pending Requests
+    </a>
+</div>
+
+<!-- Stat Cards -->
+<div class="emp-stats-grid">
+    <div class="emp-stat-card">
+        <div class="emp-stat-icon amber"><i class="fa-solid fa-hourglass-half"></i></div>
+        <div>
+            <div class="emp-stat-value">@totalPending</div>
+            <div class="emp-stat-label">Total Pending</div>
+        </div>
+    </div>
+    <div class="emp-stat-card">
+        <div class="emp-stat-icon cyan"><i class="fa-solid fa-calendar-day"></i></div>
+        <div>
+            <div class="emp-stat-value">@todayPending</div>
+            <div class="emp-stat-label">Received Today</div>
+        </div>
+    </div>
+    <div class="emp-stat-card">
+        <div class="emp-stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
+        <div>
+            <div class="emp-stat-value">@acceptedThisMonth</div>
+            <div class="emp-stat-label">Accepted This Month</div>
+        </div>
+    </div>
+    <div class="emp-stat-card">
+        <div class="emp-stat-icon red"><i class="fa-solid fa-circle-xmark"></i></div>
+        <div>
+            <div class="emp-stat-value">@rejectedThisMonth</div>
+            <div class="emp-stat-label">Rejected This Month</div>
+        </div>
+    </div>
+    <div class="emp-stat-card">
+        <div class="emp-stat-icon purple"><i class="fa-solid fa-ticket"></i></div>
+        <div>
+            <div class="emp-stat-value">@totalBookings</div>
+            <div class="emp-stat-label">Total Tickets Issued</div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Grid -->
+<div class="emp-dashboard-grid">
+
+    <!-- LEFT: Recent Pending Requests Feed -->
+    <div class="emp-card">
+        <div class="emp-card-header">
+            <div class="emp-card-title">
+                <i class="fa-solid fa-inbox"></i> Recent Pending Requests
+            </div>
+            <a href="/Employee/BookingRequests?status=Pending" class="emp-btn emp-btn-outline emp-btn-sm">
+                View All
+            </a>
+        </div>
+
+        @if (recentPending.Any())
+        {
+            <div class="emp-request-feed">
+                @foreach (var req in recentPending)
+                {
+                    string custInitials = string.Join("",
+                        (req.Customer?.FullName ?? "?").Split(' ').Take(2)
+                        .Select(w => w[0].ToString().ToUpper()));
+                    <a href="/Employee/ProcessRequest/@req.Id" class="emp-feed-item">
+                        <div class="emp-feed-avatar">@custInitials</div>
+                        <div class="emp-feed-info">
+                            <p class="emp-feed-name">@(req.Customer?.FullName ?? "Unknown")</p>
+                            <p class="emp-feed-route">
+                                @(req.Route?.Origin ?? "—") → @(req.Route?.Destination ?? "—")
+                                &nbsp;·&nbsp; @req.PreferredBusType
+                            </p>
+                        </div>
+                        <div class="emp-feed-meta">
+                            <span class="emp-badge emp-badge-pending">Pending</span>
+                            <p class="emp-feed-date">@req.TravelDate.ToString("MMM dd")</p>
+                        </div>
+                    </a>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="emp-empty-state">
+                <div class="emp-empty-icon"><i class="fa-solid fa-inbox"></i></div>
+                <p class="emp-empty-title">No Pending Requests</p>
+                <p class="emp-empty-sub">All booking requests have been processed. Great work!</p>
+            </div>
+        }
+    </div>
+
+    <!-- RIGHT: Quick Summary + Actions -->
+    <div>
+        <!-- Quick Stats -->
+        <div class="emp-card" style="margin-bottom:1.25rem;">
+            <div class="emp-card-header">
+                <div class="emp-card-title">
+                    <i class="fa-solid fa-chart-simple"></i> Month Summary
+                </div>
+            </div>
+            <div class="emp-quick-stats">
+                <div class="emp-quick-stat-row">
+                    <span>Accepted</span>
+                    <span style="color:var(--emp-accepted-color);">@acceptedThisMonth</span>
+                </div>
+                <div class="emp-quick-stat-row">
+                    <span>Rejected</span>
+                    <span style="color:var(--emp-rejected-color);">@rejectedThisMonth</span>
+                </div>
+                <div class="emp-quick-stat-row">
+                    <span>Pending Queue</span>
+                    <span style="color:var(--emp-pending-color);">@totalPending</span>
+                </div>
+                <div class="emp-quick-stat-row">
+                    <span>Total Tickets Issued</span>
+                    <span>@totalBookings</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="emp-card">
+            <div class="emp-card-header">
+                <div class="emp-card-title"><i class="fa-solid fa-bolt"></i> Quick Actions</div>
+            </div>
+            <div class="emp-quick-actions-grid">
+                <a href="/Employee/BookingRequests?status=Pending" class="emp-qa-btn">
+                    <div class="emp-qa-icon amber"><i class="fa-solid fa-inbox"></i></div>
+                    <span>Pending Requests</span>
+                </a>
+                <a href="/Employee/BookingHistory" class="emp-qa-btn">
+                    <div class="emp-qa-icon green"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <span>Booking History</span>
+                </a>
+                <a href="/Employee/BookingRequests" class="emp-qa-btn">
+                    <div class="emp-qa-icon cyan"><i class="fa-solid fa-list-check"></i></div>
+                    <span>All Requests</span>
+                </a>
+                <a href="/Employee/EmployeeProfile" class="emp-qa-btn">
+                    <div class="emp-qa-icon purple"><i class="fa-solid fa-user-tie"></i></div>
+                    <span>My Profile</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,526 @@
+SRC TRAVEL AGENCIES
+ 
+ Online Bus Ticket
+Reservation System
+ STEP 1 OF 6 — PAGE LIST & SITEMAP [v2 — Customer Portal Edition]
+ 23 Total Pages · 3 User Roles · Admin + Employee + Customer Portal
+Google OAuth · Booking Request Flow · Complete Sitemap
+ 
+ Developer: Kairo (Syed Humaam Ahmed) · Assistant: Cipher
+ Stack: ASP.NET Core MVC · C# · SQL Server · EF Core · Bootstrap 5 · Tailwind CSS
+ Feed to Google Antigravity FIRST — before all other PDFs
+ 
+■ WHAT CHANGED — V2 CUSTOMER PORTAL EDITION
+ CHANGE
+ DETAIL
+ 
++ Customer Role Added
+Customers access via Google OAuth — separate portal from Admin/Employee system
++ 4 Customer Pages
+Customer Login, Customer Dashboard, New Booking Request, My Requests (pages C-01
+to C-04)
++ 1 Employee Page
+Pending Requests page added (E-19) — employee reviews/accepts/rejects customer
+requests
+Updated Employee Role
+Employee can now BOTH create direct bookings AND accept/reject customer requests
+Updated Admin Dashboard
+New stat card: Total Pending Requests + request metrics in Reports
+New Booking Flow
+Customer submits request → Employee accepts/rejects → Booking created on acceptance
+New DB Models
+Customer model + BookingRequest model + Notification model (see Step 4 PDF)
+Google OAuth
+Customer portal only. Admin/Employee still use credential-based login.
+
+
+---■ 01 · USER ROLES OVERVIEW
+ROLE
+ AUTH METHOD
+ PORTAL
+ CAN DO
+ 
+Admin
+Credential Login (EMP-ID +
+Password)
+Internal System
+Full system control: buses, employees,
+routes, prices, reports, all bookings
+Employee
+/ Booking
+Staff
+Credential Login (EMP-ID +
+Password)
+Internal System
+Direct bookings + Accept/Reject customer
+requests + Enquiry + Cancel + Print
+Customer
+Google OAuth (Sign in with Google)
+Customer Portal
+Submit booking requests, track status, cancel
+own pending requests
+■ 02 · BOOKING FLOWS
+There are now TWO ways a booking can be created in the system:
+FLOW
+INITIATED
+BY
+ STEPS
+ RESULT
+ 
+Direct
+Booking
+Employee
+Employee fills New Booking form → Confirms →
+Booking created instantly
+Booking confirmed immediately.
+Seat assigned by employee.
+Request
+Flow
+Customer
+Customer submits request (route+date+bus type) →
+Employee reviews → Accept or Reject
+On Accept: Employee assigns
+seat → Booking created → Both
+notified. On Reject: Customer
+notified with reason.
+Booking Request Business Rules
+RULE
+ DETAIL
+ 
+One Active
+Request
+Customer can only have ONE active request (Pending or Accepted) at a time. New request allowed
+only after Rejection / Expiry / Customer Cancellation.
+Auto-Expiry
+Request auto-expires 15 hours before the travel date+time. Status changes to Expired. Customer
+notified.
+Seat Selection
+Default: Employee assigns seat on acceptance (standard fare). Optional: Customer may select
+specific seat for premium charge — seat is NOT held during pending, only confirmed on acceptance.
+Customer
+Cancellation
+Customer can cancel their own PENDING request at any time. Cannot cancel after acceptance.
+Payment
+Counter payment only. No online payment. Customer pays at branch on travel day.
+Fare Display
+Customer sees estimated fare breakdown on request form (based on route + bus type + age). Final
+fare confirmed by employee on acceptance.
+Notifications
+Both in-app AND email notifications for: request received, accepted, rejected, expired, cancelled.
+Request Code
+Auto-generated: REQ-YYYY-XXXX format. e.g. REQ-2025-0042
+
+
+---■ 03 · COMPLETE PAGE LIST — 23 PAGES
+AUTH (Shared Pre-Authentication)
+PAGE
+ NAME
+ URL
+ ROLE
+LAYOUT
+01
+Admin/Employee Login
+/Auth/Login
+Admin +
+Employee
+Split Screen 40/60 — no
+sidebar
+C-01
+Customer Login / Google
+OAuth
+/Customer/Login
+Customer
+Centered card — no
+sidebar — Google
+Sign-In btn
+ADMIN PAGES (Admin role only)
+PAGE
+NAME
+ URL
+ LAYOUT
+KEY CHANGE
+02
+Admin Dashboard
+/Admin/Dashboard
+Standard 70/30
++ Pending Requests
+stat card
+03
+Manage Buses
+/Admin/Buses
+Standard + slide panel
+No change
+04
+Manage Employees
+/Admin/Employees
+Standard + slide panel
+No change
+05
+Manage Price List
+/Admin/PriceList
+Standard + right rules
+panel
+No change
+06
+Manage Routes
+/Admin/Routes
+Standard + slide panel
+No change
+07
+Booking History
+/Shared/BookingHistory
+Standard full-width
+Admin sees ALL incl.
+request-originated
+bookings
+08
+Reports
+/Admin/Reports
+Standard + charts
++ Request acceptance
+rate metric
+09
+Admin Profile
+/Admin/Profile
+Standard + 3 tabs
+No change
+EMPLOYEE PAGES (BookingStaff role)
+PAGE
+NAME
+ URL
+ LAYOUT
+KEY CHANGE
+10
+Employee Dashboard
+/Employee/Dashboard
+Standard 70/30
++ Pending Requests
+pulsing count card
+11
+New Booking
+/Employee/NewBooking
+60/40 form+summary
+No change (direct
+booking)
+12
+Enquiry Form
+/Employee/Enquiry
+Standard + live right
+panel
+No change
+13
+Search Records
+/Shared/SearchRecords
+Standard + 3-tab results
++ Customer
+requests tab
+14
+Cancel Ticket
+/Employee/CancelTicket
+Standard + refund calc
+No change
+15
+Print Ticket
+/Employee/PrintTicket/{id}
+WHITE bg — no sidebar
+No change
+16
+Employee Profile
+/Employee/Profile
+Standard + 2 tabs
+No change
+E-19
+Pending Requests ★
+NEW
+/Employee/PendingRequests
+Standard full-width
+NEW —
+Accept/Reject
+customer requests
+CUSTOMER PORTAL PAGES ★ NEW — Google OAuth (Customer role only)
+
+
+---PAGE
+NAME
+ URL
+ LAYOUT
+DESCRIPTION
+C-01
+Customer Login
+/Customer/Login
+Centered — no sidebar
+Google Sign-In btn +
+system branding. No
+credential form.
+C-02
+Customer Dashboard
+/Customer/Dashboard
+Customer layout (top nav
+only)
+Request status
+overview + quick
+actions + notifications
+C-03
+New Booking Request
+/Customer/NewRequest
+Customer layout —
+60/40
+Route+date+bus type
+form + optional seat +
+fare estimate
+C-04
+My Requests
+/Customer/MyRequests
+Customer layout
+full-width
+All requests history +
+status + cancel pending
++ track
+SYSTEM ERROR PAGES (No sidebar, No header — fullscreen centered)
+PAGE
+NAME
+ URL
+ TRIGGER
+ 
+17
+404 Not Found
+/Error/404
+Any invalid URL
+18
+403 Access Denied
+/Error/403
+Employee tries Admin URL / Customer tries internal URL
+
+
+---■ 04 · CUSTOMER PORTAL LAYOUT (DIFFERENT FROM INTERNAL SYSTEM)
+The customer portal uses a DIFFERENT layout from the Admin/Employee internal system. Customers do NOT see the dark
+sidebar. They get a lighter, public-facing top-nav layout.
+ELEMENT
+INTERNAL SYSTEM (Admin/Employee)
+ CUSTOMER PORTAL
+ 
+Auth Method
+EMP-ID + Password form
+Google Sign-In button only
+Navigation
+Fixed left sidebar bg #4B4038 w-64
+Fixed top navigation bar only (no sidebar)
+Top Nav
+Header bar bg #202940 with hamburger +
+avatar
+Clean top nav: Logo left + nav links + Google
+avatar right
+BG Color
+#202940 dark navy throughout
+#202940 same dark theme — consistent brand
+Card Style
+bg #2C3248 with amber accents
+Same bg #2C3248 cards — consistent
+Content
+Full system access per role
+Request form, request status, notifications only
+Footer
+None (dashboard style)
+Simple footer: SRC contact + copyright
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+■ TOP NAV (bg #202940, fixed, no sidebar) ■
+■ [■ SRC Travel] [My Requests] [Google Avatar ■] ■
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+■ ■
+■ CUSTOMER CONTENT AREA ■
+■ bg #202940 p-6 min-h-screen ■
+■ ■
+■ Cards → bg #2C3248 rounded-xl ■
+■ ■
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+■ FOOTER SRC contact | www.srctravel.pk ■
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+
+---■ 05 · BOOKING REQUEST STATUS FLOW
+A BookingRequest moves through the following statuses during its lifecycle:
+STATUS
+COLOR
+ MEANING
+ NEXT STATUS
+WHO
+TRIGGERS
+Pending
+#E8C547
+Yellow
+Submitted — waiting for
+employee review
+Accepted / Rejected / Expired /
+CancelledByCustomer
+System (on
+submit)
+Accepted
+#52B788
+Green
+Employee accepted — Booking
+record created
+Terminal state
+Employee
+Rejected
+#D64045
+Red
+Employee rejected with reason
+Terminal state — customer can
+submit new
+Employee
+Expired
+#9A8678
+Grey
+Auto-expired 15hrs before
+travel — no action taken
+Terminal state — customer can
+submit new
+System
+(background
+job)
+CancelledByCus
+tomer
+#9A8678
+Grey
+Customer cancelled own
+pending request
+Terminal state — customer can
+submit new
+Customer
+Request Status: Can Customer Submit New Request?
+CURRENT STATUS
+CAN SUBMIT NEW
+REQUEST?
+ REASON
+ 
+Pending
+■ NO
+Must wait for employee decision or cancel current request
+Accepted
+■ NO
+Booking already confirmed — cannot double-book
+Rejected
+■ YES
+Request was declined — customer free to try again
+Expired
+■ YES
+Request timed out — customer can submit fresh request
+CancelledByCustomer
+■ YES
+Customer chose to cancel — free to make new request
+None (no history)
+■ YES
+First-time request — always allowed
+
+
+---■ 06 · COMPLETE SITEMAP — ALL 23 PAGES
+SRCTravel.com/
+■
+■■■ /Auth/
+■ ■■■ Login (Page 01 — Admin + Employee credential login)
+■
+■■■ /Customer/ ★ NEW CUSTOMER PORTAL
+■ ■■■ Login (C-01 — Google OAuth sign-in)
+■ ■■■ Dashboard (C-02 — request status overview)
+■ ■■■ NewRequest (C-03 — submit booking request)
+■ ■■■ MyRequests (C-04 — request history + tracking)
+■
+■■■ /Admin/ (Requires Admin role)
+■ ■■■ Dashboard (Page 02)
+■ ■■■ Buses (Page 03)
+■ ■■■ Employees (Page 04)
+■ ■■■ PriceList (Page 05)
+■ ■■■ Routes (Page 06)
+■ ■■■ Reports (Page 08)
+■ ■■■ Profile (Page 09)
+■
+■■■ /Employee/ (Requires BookingStaff role)
+■ ■■■ Dashboard (Page 10)
+■ ■■■ NewBooking (Page 11 — direct booking by employee)
+■ ■■■ Enquiry (Page 12)
+■ ■■■ CancelTicket (Page 14)
+■ ■■■ PrintTicket/{id} (Page 15)
+■ ■■■ Profile (Page 16)
+■ ■■■ PendingRequests (Page E-19 — accept/reject customer requests) ★ NEW
+■
+■■■ /Shared/ (Both Admin + Employee, role-filtered)
+■ ■■■ BookingHistory (Page 07)
+■ ■■■ SearchRecords (Page 13)
+■
+■■■ /Error/
+■■■ 404 (Page 17 — not found)
+■■■ 403 (Page 18 — access denied)
+
+
+---■ 07 · CONTROLLER STRUCTURE — ALL 23 PAGES
+CONTROLLER
+ ACTIONS / PAGES
+ ROLE POLICY
+AuthController
+Login (GET+POST), Logout, AccessDenied
+[AllowAnonymous]
+CustomerController
+Login (Google OAuth), Dashboard, NewRequest (GET+POST),
+MyRequests, CancelRequest
+[Authorize(Roles=Customer)
+] except Login
+AdminController
+Dashboard, Buses (CRUD), Employees (CRUD), PriceList,
+Routes (CRUD), Reports, Profile
+[Authorize(Policy=AdminOnl
+y)]
+EmployeeController
+Dashboard, NewBooking, Enquiry, CancelTicket, PrintTicket,
+Profile, PendingRequests, AcceptRequest, RejectRequest
+[Authorize(Policy=Employee
+Only)]
+SharedController
+BookingHistory, SearchRecords
+[Authorize(Policy=AnyStaff)]
+— data filtered by role
+ErrorController
+NotFound (404), Forbidden (403)
+[AllowAnonymous]
+■ 08 · NOTIFICATION EVENTS
+Both in-app AND email notifications are sent for each event below:
+ EVENT
+ NOTIFIED
+ MESSAGE
+ 
+Customer submits
+request
+Employee (all
+active)
+New booking request REQ-YYYY-XXXX received from [Customer
+Name] for [Route] on [Date]
+Employee accepts
+request
+Customer
+Your booking request REQ-XXXX has been ACCEPTED! Your seat is
+[X]. Payment at counter on travel day.
+Employee rejects
+request
+Customer
+Your booking request REQ-XXXX was not accepted. Reason: [reason].
+You may submit a new request.
+Request auto-expires
+Customer
+Your booking request REQ-XXXX has expired (15 hours before travel).
+Please submit a new request.
+Customer cancels
+request
+Employee (all
+active)
+Booking request REQ-XXXX from [Customer] has been cancelled by
+the customer.
+Direct booking
+created
+Admin (dashboard
+update)
+New booking BK-XXXX created by [Employee Name].
+Step 1 / 6 v2 — Page List + Sitemap (Customer Portal
+ Edition)
+ SRC Travel Agencies — Online Bus Ticket Reservation
+ System
+ Developer: Kairo · Assistant: Cipher
+ 

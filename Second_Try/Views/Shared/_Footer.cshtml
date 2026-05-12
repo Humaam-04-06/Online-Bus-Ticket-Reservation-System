@@ -1,0 +1,87 @@
+<footer class="bg-secondary/60 border-t border-border mt-auto relative overflow-hidden backdrop-blur-sm">
+    <!-- Top glowing accent line -->
+    <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan to-transparent opacity-30"></div>
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+            
+            <!-- Brand section -->
+            <div class="col-span-1 lg:col-span-1">
+                <a href="@Url.Action("Index", "Home")" class="text-2xl font-bold flex items-center gap-3 mb-6 group inline-flex">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan to-blue flex items-center justify-center text-primary shadow-[0_0_15px_var(--accent-cyan)] group-hover:shadow-[0_0_25px_var(--accent-cyan)] transition-all duration-300">
+                        <i class="fa-solid fa-bus text-lg"></i>
+                    </div>
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-light to-cyan tracking-wide">SRC Travel</span>
+                </a>
+                <p class="text-muted text-sm leading-relaxed mb-8">
+                    Experience the future of bus travel. Seamless bookings, premium service, and real-time tracking, tailored for your comfort.
+                </p>
+                <div class="flex space-x-5">
+                    <a href="#" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-muted hover:text-light hover:bg-blue hover:shadow-[0_0_15px_var(--accent-blue)] transition-all duration-300"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-muted hover:text-light hover:bg-cyan hover:shadow-[0_0_15px_var(--accent-cyan)] transition-all duration-300"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-muted hover:text-light hover:bg-purple hover:shadow-[0_0_15px_var(--accent-purple)] transition-all duration-300"><i class="fa-brands fa-instagram"></i></a>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div>
+                <h3 class="text-light font-bold mb-6 text-sm tracking-widest uppercase border-b border-border/50 pb-3 inline-block">Explore</h3>
+                <ul class="space-y-4">
+                    <li><a href="#" class="text-muted hover:text-cyan transition-colors text-sm flex items-center gap-3 group"><i class="fa-solid fa-arrow-right-long text-purple group-hover:translate-x-1 transition-transform"></i> Popular Routes</a></li>
+                    <li><a href="#" class="text-muted hover:text-cyan transition-colors text-sm flex items-center gap-3 group"><i class="fa-solid fa-arrow-right-long text-purple group-hover:translate-x-1 transition-transform"></i> Timetables</a></li>
+                    <li><a href="@Url.Action("MyRequests", "Customer")" class="text-muted hover:text-cyan transition-colors text-sm flex items-center gap-3 group"><i class="fa-solid fa-arrow-right-long text-purple group-hover:translate-x-1 transition-transform"></i> Track Order</a></li>
+                    <li><a href="#" class="text-muted hover:text-cyan transition-colors text-sm flex items-center gap-3 group"><i class="fa-solid fa-arrow-right-long text-purple group-hover:translate-x-1 transition-transform"></i> Cancellation Policy</a></li>
+                </ul>
+            </div>
+
+            <!-- Support -->
+            <div>
+                <h3 class="text-light font-bold mb-6 text-sm tracking-widest uppercase border-b border-border/50 pb-3 inline-block">Support</h3>
+                <ul class="space-y-4">
+                    <li><a href="#" class="text-muted hover:text-cyan transition-colors text-sm flex items-center gap-3 group"><i class="fa-solid fa-arrow-right-long text-purple group-hover:translate-x-1 transition-transform"></i> Help Center & FAQ</a></li>
+                    <li><a href="#" class="text-muted hover:text-cyan transition-colors text-sm flex items-center gap-3 group"><i class="fa-solid fa-arrow-right-long text-purple group-hover:translate-x-1 transition-transform"></i> Contact Us</a></li>
+                    <li><a href="#" class="text-muted hover:text-cyan transition-colors text-sm flex items-center gap-3 group"><i class="fa-solid fa-arrow-right-long text-purple group-hover:translate-x-1 transition-transform"></i> Terms of Service</a></li>
+                    <li><a href="#" class="text-muted hover:text-cyan transition-colors text-sm flex items-center gap-3 group"><i class="fa-solid fa-arrow-right-long text-purple group-hover:translate-x-1 transition-transform"></i> Privacy Policy</a></li>
+                </ul>
+            </div>
+
+            <!-- Contact Info -->
+            <div>
+                <h3 class="text-light font-bold mb-6 text-sm tracking-widest uppercase border-b border-border/50 pb-3 inline-block">Get In Touch</h3>
+                <ul class="space-y-5">
+                    <li class="flex items-start gap-4 text-sm text-muted group">
+                        <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-cyan group-hover:bg-cyan group-hover:text-primary transition-colors shrink-0">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <span class="pt-1 leading-relaxed">123 SRC Avenue, Tech District<br />PK 10020</span>
+                    </li>
+                    <li class="flex items-center gap-4 text-sm text-muted group">
+                        <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-cyan group-hover:bg-cyan group-hover:text-primary transition-colors shrink-0">
+                            <i class="fa-solid fa-phone"></i>
+                        </div>
+                        <span class="font-medium tracking-wide">+92 (300) 123-4567</span>
+                    </li>
+                    <li class="flex items-center gap-4 text-sm text-muted group">
+                        <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-cyan group-hover:bg-cyan group-hover:text-primary transition-colors shrink-0">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <span>support@srctravel.pk</span>
+                    </li>
+                </ul>
+            </div>
+            
+        </div>
+        
+        <!-- Bottom Bar -->
+        <div class="mt-16 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-6">
+            <p class="text-muted text-sm font-medium tracking-wide">
+                &copy; @DateTime.Now.Year SRC Travel. All rights reserved.
+            </p>
+            <div class="flex items-center gap-2 text-sm text-muted font-medium bg-primary px-4 py-2 rounded-full border border-border">
+                <span>Designed with</span>
+                <i class="fa-solid fa-heart text-danger animate-pulse mx-1"></i>
+                <span>for a premium experience</span>
+            </div>
+        </div>
+    </div>
+</footer>

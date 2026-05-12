@@ -1,0 +1,303 @@
+/* ============================================================
+   MY REQUESTS PAGE
+   ============================================================ */
+
+/* Status filter tabs */
+.mr-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+}
+
+.mr-filter-btn {
+    padding: 0.45rem 1.1rem;
+    border-radius: 9999px;
+    border: 1.5px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+
+.mr-filter-btn:hover {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+}
+
+.mr-filter-btn.active {
+    background: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    color: white;
+}
+
+/* Search bar */
+.mr-search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+}
+
+.mr-search-wrap i {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.mr-search {
+    width: 100%;
+    padding: 0.5rem 1rem 0.5rem 2.4rem;
+    background: var(--bg-secondary);
+    border: 1.5px solid var(--border-color);
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.mr-search:focus {
+    border-color: var(--accent-cyan);
+}
+
+/* Request cards */
+.mr-card {
+    background: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(162,162,162,0.15);
+    margin-bottom: 1rem;
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.mr-card:hover {
+    box-shadow: 0 8px 32px rgba(92,126,143,0.12);
+    transform: translateY(-1px);
+}
+
+.mr-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
+}
+
+.mr-req-id {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    letter-spacing: 0.04em;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.mr-req-date {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.mr-card-body {
+    padding: 1.25rem 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+    .mr-card-body { grid-template-columns: 1fr; }
+}
+
+.mr-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+.mr-detail-item i {
+    width: 18px;
+    color: var(--accent-cyan);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.mr-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.85rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Status-specific left border accents */
+.mr-card.status-pending  { border-left: 4px solid var(--status-pending); }
+.mr-card.status-accepted { border-left: 4px solid var(--status-accepted); }
+.mr-card.status-rejected { border-left: 4px solid var(--status-rejected); }
+.mr-card.status-expired  { border-left: 4px solid var(--status-expired); }
+.mr-card.status-cancelled{ border-left: 4px solid var(--status-cancelled); }
+
+/* Employee remarks box */
+.mr-remarks {
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    border-radius: 0.5rem;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.8rem;
+    color: #92400E;
+    margin: 0 1.5rem 0.85rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.mr-remarks i { color: #F59E0B; margin-top: 1px; flex-shrink: 0; }
+
+/* Empty state for no requests */
+.mr-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 1rem;
+    text-align: center;
+    background: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+}
+
+.mr-empty-icon {
+    font-size: 3rem;
+    color: var(--border-color);
+    margin-bottom: 1rem;
+}
+
+.mr-empty-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-light);
+    margin: 0 0 0.5rem;
+}
+
+.mr-empty-sub {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0 0 1.5rem;
+}
+
+/* Pagination */
+.mr-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.mr-page-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 0.5rem;
+    border: 1.5px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+
+.mr-page-btn:hover,
+.mr-page-btn.active {
+    background: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    color: white;
+}
+
+/* Cancel confirm modal */
+.mr-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.mr-modal-overlay.open {
+    display: flex;
+}
+
+.mr-modal {
+    background: var(--bg-secondary);
+    border-radius: var(--card-radius);
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+    animation: modalIn 0.25s ease;
+}
+
+@keyframes modalIn {
+    from { opacity:0; transform: scale(0.9); }
+    to   { opacity:1; transform: scale(1); }
+}
+
+.mr-modal-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #FEE2E2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--danger);
+    margin: 0 auto 1.25rem;
+}
+
+.mr-modal-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-light);
+    margin: 0 0 0.5rem;
+}
+
+.mr-modal-msg {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin: 0 0 1.5rem;
+    line-height: 1.5;
+}
+
+.mr-modal-btns {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}

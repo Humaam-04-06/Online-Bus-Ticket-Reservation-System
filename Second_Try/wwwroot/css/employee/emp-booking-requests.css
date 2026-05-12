@@ -1,0 +1,136 @@
+/* ============================================================
+   EMPLOYEE PORTAL — Booking Requests Page
+   Extends emp-dashboard.css variables
+   ============================================================ */
+
+/* Page header */
+.emp-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.emp-page-heading {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-light);
+    margin: 0 0 0.25rem;
+}
+
+.emp-page-sub {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Toolbar: filter tabs + search on same row */
+.emp-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Filter tabs as links */
+.emp-filter-tabs {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.emp-filter-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.42rem 0.9rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--border-color);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.emp-filter-tab:hover {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+}
+
+.emp-filter-tab.active {
+    background: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    color: #fff;
+}
+
+.emp-tab-count {
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: rgba(255,255,255,0.25);
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+}
+
+.emp-filter-tab:not(.active) .emp-tab-count {
+    background: rgba(92,126,143,0.12);
+    color: var(--accent-cyan);
+}
+
+/* REQ ID pill */
+.emp-req-id {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    font-family: monospace;
+    background: rgba(92,126,143,0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.4rem;
+}
+
+/* Customer cell */
+.emp-customer-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.emp-customer-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(92,126,143,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    flex-shrink: 0;
+}
+
+.emp-customer-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.emp-customer-email {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+}
+
+/* Route cell */
+.emp-route-cell {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    white-space: nowrap;
+}

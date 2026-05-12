@@ -1,0 +1,247 @@
+@{
+    string userName    = User.Identity?.Name ?? "Customer";
+    string initials   = string.Join("", userName.Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()));
+    string currentPage = ViewData["ActivePage"]?.ToString() ?? "";
+    string? picUrl    = ViewBag.ProfilePicUrl as string;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — SRC Travel</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Core CSS Variables -->
+    <link rel="stylesheet" href="~/css/variables.css" asp-append-version="true" />
+    <!-- Customer Portal CSS -->
+    <link rel="stylesheet" href="~/css/customer/customer-dashboard.css" asp-append-version="true" />
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+
+<!-- Mobile overlay -->
+<div class="cp-overlay" id="cp-overlay"></div>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="cp-sidebar" id="cp-sidebar">
+
+    <!-- Logo -->
+    <a href="/Home/Index" class="cp-sidebar-logo">
+        <div class="cp-sidebar-logo-icon"><i class="fa-solid fa-bus"></i></div>
+        <div class="cp-sidebar-logo-text">
+            SRC Travel
+            <span>Customer Portal</span>
+        </div>
+    </a>
+
+    <!-- User mini card -->
+    <div class="cp-sidebar-user">
+        <div class="cp-sidebar-avatar" style="@(!string.IsNullOrEmpty(picUrl) ? "background:transparent;overflow:hidden;padding:0;" : "")">
+            @if (!string.IsNullOrEmpty(picUrl))
+            {
+                <img src="@picUrl" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="avatar" />
+            }
+            else
+            {
+                @initials
+            }
+        </div>
+        <div class="cp-sidebar-user-info">
+            <div class="cp-sidebar-user-name">@userName</div>
+            <div class="cp-sidebar-user-role">Verified Customer</div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="cp-nav">
+        <div class="cp-nav-label">Main Menu</div>
+        <a href="/Customer/Dashboard" class="@(currentPage == "Dashboard" ? "active" : "")">
+            <i class="fa-solid fa-gauge-high"></i> Dashboard
+        </a>
+        <a href="/Customer/NewRequest" class="@(currentPage == "NewRequest" ? "active" : "")">
+            <i class="fa-solid fa-ticket"></i> New Booking Request
+        </a>
+        <a href="/Customer/MyRequests" class="@(currentPage == "MyRequests" ? "active" : "")">
+            <i class="fa-solid fa-list-check"></i> My Requests
+        </a>
+
+        <div class="cp-nav-label" style="margin-top:0.5rem;">Account</div>
+        <a href="/Customer/Profile" class="@(currentPage == "Profile" ? "active" : "")">
+            <i class="fa-solid fa-user-circle"></i> My Profile
+        </a>
+    </nav>
+
+    <!-- Logout -->
+    <div class="cp-sidebar-bottom">
+        <a href="/Auth/Logout"
+           style="display:flex;align-items:center;gap:0.8rem;width:100%;padding:0.7rem 0.75rem;color:rgba(255,255,255,0.6);font-size:0.875rem;border-radius:0.6rem;transition:all 0.2s;text-decoration:none;"
+           onmouseover="this.style.background='rgba(255,0,0,0.15)';this.style.color='#fca5a5'"
+           onmouseout="this.style.background='none';this.style.color='rgba(255,255,255,0.6)'">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </a>
+    </div>
+</aside>
+
+<!-- ===== TOP NAVBAR ===== -->
+<header class="cp-topbar" id="cp-topbar">
+    <div class="cp-topbar-left">
+        <!-- Hamburger for mobile -->
+        <button class="cp-hamburger" id="cp-hamburger" aria-label="Toggle menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <span class="cp-page-title">@ViewData["Title"]</span>
+    </div>
+
+    <div class="cp-topbar-right">
+        @{
+            int unreadCount = ViewBag.UnreadCount ?? 0;
+            var layoutNotifs = ViewBag.Notifications as List<Second_Try.Models.Notification>
+                               ?? new List<Second_Try.Models.Notification>();
+        }
+
+        <!-- Notification bell -->
+        <div class="cp-notif-wrapper" id="cp-notif-wrapper">
+            <button class="cp-notif-btn" id="cp-notif-btn" title="Notifications">
+                <i class="fa-solid fa-bell"></i>
+                @if (unreadCount > 0)
+                {
+                    <span class="cp-notif-badge" id="cp-notif-badge">@unreadCount</span>
+                }
+            </button>
+
+            <!-- Notification dropdown -->
+            <div class="cp-notif-dropdown" id="cp-notif-dropdown">
+                <div class="cp-notif-dd-header">
+                    <span><i class="fa-solid fa-bell"></i> Notifications</span>
+                    @if (unreadCount > 0)
+                    {
+                        <form asp-controller="Customer" asp-action="MarkNotificationsRead" method="POST" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="cp-notif-mark-read">Mark all read</button>
+                        </form>
+                    }
+                </div>
+                <div class="cp-notif-dd-body">
+                    @if (layoutNotifs.Any())
+                    {
+                        foreach (var notif in layoutNotifs)
+                        {
+                            <div class="cp-notif-dd-item @(notif.IsRead ? "" : "unread")">
+                                <div class="cp-notif-dot @(notif.IsRead ? "grey" : "pending")"></div>
+                                <div class="cp-notif-body">
+                                    <p class="cp-notif-msg">@notif.Message</p>
+                                    <span class="cp-notif-time">
+                                        <i class="fa-regular fa-clock"></i>
+                                        @{
+                                            var diff = DateTime.UtcNow - notif.CreatedAt;
+                                            string t = diff.TotalMinutes < 1 ? "Just now"
+                                                : diff.TotalHours < 1 ? $"{(int)diff.TotalMinutes}m ago"
+                                                : diff.TotalDays < 1 ? $"{(int)diff.TotalHours}h ago"
+                                                : $"{(int)diff.TotalDays}d ago";
+                                        }
+                                        @t
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div style="padding:1.5rem;text-align:center;color:var(--text-muted);font-size:0.82rem;">
+                            <i class="fa-regular fa-bell-slash" style="font-size:1.3rem;display:block;margin-bottom:0.4rem;"></i>
+                            No notifications yet
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Avatar dropdown -->
+        <div class="cp-avatar-wrapper">
+            <button class="cp-avatar-btn" id="cp-avatar-btn" aria-expanded="false">
+                <div class="cp-avatar-circle" style="@(!string.IsNullOrEmpty(picUrl) ? "background:transparent;overflow:hidden;padding:0;" : "")">
+                    @if (!string.IsNullOrEmpty(picUrl))
+                    {
+                        <img src="@picUrl" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="avatar" />
+                    }
+                    else
+                    {
+                        @initials
+                    }
+                </div>
+                <span class="cp-avatar-name">@userName.Split(' ')[0]</span>
+                <i class="fa-solid fa-chevron-down cp-avatar-chevron" id="cp-chevron"></i>
+            </button>
+            <div class="cp-avatar-dropdown" id="cp-avatar-dropdown">
+                <a href="/Customer/Profile"><i class="fa-solid fa-user"></i> My Profile</a>
+                <a href="/Auth/Logout" class="logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="cp-main" id="cp-main">
+    @RenderBody()
+</main>
+
+<!-- ===== SCRIPTS ===== -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar   = document.getElementById('cp-sidebar');
+        const overlay   = document.getElementById('cp-overlay');
+        const hamburger = document.getElementById('cp-hamburger');
+        const avatarBtn = document.getElementById('cp-avatar-btn');
+        const dropdown  = document.getElementById('cp-avatar-dropdown');
+        const chevron   = document.getElementById('cp-chevron');
+
+        // Hamburger toggle
+        hamburger?.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        });
+
+        // Overlay click closes sidebar
+        overlay?.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+        });
+
+        // Avatar dropdown
+        avatarBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = dropdown.classList.toggle('open');
+            avatarBtn.setAttribute('aria-expanded', isOpen);
+            chevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0)';
+            // Close notif dropdown
+            document.getElementById('cp-notif-dropdown')?.classList.remove('open');
+        });
+
+        // Notification bell toggle
+        const notifBtn = document.getElementById('cp-notif-btn');
+        const notifDropdown = document.getElementById('cp-notif-dropdown');
+        notifBtn?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notifDropdown?.classList.toggle('open');
+            // Close avatar dropdown
+            dropdown?.classList.remove('open');
+            chevron.style.transform = 'rotate(0)';
+        });
+
+        // Close both dropdowns when clicking outside
+        document.addEventListener('click', () => {
+            dropdown?.classList.remove('open');
+            notifDropdown?.classList.remove('open');
+            chevron.style.transform = 'rotate(0)';
+        });
+    });
+</script>
+@RenderSection("Scripts", required: false)
+</body>
+</html>

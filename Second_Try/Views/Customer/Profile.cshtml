@@ -1,0 +1,478 @@
+@using Second_Try.Models
+@model Second_Try.Models.Customer
+@{
+    ViewData["Title"] = "My Profile";
+    ViewData["ActivePage"] = "Profile";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+
+    string name     = Model?.FullName ?? User.Identity?.Name ?? "Customer";
+    string email    = Model?.Email ?? "";
+    string phone    = Model?.PhoneNumber ?? "";
+    string joined   = Model?.CreatedAt.ToString("MMMM dd, yyyy") ?? "—";
+    bool   hasPic   = !string.IsNullOrEmpty(Model?.ProfilePictureUrl);
+    bool   hasBanner = !string.IsNullOrEmpty(Model?.CoverPictureUrl);
+    string initials = string.Join("", name.Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()));
+
+    int total    = ViewBag.TotalRequests   ?? 0;
+    int accepted = ViewBag.AcceptedCount   ?? 0;
+    int pending  = ViewBag.PendingCount    ?? 0;
+
+    string? activeTab = TempData["ActiveTab"]?.ToString() ?? "info";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/customer/customer-profile.css" asp-append-version="true" />
+}
+
+<div class="cp-shell-content">
+
+    @if (TempData["SuccessMessage"] is string ok)
+    {
+        <div class="cp-toast cp-toast-success" id="pf-toast">
+            <i class="fa-solid fa-circle-check"></i> @ok
+        </div>
+    }
+    @if (TempData["ErrorMessage"] is string err)
+    {
+        <div class="cp-toast cp-toast-error" id="pf-toast">
+            <i class="fa-solid fa-triangle-exclamation"></i> @err
+        </div>
+    }
+
+    <!-- ===== HERO CARD ===== -->
+    <div class="pf-hero">
+
+        <!-- Cover banner -->
+        <div class="pf-cover" id="pf-cover"
+             @if (hasBanner) { <text>style="background-image:url('@Model!.CoverPictureUrl');background-size:cover;background-position:center;"</text> }>
+            <!-- Banner upload overlay -->
+            <div class="pf-cover-overlay" onclick="document.getElementById('banner-file-input').click()">
+                <i class="fa-solid fa-camera"></i>
+                <span>Change Cover</span>
+            </div>
+            <input type="file" id="banner-file-input" accept="image/png,image/jpeg,image/webp" style="display:none;" />
+        </div>
+
+        <!-- Avatar + info row -->
+        <div class="pf-avatar-section">
+            <div style="display:flex;align-items:flex-end;gap:1.25rem;flex-wrap:wrap;">
+                <!-- Avatar with upload overlay -->
+                <div class="pf-avatar-wrap">
+                    <div class="pf-avatar" id="pf-avatar-circle">
+                        @if (hasPic)
+                        {
+                            <img src="@Model!.ProfilePictureUrl" id="pf-avatar-img" alt="Profile" />
+                        }
+                        else
+                        {
+                            <span id="pf-avatar-initials">@initials</span>
+                            <img src="" id="pf-avatar-img" alt="Profile" style="display:none;" />
+                        }
+                        <div class="pf-avatar-overlay" onclick="document.getElementById('avatar-file-input').click()">
+                            <i class="fa-solid fa-camera"></i>
+                            <span>Change</span>
+                        </div>
+                    </div>
+                    <input type="file" id="avatar-file-input" accept="image/png,image/jpeg,image/webp" />
+                    <div class="pf-upload-progress" id="pf-upload-progress">
+                        <div class="pf-upload-progress-bar" id="pf-progress-bar"></div>
+                    </div>
+                </div>
+
+                <!-- Name + email -->
+                <div class="pf-hero-info">
+                    <h2 class="pf-hero-name" id="pf-display-name">@name</h2>
+                    <p class="pf-hero-email">@email</p>
+                    <span class="cp-badge cp-badge-accepted"><i class="fa-solid fa-circle-check" style="font-size:0.5rem;"></i> Verified Customer</span>
+                </div>
+            </div>
+
+            <!-- Quick stats -->
+            <div class="pf-hero-stats">
+                <div class="pf-hero-stat">
+                    <div class="pf-hero-stat-val">@total</div>
+                    <div class="pf-hero-stat-lbl">Requests</div>
+                </div>
+                <div class="pf-hero-stat">
+                    <div class="pf-hero-stat-val">@accepted</div>
+                    <div class="pf-hero-stat-lbl">Accepted</div>
+                </div>
+                <div class="pf-hero-stat">
+                    <div class="pf-hero-stat-val">@pending</div>
+                    <div class="pf-hero-stat-lbl">Pending</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="pf-tabs">
+            <button class="pf-tab-btn @(activeTab == "info" ? "active" : "")"
+                    onclick="switchTab('info', this)">
+                <i class="fa-solid fa-user"></i> Personal Info
+            </button>
+            <button class="pf-tab-btn @(activeTab == "security" ? "active" : "")"
+                    onclick="switchTab('security', this)">
+                <i class="fa-solid fa-shield-halved"></i> Security
+            </button>
+            <button class="pf-tab-btn @(activeTab == "account" ? "active" : "")"
+                    onclick="switchTab('account', this)">
+                <i class="fa-solid fa-chart-bar"></i> Account Stats
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== TAB 1: Personal Info ===== -->
+    <div class="pf-tab-panel @(activeTab == "info" ? "active" : "")" id="tab-info">
+        <div class="cp-card">
+            <div class="cp-card-header">
+                <div class="cp-card-title"><i class="fa-solid fa-id-card"></i> Personal Information</div>
+                <span style="font-size:0.78rem;color:var(--text-muted);">Changes saved to your account</span>
+            </div>
+
+            <form asp-controller="Customer" asp-action="UpdateProfile" method="POST"
+                  id="profile-info-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="activeTab" value="info" />
+
+                <div class="pf-form-grid">
+                    <div class="pf-form-group">
+                        <label class="pf-label">Full Name</label>
+                        <div class="pf-input-icon-wrap">
+                            <i class="pf-input-icon fa-solid fa-user"></i>
+                            <input type="text" class="pf-input" name="FullName"
+                                   value="@name" placeholder="Your full name" required />
+                        </div>
+                        @if (ViewData.ModelState["FullName"]?.Errors.Count > 0)
+                        {
+                            <span style="color:var(--danger);font-size:0.75rem;">@ViewData.ModelState["FullName"]!.Errors[0].ErrorMessage</span>
+                        }
+                    </div>
+
+                    <div class="pf-form-group">
+                        <label class="pf-label">Email Address</label>
+                        <div class="pf-input-icon-wrap">
+                            <i class="pf-input-icon fa-solid fa-envelope"></i>
+                            <input type="email" class="pf-input" name="Email"
+                                   value="@email" placeholder="your@email.com" required />
+                        </div>
+                        @if (ViewData.ModelState["Email"]?.Errors.Count > 0)
+                        {
+                            <span style="color:var(--danger);font-size:0.75rem;">@ViewData.ModelState["Email"]!.Errors[0].ErrorMessage</span>
+                        }
+                    </div>
+
+                    <div class="pf-form-group">
+                        <label class="pf-label">Phone Number <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+                        <div class="pf-input-icon-wrap">
+                            <i class="pf-input-icon fa-solid fa-phone"></i>
+                            <input type="tel" class="pf-input" name="PhoneNumber"
+                                   value="@phone" placeholder="+92 3XX XXXXXXX" />
+                        </div>
+                    </div>
+
+                    <div class="pf-form-group">
+                        <label class="pf-label">Member Since</label>
+                        <div class="pf-input-icon-wrap">
+                            <i class="pf-input-icon fa-solid fa-calendar"></i>
+                            <input type="text" class="pf-input" value="@joined" disabled
+                                   style="background:var(--bg-primary);cursor:not-allowed;opacity:0.7;" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pf-action-row">
+                    <button type="reset" class="cp-btn cp-btn-outline">
+                        <i class="fa-solid fa-rotate-left"></i> Reset
+                    </button>
+                    <button type="submit" class="cp-btn cp-btn-primary">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== TAB 2: Security ===== -->
+    <div class="pf-tab-panel @(activeTab == "security" ? "active" : "")" id="tab-security">
+        <div class="cp-card">
+            <div class="cp-card-header">
+                <div class="cp-card-title"><i class="fa-solid fa-key"></i> Change Password</div>
+                <span style="font-size:0.78rem;color:var(--text-muted);">Choose a strong password</span>
+            </div>
+
+            <form asp-controller="Customer" asp-action="UpdatePassword" method="POST" id="pw-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="activeTab" value="security" />
+
+                <div style="max-width:520px;display:flex;flex-direction:column;gap:1.25rem;">
+
+                    <div class="pf-form-group">
+                        <label class="pf-label">Current Password</label>
+                        <div class="pf-pw-wrap">
+                            <input type="password" class="pf-input" name="CurrentPassword"
+                                   id="pw-current" placeholder="Enter your current password" required />
+                            <button type="button" class="pf-pw-toggle" onclick="togglePw('pw-current', this)">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        @if (ViewData.ModelState["CurrentPassword"]?.Errors.Count > 0)
+                        {
+                            <span style="color:var(--danger);font-size:0.75rem;">@ViewData.ModelState["CurrentPassword"]!.Errors[0].ErrorMessage</span>
+                        }
+                    </div>
+
+                    <hr class="pf-divider" />
+
+                    <div class="pf-form-group">
+                        <label class="pf-label">New Password</label>
+                        <div class="pf-pw-wrap">
+                            <input type="password" class="pf-input" name="NewPassword"
+                                   id="pw-new" placeholder="Create a strong password" required
+                                   oninput="checkPwStrength(this.value)" />
+                            <button type="button" class="pf-pw-toggle" onclick="togglePw('pw-new', this)">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="pf-strength-track">
+                            <div class="pf-strength-fill" id="pf-strength-fill"></div>
+                        </div>
+                        <span class="pf-strength-label" id="pf-strength-label" style="color:var(--text-muted);">Enter a new password</span>
+                        @if (ViewData.ModelState["NewPassword"]?.Errors.Count > 0)
+                        {
+                            <span style="color:var(--danger);font-size:0.75rem;">@ViewData.ModelState["NewPassword"]!.Errors[0].ErrorMessage</span>
+                        }
+                    </div>
+
+                    <div class="pf-form-group">
+                        <label class="pf-label">Confirm New Password</label>
+                        <div class="pf-pw-wrap">
+                            <input type="password" class="pf-input" name="ConfirmPassword"
+                                   id="pw-confirm" placeholder="Repeat your new password" required />
+                            <button type="button" class="pf-pw-toggle" onclick="togglePw('pw-confirm', this)">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        @if (ViewData.ModelState["ConfirmPassword"]?.Errors.Count > 0)
+                        {
+                            <span style="color:var(--danger);font-size:0.75rem;">@ViewData.ModelState["ConfirmPassword"]!.Errors[0].ErrorMessage</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="pf-action-row">
+                    <button type="reset" class="cp-btn cp-btn-outline"
+                            onclick="document.getElementById('pf-strength-fill').style.width='0%';document.getElementById('pf-strength-label').textContent='Enter a new password'">
+                        <i class="fa-solid fa-rotate-left"></i> Clear
+                    </button>
+                    <button type="submit" class="cp-btn cp-btn-primary" id="pw-submit">
+                        <i class="fa-solid fa-lock"></i> Update Password
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="pf-danger-zone" style="margin-top:1.25rem;">
+            <p class="pf-danger-title"><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</p>
+            <p class="pf-danger-sub">Logging out will end your current session on all devices.</p>
+            <a href="/Auth/Logout" class="cp-btn cp-btn-danger">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout Now
+            </a>
+        </div>
+    </div>
+
+    <!-- ===== TAB 3: Account Stats ===== -->
+    <div class="pf-tab-panel @(activeTab == "account" ? "active" : "")" id="tab-account">
+
+        <!-- Member since banner -->
+        <div class="pf-member-card" style="margin-bottom:1.25rem;">
+            <i class="fa-solid fa-star"></i>
+            <div>
+                <p class="pf-member-card-title">SRC Travel Member Since</p>
+                <p class="pf-member-card-val">@joined</p>
+            </div>
+        </div>
+
+        <!-- Stat boxes -->
+        <div class="pf-account-stats">
+            <div class="pf-stat-box">
+                <div class="pf-stat-box-icon">🎫</div>
+                <div class="pf-stat-box-val">@total</div>
+                <div class="pf-stat-box-lbl">Total Requests</div>
+            </div>
+            <div class="pf-stat-box">
+                <div class="pf-stat-box-icon">✅</div>
+                <div class="pf-stat-box-val">@accepted</div>
+                <div class="pf-stat-box-lbl">Accepted</div>
+            </div>
+            <div class="pf-stat-box">
+                <div class="pf-stat-box-icon">⏳</div>
+                <div class="pf-stat-box-val">@pending</div>
+                <div class="pf-stat-box-lbl">Pending</div>
+            </div>
+        </div>
+
+        <div class="cp-card">
+            <div class="cp-card-header">
+                <div class="cp-card-title"><i class="fa-solid fa-circle-info"></i> Account Details</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0;">
+                <div class="nr-summary-row" style="display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--border-color);font-size:0.875rem;">
+                    <span style="color:var(--text-muted);">Full Name</span>
+                    <span style="font-weight:600;color:var(--text-light);">@name</span>
+                </div>
+                <div class="nr-summary-row" style="display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--border-color);font-size:0.875rem;">
+                    <span style="color:var(--text-muted);">Email</span>
+                    <span style="font-weight:600;color:var(--text-light);">@email</span>
+                </div>
+                <div class="nr-summary-row" style="display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--border-color);font-size:0.875rem;">
+                    <span style="color:var(--text-muted);">Phone</span>
+                    <span style="font-weight:600;color:var(--text-light);">@(string.IsNullOrEmpty(phone) ? "Not set" : phone)</span>
+                </div>
+                <div class="nr-summary-row" style="display:flex;justify-content:space-between;padding:0.75rem 0;font-size:0.875rem;">
+                    <span style="color:var(--text-muted);">Account Status</span>
+                    <span class="cp-badge cp-badge-accepted">Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- end shell-content -->
+
+<!-- Hidden form for avatar upload -->
+<form asp-controller="Customer" asp-action="UploadPicture" method="POST"
+      enctype="multipart/form-data" id="avatar-upload-form" style="display:none;">
+    @Html.AntiForgeryToken()
+    <input type="file" name="picture" id="avatar-hidden-file" />
+</form>
+
+<!-- Hidden form for banner upload -->
+<form asp-controller="Customer" asp-action="UploadBanner" method="POST"
+      enctype="multipart/form-data" id="banner-upload-form" style="display:none;">
+    @Html.AntiForgeryToken()
+    <input type="file" name="banner" id="banner-hidden-file" />
+</form>
+
+@section Scripts {
+<script>
+    // ── Tab switching ─────────────────────────────────────────
+    function switchTab(id, btn) {
+        document.querySelectorAll('.pf-tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.pf-tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + id).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    // ── Password reveal ───────────────────────────────────────
+    function togglePw(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const icon  = btn.querySelector('i');
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        icon.className = isHidden ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+    }
+
+    // ── Password strength ─────────────────────────────────────
+    const levels = [
+        { color:'#ef4444', text:'Too weak',  pct:'15%' },
+        { color:'#f97316', text:'Weak',      pct:'30%' },
+        { color:'#eab308', text:'Fair',      pct:'55%' },
+        { color:'#22c55e', text:'Good',      pct:'75%' },
+        { color:'#16a34a', text:'Strong ✓',  pct:'100%'}
+    ];
+
+    function checkPwStrength(pwd) {
+        const fill  = document.getElementById('pf-strength-fill');
+        const label = document.getElementById('pf-strength-label');
+        const submit = document.getElementById('pw-submit');
+        if (!pwd) {
+            fill.style.width='0%'; label.textContent='Enter a new password';
+            label.style.color='var(--text-muted)'; submit.disabled=false; return;
+        }
+        let score = 0;
+        if (pwd.length >= 8)   score++;
+        if (/[A-Z]/.test(pwd)) score++;
+        if (/[a-z]/.test(pwd)) score++;
+        if (/\d/.test(pwd))    score++;
+        if (/[!@@#$%^&*]/.test(pwd)) score++;
+        const lvl = levels[Math.max(0, score-1)];
+        fill.style.width = lvl.pct;
+        fill.style.background = lvl.color;
+        label.textContent = lvl.text;
+        label.style.color = lvl.color;
+        submit.disabled = (score < 4);
+    }
+
+    // ── Avatar preview + upload ───────────────────────────────
+    document.getElementById('avatar-file-input').addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+
+        // Live preview
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = document.getElementById('pf-avatar-img');
+            const ini = document.getElementById('pf-avatar-initials');
+            img.src = e.target.result;
+            img.style.display = 'block';
+            if (ini) ini.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+
+        // Upload via fetch
+        const form = document.getElementById('avatar-upload-form');
+        const hiddenInput = document.getElementById('avatar-hidden-file');
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        hiddenInput.files = dt.files;
+
+        const formData = new FormData(form);
+        const progress = document.getElementById('pf-upload-progress');
+        const bar = document.getElementById('pf-progress-bar');
+        progress.style.display = 'block';
+        bar.style.width = '30%';
+
+        fetch(form.action, { method: 'POST', body: formData })
+            .then(r => {
+                bar.style.width = '100%';
+                setTimeout(() => { progress.style.display = 'none'; bar.style.width = '0%'; }, 800);
+                if (r.redirected) { window.location.href = r.url; }
+            })
+            .catch(() => { progress.style.display = 'none'; });
+    });
+
+    // ── Auto-dismiss toasts ───────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.cp-toast').forEach(t => {
+            setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(), 400); }, 4000);
+        });
+    });
+
+    // ── Banner upload ─────────────────────────────────────────
+    document.getElementById('banner-file-input').addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+
+        // Live preview
+        const reader = new FileReader();
+        reader.onload = e => {
+            const cover = document.getElementById('pf-cover');
+            cover.style.backgroundImage = `url('${e.target.result}')`;
+            cover.style.backgroundSize = 'cover';
+            cover.style.backgroundPosition = 'center';
+        };
+        reader.readAsDataURL(file);
+
+        // Upload via fetch
+        const form = document.getElementById('banner-upload-form');
+        const hiddenInput = document.getElementById('banner-hidden-file');
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        hiddenInput.files = dt.files;
+
+        fetch(form.action, { method: 'POST', body: new FormData(form) })
+            .then(r => { if (r.redirected) window.location.href = r.url; })
+            .catch(() => {});
+    });
+</script>
+}

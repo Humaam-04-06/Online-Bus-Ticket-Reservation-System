@@ -1,0 +1,128 @@
+@using Second_Try.Models
+@model Booking
+@{
+    ViewData["Title"]      = "Print Ticket";
+    ViewData["ActivePage"] = "BookingHistory";
+    Layout = "~/Views/Shared/_EmployeeLayout.cshtml";
+
+    var req      = Model.BookingRequest;
+    var customer = req?.Customer;
+    var route    = req?.Route;
+    var bus      = Model.Bus;
+    string bookingRef = $"SRC-{Model.Id:D6}";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/employee/print-ticket.css" asp-append-version="true" />
+}
+
+<!-- Actions bar (hidden on print) -->
+<div class="pt-actions no-print">
+    <a href="/Employee/BookingHistory" class="emp-btn emp-btn-outline emp-btn-sm">
+        <i class="fa-solid fa-arrow-left"></i> Back
+    </a>
+    <button class="emp-btn emp-btn-primary emp-btn-sm" onclick="window.print()">
+        <i class="fa-solid fa-print"></i> Print Ticket
+    </button>
+</div>
+
+<!-- Ticket Card -->
+<div class="pt-ticket-wrapper">
+    <div class="pt-ticket">
+
+        <!-- Header stripe -->
+        <div class="pt-header">
+            <div class="pt-header-left">
+                <div class="pt-logo-icon"><i class="fa-solid fa-bus"></i></div>
+                <div>
+                    <div class="pt-company">SRC Travel</div>
+                    <div class="pt-company-sub">Official Bus Ticket</div>
+                </div>
+            </div>
+            <div class="pt-header-right">
+                <div class="pt-booking-ref">@bookingRef</div>
+                <div class="pt-status-tag">
+                    <i class="fa-solid fa-circle-check"></i> CONFIRMED
+                </div>
+            </div>
+        </div>
+
+        <!-- Route Banner -->
+        <div class="pt-route-banner">
+            <div class="pt-route-city">@(route?.Origin ?? "—")</div>
+            <div class="pt-route-arrow">
+                <div class="pt-route-line"></div>
+                <i class="fa-solid fa-bus pt-route-bus-icon"></i>
+                <div class="pt-route-line"></div>
+            </div>
+            <div class="pt-route-city">@(route?.Destination ?? "—")</div>
+        </div>
+
+        <!-- Tear line -->
+        <div class="pt-tear-line">
+            <div class="pt-tear-circle left"></div>
+            <div class="pt-tear-dashes"></div>
+            <div class="pt-tear-circle right"></div>
+        </div>
+
+        <!-- Ticket Body — 2 columns -->
+        <div class="pt-body">
+            <div class="pt-col">
+                <div class="pt-field">
+                    <span class="pt-field-label">Passenger Name</span>
+                    <span class="pt-field-val">@(customer?.FullName ?? "—")</span>
+                </div>
+                <div class="pt-field">
+                    <span class="pt-field-label">Email</span>
+                    <span class="pt-field-val">@(customer?.Email ?? "—")</span>
+                </div>
+                <div class="pt-field">
+                    <span class="pt-field-label">Travel Date</span>
+                    <span class="pt-field-val pt-highlight">@(req?.TravelDate.ToString("dddd, MMMM dd yyyy") ?? "—")</span>
+                </div>
+                <div class="pt-field">
+                    <span class="pt-field-label">Bus Class</span>
+                    <span class="pt-field-val">@(req?.PreferredBusType.ToString() ?? "—")</span>
+                </div>
+            </div>
+
+            <div class="pt-divider-v"></div>
+
+            <div class="pt-col">
+                <div class="pt-field">
+                    <span class="pt-field-label">Bus Number</span>
+                    <span class="pt-field-val pt-highlight">@(bus?.BusNumber ?? "—")</span>
+                </div>
+                <div class="pt-field">
+                    <span class="pt-field-label">Seat Numbers</span>
+                    <span class="pt-field-val pt-highlight">@Model.SeatNumbers</span>
+                </div>
+                <div class="pt-field">
+                    <span class="pt-field-label">No. of Seats</span>
+                    <span class="pt-field-val">@(req?.NumberOfSeats ?? 0)</span>
+                </div>
+                <div class="pt-field">
+                    <span class="pt-field-label">Total Fare</span>
+                    <span class="pt-field-val pt-fare">PKR @Model.TotalFare.ToString("N0")</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="pt-footer">
+            <div class="pt-footer-left">
+                <span class="pt-footer-label">Booking Ref</span>
+                <span class="pt-footer-val">@bookingRef</span>
+            </div>
+            <div class="pt-footer-left">
+                <span class="pt-footer-label">Issued On</span>
+                <span class="pt-footer-val">@Model.ConfirmedAt.ToString("MMM dd, yyyy · HH:mm") UTC</span>
+            </div>
+            <div class="pt-footer-right">
+                <span class="pt-footer-label">Issued By</span>
+                <span class="pt-footer-val">SRC Travel Employee Portal</span>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,262 @@
+@using Second_Try.Models
+@model BookingRequest
+@{
+    ViewData["Title"]      = "Process Request";
+    ViewData["ActivePage"] = "BookingRequests";
+    Layout = "~/Views/Shared/_EmployeeLayout.cshtml";
+
+    var buses    = ViewBag.AvailableBuses as List<Bus> ?? new List<Bus>();
+    bool isPending = Model.Status == BookingRequestStatus.Pending;
+    var booking   = Model.AssignedBooking;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/employee/process-request.css" asp-append-version="true" />
+}
+
+@if (TempData["SuccessMessage"] is string sm)
+{
+    <div class="emp-toast emp-toast-success"><i class="fa-solid fa-circle-check"></i> @sm</div>
+}
+@if (TempData["ErrorMessage"] is string em)
+{
+    <div class="emp-toast emp-toast-error"><i class="fa-solid fa-triangle-exclamation"></i> @em</div>
+}
+
+<!-- Back + Title -->
+<div class="pr-toprow">
+    <a href="/Employee/BookingRequests" class="emp-btn emp-btn-outline emp-btn-sm">
+        <i class="fa-solid fa-arrow-left"></i> Back to Requests
+    </a>
+    <div>
+        <span class="pr-req-id">REQ-@Model.Id.ToString("D4")</span>
+        @{
+            string badgeCls = Model.Status switch
+            {
+                BookingRequestStatus.Pending   => "emp-badge-pending",
+                BookingRequestStatus.Accepted  => "emp-badge-accepted",
+                BookingRequestStatus.Rejected  => "emp-badge-rejected",
+                BookingRequestStatus.Cancelled => "emp-badge-cancelled",
+                _ => ""
+            };
+        }
+        <span class="emp-badge @badgeCls">@Model.Status</span>
+    </div>
+</div>
+
+<!-- Main 2-col grid -->
+<div class="pr-grid">
+
+    <!-- LEFT: Request Details -->
+    <div>
+        <!-- Customer Card -->
+        <div class="emp-card pr-section">
+            <div class="emp-card-header">
+                <div class="emp-card-title"><i class="fa-solid fa-user"></i> Customer Details</div>
+            </div>
+            <div class="pr-info-rows">
+                <div class="pr-info-row">
+                    <span class="pr-info-label">Full Name</span>
+                    <span class="pr-info-val">@(Model.Customer?.FullName ?? "—")</span>
+                </div>
+                <div class="pr-info-row">
+                    <span class="pr-info-label">Email</span>
+                    <span class="pr-info-val">@(Model.Customer?.Email ?? "—")</span>
+                </div>
+                <div class="pr-info-row">
+                    <span class="pr-info-label">Phone</span>
+                    <span class="pr-info-val">@(string.IsNullOrEmpty(Model.Customer?.PhoneNumber) ? "Not provided" : Model.Customer.PhoneNumber)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Request Card -->
+        <div class="emp-card pr-section">
+            <div class="emp-card-header">
+                <div class="emp-card-title"><i class="fa-solid fa-ticket"></i> Booking Request Details</div>
+            </div>
+            <div class="pr-info-rows">
+                <div class="pr-info-row">
+                    <span class="pr-info-label">Origin</span>
+                    <span class="pr-info-val">@(Model.Route?.Origin ?? "—")</span>
+                </div>
+                <div class="pr-info-row">
+                    <span class="pr-info-label">Destination</span>
+                    <span class="pr-info-val">@(Model.Route?.Destination ?? "—")</span>
+                </div>
+                <div class="pr-info-row">
+                    <span class="pr-info-label">Travel Date</span>
+                    <span class="pr-info-val">@Model.TravelDate.ToString("dddd, MMMM dd yyyy")</span>
+                </div>
+                <div class="pr-info-row">
+                    <span class="pr-info-label">Bus Class</span>
+                    <span class="pr-info-val"><span class="emp-badge emp-badge-info">@Model.PreferredBusType</span></span>
+                </div>
+                <div class="pr-info-row">
+                    <span class="pr-info-label">Seats Requested</span>
+                    <span class="pr-info-val">@Model.NumberOfSeats</span>
+                </div>
+                <div class="pr-info-row">
+                    <span class="pr-info-label">Request Date</span>
+                    <span class="pr-info-val">@Model.RequestDate.ToString("MMM dd, yyyy · HH:mm") UTC</span>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.AdminRemarks))
+                {
+                    <div class="pr-info-row">
+                        <span class="pr-info-label">Remarks</span>
+                        <span class="pr-info-val pr-remarks">@Model.AdminRemarks</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Assigned Booking (if accepted) -->
+        @if (booking != null)
+        {
+            <div class="emp-card pr-section pr-confirmed-card">
+                <div class="emp-card-header">
+                    <div class="emp-card-title"><i class="fa-solid fa-circle-check"></i> Confirmed Booking</div>
+                    <a href="/Employee/PrintTicket/@booking.Id" class="emp-btn emp-btn-primary emp-btn-sm">
+                        <i class="fa-solid fa-print"></i> Print Ticket
+                    </a>
+                </div>
+                <div class="pr-info-rows">
+                    <div class="pr-info-row">
+                        <span class="pr-info-label">Bus</span>
+                        <span class="pr-info-val">@(booking.Bus?.BusNumber ?? "—") (@(booking.Bus?.Type))</span>
+                    </div>
+                    <div class="pr-info-row">
+                        <span class="pr-info-label">Seat Numbers</span>
+                        <span class="pr-info-val">@booking.SeatNumbers</span>
+                    </div>
+                    <div class="pr-info-row">
+                        <span class="pr-info-label">Total Fare</span>
+                        <span class="pr-info-val pr-fare">PKR @booking.TotalFare.ToString("N0")</span>
+                    </div>
+                    <div class="pr-info-row">
+                        <span class="pr-info-label">Confirmed At</span>
+                        <span class="pr-info-val">@booking.ConfirmedAt.ToString("MMM dd, yyyy · HH:mm") UTC</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- RIGHT: Action Panel -->
+    <div>
+        @if (isPending)
+        {
+            <!-- Accept Form -->
+            <div class="emp-card pr-section pr-accept-card">
+                <div class="emp-card-header">
+                    <div class="emp-card-title"><i class="fa-solid fa-circle-check"></i> Accept Request</div>
+                </div>
+
+                <form asp-controller="Employee" asp-action="AcceptRequest" method="POST">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="requestId" value="@Model.Id" />
+
+                    <div class="pr-form-group">
+                        <label class="pr-label">Assign Bus</label>
+                        @if (buses.Any())
+                        {
+                            <select name="busId" class="pr-select" id="bus-select" required>
+                                <option value="">— Select a Bus —</option>
+                                @foreach (var bus in buses)
+                                {
+                                    <option value="@bus.Id" data-capacity="@bus.Capacity">
+                                        @bus.BusNumber — @bus.Type (@bus.Capacity seats)
+                                        @if (!string.IsNullOrEmpty(bus.Amenities))
+                                        { <text>· @bus.Amenities</text> }
+                                    </option>
+                                }
+                            </select>
+                        }
+                        else
+                        {
+                            <div class="pr-no-buses">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                No active @Model.PreferredBusType buses available. Please add buses first.
+                            </div>
+                        }
+                    </div>
+
+                    <div class="pr-form-group">
+                        <label class="pr-label">Seat Numbers</label>
+                        <input type="text" name="seatNumbers" class="pr-input"
+                               placeholder="e.g. 12A, 12B, 13A" required
+                               title="Enter comma-separated seat numbers" />
+                        <span class="pr-hint">Enter @Model.NumberOfSeats seat number(s), comma separated</span>
+                    </div>
+
+                    <div class="pr-form-group">
+                        <label class="pr-label">Total Fare (PKR)</label>
+                        <input type="number" name="totalFare" id="total-fare" class="pr-input"
+                               min="0" step="0.01" placeholder="e.g. 2500" required />
+                    </div>
+
+                    <button type="submit" class="emp-btn emp-btn-success pr-submit-btn" @(buses.Any() ? "" : "disabled")>
+                        <i class="fa-solid fa-circle-check"></i> Confirm & Accept
+                    </button>
+                </form>
+            </div>
+
+            <!-- Reject Form -->
+            <div class="emp-card pr-section pr-reject-card">
+                <div class="emp-card-header">
+                    <div class="emp-card-title"><i class="fa-solid fa-circle-xmark"></i> Reject Request</div>
+                </div>
+
+                <form asp-controller="Employee" asp-action="RejectRequest" method="POST">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="requestId" value="@Model.Id" />
+
+                    <div class="pr-form-group">
+                        <label class="pr-label">Rejection Reason <span class="pr-optional">(optional)</span></label>
+                        <textarea name="remarks" class="pr-textarea" rows="3"
+                                  placeholder="e.g. No available bus on requested date..."></textarea>
+                    </div>
+
+                    <button type="submit" class="emp-btn emp-btn-danger pr-submit-btn"
+                            onclick="return confirm('Are you sure you want to reject this request?')">
+                        <i class="fa-solid fa-circle-xmark"></i> Reject Request
+                    </button>
+                </form>
+            </div>
+        }
+        else
+        {
+            <!-- Already processed -->
+            <div class="emp-card pr-section pr-processed-card">
+                <div class="emp-card-title" style="margin-bottom:1rem;">
+                    <i class="fa-solid fa-lock"></i> Request Already Processed
+                </div>
+                <p class="pr-processed-msg">
+                    This request was <strong>@Model.Status.ToString().ToLower()</strong> and cannot be modified.
+                </p>
+                @if (booking != null)
+                {
+                    <a href="/Employee/PrintTicket/@booking.Id" class="emp-btn emp-btn-primary" style="margin-top:1rem;width:100%;justify-content:center;">
+                        <i class="fa-solid fa-print"></i> Print Ticket
+                    </a>
+                }
+                <a href="/Employee/BookingRequests" class="emp-btn emp-btn-outline" style="margin-top:0.5rem;width:100%;justify-content:center;">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Requests
+                </a>
+            </div>
+        }
+    </div>
+
+</div>
+
+@section Scripts {
+<script>
+    // Auto-calculate fare hint based on bus capacity (optional UX helper)
+    const busSelect  = document.getElementById('bus-select');
+    const fareInput  = document.getElementById('total-fare');
+
+    busSelect?.addEventListener('change', function() {
+        // You can add dynamic fare calculation here if PriceList is available
+    });
+</script>
+}
