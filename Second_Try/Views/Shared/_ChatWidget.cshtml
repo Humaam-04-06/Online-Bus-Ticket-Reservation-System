@@ -1,0 +1,49 @@
+<!-- ── ARIA AI Chat Widget ─────────────────────────────────── -->
+<link rel="stylesheet" href="~/css/chat.css" asp-append-version="true" />
+
+<!-- Floating toggle button -->
+<button id="aria-toggle" title="Chat with ARIA" aria-label="Open AI Assistant">
+    <i class="fa-solid fa-robot"></i>
+    <span id="aria-badge"></span>
+</button>
+
+<!-- Chat panel -->
+<div id="aria-panel" role="dialog" aria-label="ARIA AI Assistant">
+
+    <!-- Header -->
+    <div class="aria-header">
+        <div class="aria-header-icon">
+            <i class="fa-solid fa-robot"></i>
+        </div>
+        <div class="aria-header-info">
+            <h4>ARIA</h4>
+            <p><span class="aria-online-dot"></span> Online · SRC Travel Assistant</p>
+        </div>
+        <button class="aria-header-close" id="aria-close" title="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- Messages -->
+    <div id="aria-messages"></div>
+
+    <!-- Quick suggestion chips (disappear after first use) -->
+    <div class="aria-chips">
+        <button class="aria-chip">How do I book a ticket?</button>
+        <button class="aria-chip">What routes are available?</button>
+        <button class="aria-chip">My booking status</button>
+        <button class="aria-chip">Forgot password help</button>
+    </div>
+
+    <!-- Input footer -->
+    <div class="aria-footer">
+        <textarea id="aria-input" rows="1"
+                  placeholder="Ask me anything about SRC Travel..."
+                  aria-label="Chat input"></textarea>
+        <button id="aria-send" title="Send" aria-label="Send message">
+            <i class="fa-solid fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<script src="~/js/chat.js" asp-append-version="true"></script>

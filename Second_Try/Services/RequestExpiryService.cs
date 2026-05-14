@@ -77,6 +77,7 @@ namespace Second_Try.Services
                 notifications.Add(new Notification
                 {
                     CustomerId = req.CustomerId,
+                    Title      = "Booking Request Expired",
                     Message    = $"Your booking request for " +
                                  $"{req.Route?.Origin ?? "Unknown"} → {req.Route?.Destination ?? "Unknown"} " +
                                  $"on {req.TravelDate:MMM dd, yyyy} has expired because the travel date passed " +

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Second_Try.Data;
 using Second_Try.Models;
+using Second_Try.Services;
 
 namespace Second_Try.Controllers
 {
@@ -11,10 +12,12 @@ namespace Second_Try.Controllers
     public class CustomerController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IEmailService _email;
 
-        public CustomerController(ApplicationDbContext context)
+        public CustomerController(ApplicationDbContext context, IEmailService email)
         {
             _context = context;
+            _email   = email;
         }
 
         // ── helper: get current customer from DB ──────────────────────────
@@ -196,6 +199,12 @@ namespace Second_Try.Controllers
 
             request.Status = BookingRequestStatus.Cancelled;
             await _context.SaveChangesAsync();
+
+            // 📧 Send cancellation email (fire-and-forget)
+            var route = await _context.Routes.FindAsync(request.RouteId);
+            string routeStr = route != null ? $"{route.Origin} → {route.Destination}" : "N/A";
+            _ = _email.SendBookingCancelledEmailAsync(
+                customer.Email, customer.FullName, routeStr, request.TravelDate);
 
             TempData["SuccessMessage"] = $"Request REQ-{requestId:D4} has been cancelled successfully.";
             return RedirectToAction(nameof(MyRequests));

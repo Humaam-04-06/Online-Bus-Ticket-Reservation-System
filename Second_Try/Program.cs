@@ -32,6 +32,19 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddHostedService<RequestExpiryService>();
 
+// ── AI Chat Service ───────────────────────────────────────
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IGeminiService, GeminiService>();
+
+// ── Session (for chat history) ────────────────────────────
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout        = TimeSpan.FromMinutes(60);
+    options.Cookie.HttpOnly    = true;
+    options.Cookie.IsEssential = true;
+});
+
 var app = builder.Build();
 
 // ── Run DB seeder on startup ──────────────────────────────
@@ -45,6 +58,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseSession();
 app.UseRouting();
 
 app.UseAuthentication();

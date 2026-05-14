@@ -171,5 +171,9 @@
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
+
+    @* ── ARIA AI Chat Widget ──────────────────────────────────── *@
+    @await Html.PartialAsync("_ChatWidget")
+
 </body>
 </html>
