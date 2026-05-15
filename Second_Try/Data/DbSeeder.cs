@@ -95,6 +95,34 @@ namespace Second_Try.Data
             {
                 Console.WriteLine("ℹ️  [Seeder] Buses already exist — skipping.");
             }
+
+            // ── 3. Seed Routes, PriceLists, and BusSchedules ──────
+            if (!await db.Routes.AnyAsync())
+            {
+                var r1 = new Second_Try.Models.Route { Origin = "Lahore", Destination = "Karachi", EstimatedDurationHours = 18.5, IsActive = true };
+                var r2 = new Second_Try.Models.Route { Origin = "Islamabad", Destination = "Lahore", EstimatedDurationHours = 4.5, IsActive = true };
+                var r3 = new Second_Try.Models.Route { Origin = "Multan", Destination = "Islamabad", EstimatedDurationHours = 8.0, IsActive = true };
+                
+                db.Routes.AddRange(r1, r2, r3);
+                await db.SaveChangesAsync();
+
+                db.PriceLists.AddRange(
+                    new PriceList { RouteId = r1.Id, BusType = BusType.Standard, FareAmount = 3500 },
+                    new PriceList { RouteId = r1.Id, BusType = BusType.Luxury, FareAmount = 5500 },
+                    new PriceList { RouteId = r2.Id, BusType = BusType.Economy, FareAmount = 1200 },
+                    new PriceList { RouteId = r2.Id, BusType = BusType.Express, FareAmount = 2500 }
+                );
+
+                db.BusSchedules.AddRange(
+                    new BusSchedule { RouteId = r1.Id, BusType = BusType.Standard, DepartureTime = new TimeSpan(10, 0, 0), ArrivalTime = new TimeSpan(4, 30, 0) }, // 10 AM
+                    new BusSchedule { RouteId = r1.Id, BusType = BusType.Luxury, DepartureTime = new TimeSpan(22, 0, 0), ArrivalTime = new TimeSpan(16, 30, 0) }, // 10 PM
+                    new BusSchedule { RouteId = r2.Id, BusType = BusType.Economy, DepartureTime = new TimeSpan(8, 0, 0), ArrivalTime = new TimeSpan(12, 30, 0) }, // 8 AM
+                    new BusSchedule { RouteId = r2.Id, BusType = BusType.Express, DepartureTime = new TimeSpan(14, 0, 0), ArrivalTime = new TimeSpan(18, 30, 0) } // 2 PM
+                );
+
+                await db.SaveChangesAsync();
+                Console.WriteLine("✅  [Seeder] Sample routes, prices, and schedules created.");
+            }
         }
     }
 }

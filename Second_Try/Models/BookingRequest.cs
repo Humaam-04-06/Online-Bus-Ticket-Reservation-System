@@ -8,7 +8,8 @@ namespace Second_Try.Models
         Pending,
         Accepted,
         Rejected,
-        Cancelled
+        Cancelled,
+        Completed
     }
 
     public class BookingRequest
@@ -21,6 +22,8 @@ namespace Second_Try.Models
 
         [Required]
         public int RouteId { get; set; }
+
+        public int? BusScheduleId { get; set; }
 
         [Required]
         public BusType PreferredBusType { get; set; }
@@ -45,6 +48,9 @@ namespace Second_Try.Models
 
         [ForeignKey(nameof(RouteId))]
         public Route? Route { get; set; }
+
+        [ForeignKey(nameof(BusScheduleId))]
+        public BusSchedule? BusSchedule { get; set; }
 
         public Booking? AssignedBooking { get; set; } // Will be populated if accepted
     }

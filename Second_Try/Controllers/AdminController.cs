@@ -184,6 +184,76 @@ namespace Second_Try.Controllers
         }
 
         // ══════════════════════════════════════════════════════════
+        // MANAGE SCHEDULES
+        // ══════════════════════════════════════════════════════════
+        public async Task<IActionResult> ManageSchedules()
+        {
+            ViewBag.Schedules = await _context.BusSchedules
+                .Include(s => s.Route)
+                .OrderBy(s => s.Route!.Origin).ThenBy(s => s.DepartureTime)
+                .ToListAsync();
+            ViewBag.Routes = await _context.Routes.Where(r => r.IsActive).ToListAsync();
+            return View();
+        }
+
+        [HttpPost][ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpsertSchedule(int id, int RouteId, BusType BusType, TimeSpan DepartureTime, TimeSpan ArrivalTime)
+        {
+            if (id == 0)
+            {
+                _context.BusSchedules.Add(new BusSchedule
+                {
+                    RouteId = RouteId,
+                    BusType = BusType,
+                    DepartureTime = DepartureTime,
+                    ArrivalTime = ArrivalTime,
+                    IsActive = true
+                });
+                TempData["SuccessMessage"] = "Bus schedule added successfully.";
+            }
+            else
+            {
+                var sched = await _context.BusSchedules.FindAsync(id);
+                if (sched != null)
+                {
+                    sched.RouteId = RouteId;
+                    sched.BusType = BusType;
+                    sched.DepartureTime = DepartureTime;
+                    sched.ArrivalTime = ArrivalTime;
+                    TempData["SuccessMessage"] = "Bus schedule updated successfully.";
+                }
+            }
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(ManageSchedules));
+        }
+
+        [HttpPost][ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleSchedule(int id)
+        {
+            var sched = await _context.BusSchedules.FindAsync(id);
+            if (sched != null)
+            {
+                sched.IsActive = !sched.IsActive;
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"Schedule {(sched.IsActive ? "activated" : "deactivated")}.";
+            }
+            return RedirectToAction(nameof(ManageSchedules));
+        }
+
+        [HttpPost][ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteSchedule(int id)
+        {
+            var sched = await _context.BusSchedules.FindAsync(id);
+            if (sched != null)
+            {
+                _context.BusSchedules.Remove(sched);
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Schedule deleted.";
+            }
+            return RedirectToAction(nameof(ManageSchedules));
+        }
+
+        // ══════════════════════════════════════════════════════════
         // MANAGE PRICE LIST
         // ══════════════════════════════════════════════════════════
         public async Task<IActionResult> ManagePriceList()

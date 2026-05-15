@@ -19,6 +19,7 @@ namespace Second_Try.Data
         public DbSet<BookingRequest> BookingRequests { get; set; }
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<BusSchedule> BusSchedules { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

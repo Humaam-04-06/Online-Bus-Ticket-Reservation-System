@@ -45,41 +45,74 @@
             <form id="booking-form" asp-controller="Customer" asp-action="NewRequest" method="POST">
                 @Html.AntiForgeryToken()
 
+                @if(ViewBag.PreScheduleId != null)
+                {
+                    <input type="hidden" name="BusScheduleId" value="@ViewBag.PreScheduleId" />
+                    <input type="hidden" name="RouteId" value="@ViewBag.PreRouteId" />
+                    <div class="nr-alert nr-alert-success" style="margin-bottom:1.5rem;background:var(--accent-cyan-transparent);border-color:var(--accent-cyan);">
+                        <i class="fa-solid fa-check-circle" style="color:var(--accent-cyan)"></i>
+                        <div>
+                            <strong>Schedule Selected!</strong> You are booking the <strong>@ViewBag.PreOrigin &rarr; @ViewBag.PreDest</strong> (@ViewBag.PreBusType) bus.
+                        </div>
+                    </div>
+                }
+
                 <div class="nr-row">
                     <div class="nr-form-group">
                         <label class="nr-label" for="origin">Origin City <span>*</span></label>
-                        <select class="nr-select" id="origin" name="Origin" required onchange="updateSummary()">
-                            <option value="">— Select Origin —</option>
-                            <option value="Karachi">Karachi</option>
-                            <option value="Lahore">Lahore</option>
-                            <option value="Islamabad">Islamabad</option>
-                            <option value="Faisalabad">Faisalabad</option>
-                            <option value="Multan">Multan</option>
-                            <option value="Peshawar">Peshawar</option>
-                            <option value="Quetta">Quetta</option>
-                        </select>
+                        @if(ViewBag.PreOrigin != null)
+                        {
+                            <input type="text" class="nr-input" name="Origin" id="origin" value="@ViewBag.PreOrigin" readonly style="background:var(--bg-secondary);opacity:0.8;color:var(--text-light)" />
+                        }
+                        else
+                        {
+                            <select class="nr-select" id="origin" name="Origin" required onchange="updateSummary()">
+                                <option value="">— Select Origin —</option>
+                                <option value="Karachi">Karachi</option>
+                                <option value="Lahore">Lahore</option>
+                                <option value="Islamabad">Islamabad</option>
+                                <option value="Faisalabad">Faisalabad</option>
+                                <option value="Multan">Multan</option>
+                                <option value="Peshawar">Peshawar</option>
+                                <option value="Quetta">Quetta</option>
+                            </select>
+                        }
                     </div>
                     <div class="nr-form-group">
                         <label class="nr-label" for="destination">Destination City <span>*</span></label>
-                        <select class="nr-select" id="destination" name="Destination" required onchange="updateSummary()">
-                            <option value="">— Select Destination —</option>
-                            <option value="Karachi">Karachi</option>
-                            <option value="Lahore">Lahore</option>
-                            <option value="Islamabad">Islamabad</option>
-                            <option value="Faisalabad">Faisalabad</option>
-                            <option value="Multan">Multan</option>
-                            <option value="Peshawar">Peshawar</option>
-                            <option value="Quetta">Quetta</option>
-                        </select>
+                        @if(ViewBag.PreDest != null)
+                        {
+                            <input type="text" class="nr-input" name="Destination" id="destination" value="@ViewBag.PreDest" readonly style="background:var(--bg-secondary);opacity:0.8;color:var(--text-light)" />
+                        }
+                        else
+                        {
+                            <select class="nr-select" id="destination" name="Destination" required onchange="updateSummary()">
+                                <option value="">— Select Destination —</option>
+                                <option value="Karachi">Karachi</option>
+                                <option value="Lahore">Lahore</option>
+                                <option value="Islamabad">Islamabad</option>
+                                <option value="Faisalabad">Faisalabad</option>
+                                <option value="Multan">Multan</option>
+                                <option value="Peshawar">Peshawar</option>
+                                <option value="Quetta">Quetta</option>
+                            </select>
+                        }
                     </div>
                 </div>
 
                 <div class="nr-row">
                     <div class="nr-form-group">
                         <label class="nr-label" for="travel-date">Travel Date <span>*</span></label>
-                        <input type="date" class="nr-input" id="travel-date" name="TravelDate"
-                               min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" required
-                               onchange="updateSummary()" />
+                        @if(ViewBag.PreDate != null)
+                        {
+                            <input type="date" class="nr-input" id="travel-date" name="TravelDate" value="@ViewBag.PreDate" readonly style="background:var(--bg-secondary);opacity:0.8;color:var(--text-light)" />
+                        }
+                        else
+                        {
+                            <input type="date" class="nr-input" id="travel-date" name="TravelDate"
+                                   min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" required
+                                   onchange="updateSummary()" />
+                        }
                     </div>
                     <div class="nr-form-group">
                         <label class="nr-label" for="seats">Number of Seats <span>*</span></label>

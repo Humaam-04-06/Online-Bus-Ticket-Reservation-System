@@ -97,16 +97,58 @@
                 Book your journey seamlessly. With our premium modern platform, discovering routes and tracking buses is faster and easier than ever before.
             </p>
             
-            <!-- Action Buttons -->
-            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                <a href="#features" class="w-full sm:w-auto px-10 py-4 rounded-xl bg-gradient-to-r from-cyan to-blue text-primary font-bold text-lg shadow-[0_0_20px_var(--accent-blue)] hover:shadow-[0_0_35px_var(--accent-cyan)] hover:-translate-y-1 transition-all duration-300">
-                    <i class="fa-solid fa-magnifying-glass mr-2"></i> Find Routes
-                </a>
-                <a href="@Url.Action("Login", "Customer")" class="w-full sm:w-auto px-10 py-4 rounded-xl glass-panel border border-border text-light font-bold text-lg hover:border-cyan hover:bg-secondary/60 shadow-lg transition-all duration-300 flex items-center justify-center group">
-                    Customer Portal 
-                    <div class="w-8 h-8 rounded-full bg-primary/50 flex items-center justify-center ml-3 group-hover:bg-cyan group-hover:text-primary transition-colors border border-border group-hover:border-transparent">
-                        <i class="fa-solid fa-arrow-right group-hover:translate-x-0.5 transition-transform"></i>
+            <!-- Search Engine Panel -->
+            <div class="glass-panel p-6 rounded-2xl border border-cyan/30 bg-secondary/40 backdrop-blur-xl shadow-2xl max-w-4xl mx-auto mb-8 relative z-20">
+                <form action="/Home/SearchBuses" method="get" class="flex flex-col md:flex-row gap-4 items-end">
+                    <div class="w-full">
+                        <label class="block text-light text-sm font-semibold mb-2 text-left"><i class="fa-solid fa-location-dot text-cyan mr-2"></i>From</label>
+                        <select name="origin" class="w-full bg-primary/80 border border-border rounded-xl px-4 py-3 text-light focus:outline-none focus:border-cyan focus:ring-1 focus:ring-cyan transition-all" required>
+                            <option value="">Origin City</option>
+                            @if(ViewBag.Locations != null)
+                            {
+                                foreach(var loc in ViewBag.Locations)
+                                {
+                                    <option value="@loc">@loc</option>
+                                }
+                            }
+                        </select>
                     </div>
+                    
+                    <div class="hidden md:flex items-center justify-center pb-3">
+                        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center border border-border text-cyan">
+                            <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                        </div>
+                    </div>
+
+                    <div class="w-full">
+                        <label class="block text-light text-sm font-semibold mb-2 text-left"><i class="fa-solid fa-location-dot text-blue mr-2"></i>To</label>
+                        <select name="destination" class="w-full bg-primary/80 border border-border rounded-xl px-4 py-3 text-light focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all" required>
+                            <option value="">Destination City</option>
+                            @if(ViewBag.Locations != null)
+                            {
+                                foreach(var loc in ViewBag.Locations)
+                                {
+                                    <option value="@loc">@loc</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="w-full">
+                        <label class="block text-light text-sm font-semibold mb-2 text-left"><i class="fa-regular fa-calendar text-purple mr-2"></i>Date</label>
+                        <input type="date" name="travelDate" min="@DateTime.Today.ToString("yyyy-MM-dd")" value="@DateTime.Today.ToString("yyyy-MM-dd")" class="w-full bg-primary/80 border border-border rounded-xl px-4 py-3 text-light focus:outline-none focus:border-purple focus:ring-1 focus:ring-purple transition-all" required style="color-scheme: dark;" />
+                    </div>
+
+                    <button type="submit" class="w-full md:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-cyan to-blue text-primary font-bold text-lg shadow-[0_0_15px_var(--accent-blue)] hover:shadow-[0_0_25px_var(--accent-cyan)] hover:-translate-y-1 transition-all duration-300 h-[50px] flex items-center justify-center">
+                        <i class="fa-solid fa-search mr-2"></i> Search
+                    </button>
+                </form>
+            </div>
+
+            <div class="flex justify-center">
+                <a href="@Url.Action("Login", "Customer")" class="inline-flex px-8 py-3 rounded-full glass-panel border border-border text-light font-medium hover:border-cyan hover:bg-secondary/60 shadow-lg transition-all duration-300 items-center justify-center group z-20">
+                    Go to Customer Portal 
+                    <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform text-cyan"></i>
                 </a>
             </div>
         </div>

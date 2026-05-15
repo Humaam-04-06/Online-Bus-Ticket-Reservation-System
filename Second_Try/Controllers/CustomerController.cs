@@ -77,7 +77,7 @@ namespace Second_Try.Controllers
         }
 
         // ── C-03: New Request (GET) ───────────────────────────────────────
-        public async Task<IActionResult> NewRequest()
+        public async Task<IActionResult> NewRequest(int? preselectRouteId = null, int? preselectScheduleId = null, string? preselectDate = null)
         {
             var customer = await GetCurrentCustomerAsync();
             if (customer == null) return RedirectToAction("Logout", "Auth");
@@ -87,6 +87,21 @@ namespace Second_Try.Controllers
                 (r.Status == BookingRequestStatus.Pending || r.Status == BookingRequestStatus.Accepted));
 
             ViewBag.HasActiveRequest = hasActive;
+
+            if (preselectRouteId.HasValue && preselectScheduleId.HasValue)
+            {
+                var sched = await _context.BusSchedules.Include(s => s.Route).FirstOrDefaultAsync(s => s.Id == preselectScheduleId);
+                if (sched != null)
+                {
+                    ViewBag.PreOrigin = sched.Route!.Origin;
+                    ViewBag.PreDest = sched.Route!.Destination;
+                    ViewBag.PreDate = preselectDate;
+                    ViewBag.PreBusType = sched.BusType.ToString();
+                    ViewBag.PreScheduleId = sched.Id;
+                    ViewBag.PreRouteId = sched.RouteId;
+                }
+            }
+
             SetCommonViewBag(customer);
             return View();
         }
@@ -97,7 +112,7 @@ namespace Second_Try.Controllers
         public async Task<IActionResult> NewRequest(
             string Origin, string Destination,
             DateTime TravelDate, int NumberOfSeats,
-            BusType PreferredBusType)
+            BusType PreferredBusType, int? BusScheduleId, int? RouteId)
         {
             var customer = await GetCurrentCustomerAsync();
             if (customer == null) return RedirectToAction("Logout", "Auth");
@@ -121,27 +136,32 @@ namespace Second_Try.Controllers
                 return View();
             }
 
-            // Find existing route or create a new one
-            var route = await _context.Routes.FirstOrDefaultAsync(r =>
-                r.Origin == Origin && r.Destination == Destination && r.IsActive);
-
-            if (route == null)
+            if (RouteId.HasValue)
             {
-                route = new Second_Try.Models.Route
+                var r = await _context.Routes.FindAsync(RouteId.Value);
+                if (r != null)
                 {
-                    Origin = Origin,
-                    Destination = Destination,
-                    EstimatedDurationHours = 0,
-                    IsActive = true
-                };
-                _context.Routes.Add(route);
-                await _context.SaveChangesAsync();
+                    Origin = r.Origin;
+                    Destination = r.Destination;
+                }
+            }
+            else
+            {
+                var r = await _context.Routes.FirstOrDefaultAsync(ro => ro.Origin == Origin && ro.Destination == Destination && ro.IsActive);
+                if (r == null)
+                {
+                    r = new Second_Try.Models.Route { Origin = Origin, Destination = Destination, EstimatedDurationHours = 0, IsActive = true };
+                    _context.Routes.Add(r);
+                    await _context.SaveChangesAsync();
+                }
+                RouteId = r.Id;
             }
 
             var request = new BookingRequest
             {
                 CustomerId      = customer.Id,
-                RouteId         = route.Id,
+                RouteId         = RouteId.Value,
+                BusScheduleId   = BusScheduleId,
                 PreferredBusType = PreferredBusType,
                 TravelDate      = TravelDate,
                 NumberOfSeats   = NumberOfSeats,
