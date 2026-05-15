@@ -30,7 +30,7 @@ namespace Second_Try.Services
         private static int _keyIndex = 0;
 
         private const string ModelEndpoint =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent";
 
         // ── System prompt: knows about SRC Travel ─────────────────
         private const string SystemPrompt = @"
@@ -133,16 +133,21 @@ You are ARIA (Automated Route & Info Assistant), the friendly AI assistant for S
                     var content  = new StringContent(json, Encoding.UTF8, "application/json");
                     var url      = $"{ModelEndpoint}?key={key}";
                     var response = await client.PostAsync(url, content);
+                    
+                    string responseJson = await response.Content.ReadAsStringAsync();
 
-                    if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                    if (!response.IsSuccessStatusCode)
                     {
-                        _logger.LogWarning("Gemini key #{Idx} hit rate limit, trying next key.", idx + 1);
-                        continue; // try next key
+                        if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                        {
+                            _logger.LogWarning("Gemini key #{Idx} hit rate limit, trying next key.", idx + 1);
+                            continue; // try next key
+                        }
+                        
+                        _logger.LogError("Gemini API Error (Status: {StatusCode}): {Error}", response.StatusCode, responseJson);
+                        throw new Exception($"Gemini API Error: {response.StatusCode}");
                     }
 
-                    response.EnsureSuccessStatusCode();
-
-                    string responseJson = await response.Content.ReadAsStringAsync();
                     using var doc = JsonDocument.Parse(responseJson);
 
                     string text = doc.RootElement
@@ -158,6 +163,10 @@ You are ARIA (Automated Route & Info Assistant), the friendly AI assistant for S
                 {
                     _logger.LogWarning(ex, "Gemini key #{Idx} failed, trying next.", idx + 1);
                     continue;
+                }
+                catch (Exception ex) when (attempt == _apiKeys.Length - 1)
+                {
+                    _logger.LogError(ex, "All Gemini API keys failed.");
                 }
             }
 
