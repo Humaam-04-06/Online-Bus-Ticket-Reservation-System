@@ -32,8 +32,12 @@ namespace Second_Try.Models
         public DateTime TravelDate { get; set; }
 
         [Required]
-        [Range(1, 10)]
-        public int NumberOfSeats { get; set; } = 1;
+        [Range(1, 6, ErrorMessage = "You can request between 1 and 6 seats.")]
+        public int NumberOfSeats { get; set; }
+
+        [Required]
+        [MaxLength(200)]
+        public string SelectedSeatNumbers { get; set; } = string.Empty;
 
         [Required]
         public BookingRequestStatus Status { get; set; } = BookingRequestStatus.Pending;

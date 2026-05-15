@@ -79,6 +79,13 @@ namespace Second_Try.Controllers
         // ── C-03: New Request (GET) ───────────────────────────────────────
         public async Task<IActionResult> NewRequest(int? preselectRouteId = null, int? preselectScheduleId = null, string? preselectDate = null)
         {
+            // If no schedule preselected, send to public search to pick a bus first
+            if (!preselectScheduleId.HasValue)
+            {
+                TempData["InfoMessage"] = "Please search for a bus first, then click 'Book Now' to select your seats.";
+                return RedirectToAction("Index", "Home");
+            }
+
             var customer = await GetCurrentCustomerAsync();
             if (customer == null) return RedirectToAction("Logout", "Auth");
 
@@ -88,18 +95,16 @@ namespace Second_Try.Controllers
 
             ViewBag.HasActiveRequest = hasActive;
 
-            if (preselectRouteId.HasValue && preselectScheduleId.HasValue)
+            var sched = await _context.BusSchedules.Include(s => s.Route).FirstOrDefaultAsync(s => s.Id == preselectScheduleId);
+            if (sched != null)
             {
-                var sched = await _context.BusSchedules.Include(s => s.Route).FirstOrDefaultAsync(s => s.Id == preselectScheduleId);
-                if (sched != null)
-                {
-                    ViewBag.PreOrigin = sched.Route!.Origin;
-                    ViewBag.PreDest = sched.Route!.Destination;
-                    ViewBag.PreDate = preselectDate;
-                    ViewBag.PreBusType = sched.BusType.ToString();
-                    ViewBag.PreScheduleId = sched.Id;
-                    ViewBag.PreRouteId = sched.RouteId;
-                }
+                ViewBag.PreOrigin     = sched.Route!.Origin;
+                ViewBag.PreDest       = sched.Route!.Destination;
+                ViewBag.PreDate       = preselectDate;
+                ViewBag.PreBusType    = sched.BusType.ToString();
+                ViewBag.PreScheduleId = sched.Id;
+                ViewBag.PreRouteId    = sched.RouteId;
+                ViewBag.BusType       = sched.BusType; // for seat map rendering
             }
 
             SetCommonViewBag(customer);
@@ -112,7 +117,8 @@ namespace Second_Try.Controllers
         public async Task<IActionResult> NewRequest(
             string Origin, string Destination,
             DateTime TravelDate, int NumberOfSeats,
-            BusType PreferredBusType, int? BusScheduleId, int? RouteId)
+            BusType PreferredBusType, int? BusScheduleId, int? RouteId,
+            string? SelectedSeatNumbers)
         {
             var customer = await GetCurrentCustomerAsync();
             if (customer == null) return RedirectToAction("Logout", "Auth");
@@ -159,14 +165,15 @@ namespace Second_Try.Controllers
 
             var request = new BookingRequest
             {
-                CustomerId      = customer.Id,
-                RouteId         = RouteId.Value,
-                BusScheduleId   = BusScheduleId,
-                PreferredBusType = PreferredBusType,
-                TravelDate      = TravelDate,
-                NumberOfSeats   = NumberOfSeats,
-                Status          = BookingRequestStatus.Pending,
-                RequestDate     = DateTime.UtcNow
+                CustomerId          = customer.Id,
+                RouteId             = RouteId.Value,
+                BusScheduleId       = BusScheduleId,
+                PreferredBusType    = PreferredBusType,
+                TravelDate          = TravelDate,
+                NumberOfSeats       = NumberOfSeats,
+                SelectedSeatNumbers = SelectedSeatNumbers ?? string.Empty,
+                Status              = BookingRequestStatus.Pending,
+                RequestDate         = DateTime.UtcNow
             };
 
             _context.BookingRequests.Add(request);
@@ -174,6 +181,31 @@ namespace Second_Try.Controllers
 
             TempData["SuccessMessage"] = $"Booking request submitted successfully! Your request ID is REQ-{request.Id:D4}.";
             return RedirectToAction(nameof(MyRequests));
+        }
+
+        // ── C-03b: Get Booked Seats API (JSON) ────────────────────────────
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetBookedSeats(int scheduleId, DateTime travelDate)
+        {
+            var taken = await _context.BookingRequests
+                .Where(r => r.BusScheduleId == scheduleId
+                         && r.TravelDate.Date == travelDate.Date
+                         && (r.Status == BookingRequestStatus.Pending ||
+                             r.Status == BookingRequestStatus.Accepted ||
+                             r.Status == BookingRequestStatus.Completed)
+                         && r.SelectedSeatNumbers != null
+                         && r.SelectedSeatNumbers != string.Empty)
+                .Select(r => r.SelectedSeatNumbers)
+                .ToListAsync();
+
+            var allTaken = taken
+                .SelectMany(s => s.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                .Select(s => s.Trim())
+                .Distinct()
+                .ToList();
+
+            return Json(allTaken);
         }
 
         // ── C-04: My Requests ─────────────────────────────────────────────

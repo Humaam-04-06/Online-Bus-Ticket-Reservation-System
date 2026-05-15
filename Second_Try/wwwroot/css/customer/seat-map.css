@@ -1,0 +1,184 @@
+/* ===================================================
+   SEAT SELECTION MAP — Urban Nocturne Theme
+   =================================================== */
+
+/* Container */
+.seat-map-wrapper {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    overflow-x: auto;
+}
+
+.seat-map-header {
+    text-align: center;
+    margin-bottom: 1.25rem;
+}
+
+.seat-map-header h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-light);
+    margin: 0 0 0.5rem;
+}
+
+/* Bus front */
+.bus-front {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+}
+
+.bus-front-icon {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue, #007BFF));
+    color: #000;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 0.4rem 2rem;
+    border-radius: 30px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+/* Legend */
+.seat-legend {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+}
+
+.seat-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.legend-box {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+}
+
+.legend-box.available  { background: var(--bg-primary); border-color: var(--border-color); }
+.legend-box.selected   { background: var(--accent-cyan); border-color: var(--accent-cyan); }
+.legend-box.booked     { background: rgba(248, 81, 73, 0.25); border-color: rgba(248, 81, 73, 0.5); }
+
+/* Grid */
+.seat-grid {
+    display: grid;
+    gap: 0.5rem;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+/* Standard (2-2) */
+.seat-grid.layout-standard {
+    grid-template-columns: repeat(5, 36px); /* 2 + aisle + 2 */
+}
+
+/* Luxury (2-1) */
+.seat-grid.layout-luxury {
+    grid-template-columns: repeat(4, 36px); /* 2 + aisle + 1 */
+}
+
+/* Individual seat */
+.seat {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-muted);
+    font-size: 0.6rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    position: relative;
+    user-select: none;
+}
+
+.seat:hover:not(.booked):not(.selected) {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+    background: rgba(0, 209, 255, 0.08);
+    transform: scale(1.08);
+    box-shadow: 0 0 10px rgba(0, 209, 255, 0.25);
+}
+
+.seat.selected {
+    background: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    color: #000;
+    box-shadow: 0 0 12px rgba(0, 209, 255, 0.5);
+}
+
+.seat.booked {
+    background: rgba(248, 81, 73, 0.15);
+    border-color: rgba(248, 81, 73, 0.4);
+    color: rgba(248, 81, 73, 0.6);
+    cursor: not-allowed;
+}
+
+/* Aisle spacer */
+.seat-aisle {
+    width: 36px;
+    height: 36px;
+    /* empty visual gap */
+}
+
+/* Row number label */
+.seat-row-label {
+    width: 20px;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    opacity: 0.5;
+}
+
+/* Selected summary strip */
+.selected-seats-strip {
+    margin-top: 1rem;
+    background: rgba(0, 209, 255, 0.08);
+    border: 1px solid rgba(0, 209, 255, 0.25);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    min-height: 50px;
+}
+
+.selected-seats-strip .strip-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent-cyan);
+    white-space: nowrap;
+}
+
+.selected-seats-strip .seat-chip {
+    background: var(--accent-cyan);
+    color: #000;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+.selected-seats-strip .empty-hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+}

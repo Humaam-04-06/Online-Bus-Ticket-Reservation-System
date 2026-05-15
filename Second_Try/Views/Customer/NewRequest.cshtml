@@ -1,217 +1,149 @@
+@using Second_Try.Models
 @{
-    ViewData["Title"] = "New Booking Request";
+    ViewData["Title"] = "Book Your Seats";
     ViewData["ActivePage"] = "NewRequest";
     Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+
+    BusType busType = ViewBag.BusType is BusType bt ? bt : BusType.Standard;
+    bool isLuxury = busType == BusType.Luxury || busType == BusType.Express;
+    int totalSeats = isLuxury ? 30 : 40;
+    int seatsPerRow = isLuxury ? 3 : 4; // 2+1 luxury vs 2+2 standard
 }
 
 @section Styles {
     <link rel="stylesheet" href="~/css/customer/new-request.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/customer/seat-map.css" asp-append-version="true" />
 }
 
 <div class="cp-shell-content">
 
-    <!-- Page header -->
+    <!-- Page Header -->
     <div style="margin-bottom:1.5rem;">
         <h2 style="font-size:1.4rem;font-weight:800;color:var(--text-light);margin:0 0 0.25rem;">
-            <i class="fa-solid fa-ticket" style="color:var(--accent-cyan);margin-right:0.5rem;"></i>New Booking Request
+            <i class="fa-solid fa-couch" style="color:var(--accent-cyan);margin-right:0.5rem;"></i>Select Your Seats
         </h2>
         <p style="color:var(--text-muted);font-size:0.875rem;margin:0;">
-            Fill in the details below and we'll assign a bus and seat for your trip.
+            <strong style="color:var(--text-light);">@ViewBag.PreOrigin &rarr; @ViewBag.PreDest</strong>
+            &nbsp;&bull;&nbsp; @busType Class
+            &nbsp;&bull;&nbsp; @(ViewBag.PreDate is string d ? DateTime.Parse(d).ToString("MMM dd, yyyy") : "")
         </p>
     </div>
 
-    <!-- Pending request warning (shown if customer already has a Pending/Accepted request) -->
     @if (ViewBag.HasActiveRequest == true)
     {
         <div class="nr-alert nr-alert-warning" style="margin-bottom:1.5rem;">
             <i class="fa-solid fa-triangle-exclamation"></i>
             <div>
                 <strong>You already have an active request.</strong>
-                You cannot submit a new request until your current one is resolved (accepted, rejected, or cancelled).
-                <a href="/Customer/MyRequests" style="color:var(--accent-cyan);font-weight:600;">View My Requests →</a>
+                Please wait for it to be resolved before submitting a new one.
+                <a href="/Customer/MyRequests" style="color:var(--accent-cyan);font-weight:600;">View My Requests &rarr;</a>
             </div>
         </div>
     }
 
-    <!-- 60/40 grid -->
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="nr-alert nr-alert-warning" style="margin-bottom:1rem;">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <div>@TempData["ErrorMessage"]</div>
+        </div>
+    }
+
     <div class="nr-grid">
 
-        <!-- LEFT: Form -->
+        <!-- LEFT: Seat Map -->
         <div class="cp-card">
             <div class="cp-card-header">
-                <div class="cp-card-title"><i class="fa-solid fa-route"></i> Trip Details</div>
+                <div class="cp-card-title"><i class="fa-solid fa-bus"></i> Bus Seat Layout — @busType</div>
             </div>
 
-            <form id="booking-form" asp-controller="Customer" asp-action="NewRequest" method="POST">
-                @Html.AntiForgeryToken()
-
-                @if(ViewBag.PreScheduleId != null)
-                {
-                    <input type="hidden" name="BusScheduleId" value="@ViewBag.PreScheduleId" />
-                    <input type="hidden" name="RouteId" value="@ViewBag.PreRouteId" />
-                    <div class="nr-alert nr-alert-success" style="margin-bottom:1.5rem;background:var(--accent-cyan-transparent);border-color:var(--accent-cyan);">
-                        <i class="fa-solid fa-check-circle" style="color:var(--accent-cyan)"></i>
-                        <div>
-                            <strong>Schedule Selected!</strong> You are booking the <strong>@ViewBag.PreOrigin &rarr; @ViewBag.PreDest</strong> (@ViewBag.PreBusType) bus.
-                        </div>
-                    </div>
-                }
-
-                <div class="nr-row">
-                    <div class="nr-form-group">
-                        <label class="nr-label" for="origin">Origin City <span>*</span></label>
-                        @if(ViewBag.PreOrigin != null)
-                        {
-                            <input type="text" class="nr-input" name="Origin" id="origin" value="@ViewBag.PreOrigin" readonly style="background:var(--bg-secondary);opacity:0.8;color:var(--text-light)" />
-                        }
-                        else
-                        {
-                            <select class="nr-select" id="origin" name="Origin" required onchange="updateSummary()">
-                                <option value="">— Select Origin —</option>
-                                <option value="Karachi">Karachi</option>
-                                <option value="Lahore">Lahore</option>
-                                <option value="Islamabad">Islamabad</option>
-                                <option value="Faisalabad">Faisalabad</option>
-                                <option value="Multan">Multan</option>
-                                <option value="Peshawar">Peshawar</option>
-                                <option value="Quetta">Quetta</option>
-                            </select>
-                        }
-                    </div>
-                    <div class="nr-form-group">
-                        <label class="nr-label" for="destination">Destination City <span>*</span></label>
-                        @if(ViewBag.PreDest != null)
-                        {
-                            <input type="text" class="nr-input" name="Destination" id="destination" value="@ViewBag.PreDest" readonly style="background:var(--bg-secondary);opacity:0.8;color:var(--text-light)" />
-                        }
-                        else
-                        {
-                            <select class="nr-select" id="destination" name="Destination" required onchange="updateSummary()">
-                                <option value="">— Select Destination —</option>
-                                <option value="Karachi">Karachi</option>
-                                <option value="Lahore">Lahore</option>
-                                <option value="Islamabad">Islamabad</option>
-                                <option value="Faisalabad">Faisalabad</option>
-                                <option value="Multan">Multan</option>
-                                <option value="Peshawar">Peshawar</option>
-                                <option value="Quetta">Quetta</option>
-                            </select>
-                        }
-                    </div>
+            <div class="seat-map-wrapper">
+                <div class="bus-front">
+                    <div class="bus-front-icon"><i class="fa-solid fa-steering-wheel mr-2"></i> Driver</div>
                 </div>
 
-                <div class="nr-row">
-                    <div class="nr-form-group">
-                        <label class="nr-label" for="travel-date">Travel Date <span>*</span></label>
-                        @if(ViewBag.PreDate != null)
-                        {
-                            <input type="date" class="nr-input" id="travel-date" name="TravelDate" value="@ViewBag.PreDate" readonly style="background:var(--bg-secondary);opacity:0.8;color:var(--text-light)" />
-                        }
-                        else
-                        {
-                            <input type="date" class="nr-input" id="travel-date" name="TravelDate"
-                                   min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" required
-                                   onchange="updateSummary()" />
-                        }
-                    </div>
-                    <div class="nr-form-group">
-                        <label class="nr-label" for="seats">Number of Seats <span>*</span></label>
-                        <input type="number" class="nr-input" id="seats" name="NumberOfSeats"
-                               min="1" max="10" value="1" required onchange="updateSummary()" />
-                    </div>
+                <!-- Legend -->
+                <div class="seat-legend">
+                    <div class="seat-legend-item"><div class="legend-box available"></div> Available</div>
+                    <div class="seat-legend-item"><div class="legend-box selected"></div> Your Selection</div>
+                    <div class="seat-legend-item"><div class="legend-box booked"></div> Already Booked</div>
                 </div>
 
-                <!-- Bus type selector -->
-                <div class="nr-form-group">
-                    <label class="nr-label">Bus Class <span>*</span></label>
-                    <div class="nr-bus-type-grid">
-                        <label class="nr-bus-type-card">
-                            <input type="radio" name="PreferredBusType" value="0" checked onchange="updateSummary()" />
-                            <div class="nr-bus-type-label">
-                                <i class="fa-solid fa-bus"></i>
-                                <span class="nr-bus-type-name">Economy</span>
-                            </div>
-                        </label>
-                        <label class="nr-bus-type-card">
-                            <input type="radio" name="PreferredBusType" value="1" onchange="updateSummary()" />
-                            <div class="nr-bus-type-label">
-                                <i class="fa-solid fa-couch"></i>
-                                <span class="nr-bus-type-name">Standard</span>
-                            </div>
-                        </label>
-                        <label class="nr-bus-type-card">
-                            <input type="radio" name="PreferredBusType" value="2" onchange="updateSummary()" />
-                            <div class="nr-bus-type-label">
-                                <i class="fa-solid fa-gem"></i>
-                                <span class="nr-bus-type-name">Luxury</span>
-                            </div>
-                        </label>
-                        <label class="nr-bus-type-card">
-                            <input type="radio" name="PreferredBusType" value="3" onchange="updateSummary()" />
-                            <div class="nr-bus-type-label">
-                                <i class="fa-solid fa-bolt"></i>
-                                <span class="nr-bus-type-name">Express</span>
-                            </div>
-                        </label>
-                    </div>
+                <!-- Seat Grid -->
+                <div id="seatGrid" class="seat-grid @(isLuxury ? "layout-luxury" : "layout-standard")">
+                    <!-- Rendered by JS -->
                 </div>
 
-                <!-- Remarks -->
-                <div class="nr-form-group">
-                    <label class="nr-label" for="remarks">Special Remarks <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
-                    <textarea class="nr-input" id="remarks" name="Remarks" rows="3"
-                              placeholder="Any special requirements, seat preferences, accessibility needs..." style="resize:vertical;"></textarea>
+                <!-- Selected seats chip strip -->
+                <div class="selected-seats-strip" id="selectedStrip">
+                    <span class="strip-label"><i class="fa-solid fa-check-circle mr-1"></i> Selected:</span>
+                    <span class="empty-hint" id="emptyHint">Click seats above to select them.</span>
                 </div>
-
-                <!-- Info note -->
-                <div class="nr-alert nr-alert-warning">
-                    <i class="fa-solid fa-circle-info"></i>
-                    <div>Seat assignment and final confirmation will be done by our booking staff.
-                    Payment is made at the counter on the day of travel.</div>
-                </div>
-
-                <button type="submit" class="cp-btn cp-btn-primary nr-submit-btn"
-                        @(ViewBag.HasActiveRequest == true ? "disabled" : "")>
-                    <i class="fa-solid fa-paper-plane"></i> Submit Booking Request
-                </button>
-            </form>
+            </div>
         </div>
 
-        <!-- RIGHT: Fare Summary -->
+        <!-- RIGHT: Booking Summary -->
         <div>
-            <div class="nr-summary-card">
-                <div class="nr-summary-header">
-                    <p class="nr-summary-title"><i class="fa-solid fa-calculator"></i> Fare Estimate</p>
-                    <p class="nr-summary-sub">Prices are indicative and may vary</p>
+            <div class="cp-card" style="position:sticky;top:90px;">
+                <div class="cp-card-header">
+                    <div class="cp-card-title"><i class="fa-solid fa-receipt"></i> Booking Summary</div>
                 </div>
-                <div class="nr-summary-body">
-                    <div class="nr-summary-row">
-                        <span class="nr-summary-row-label">Route</span>
-                        <span class="nr-summary-row-value" id="sum-route">—</span>
-                    </div>
-                    <div class="nr-summary-row">
-                        <span class="nr-summary-row-label">Travel Date</span>
-                        <span class="nr-summary-row-value" id="sum-date">—</span>
-                    </div>
-                    <div class="nr-summary-row">
-                        <span class="nr-summary-row-label">Bus Class</span>
-                        <span class="nr-summary-row-value" id="sum-class">Standard</span>
-                    </div>
-                    <div class="nr-summary-row">
-                        <span class="nr-summary-row-label">Seats</span>
-                        <span class="nr-summary-row-value" id="sum-seats">1</span>
-                    </div>
-                    <div class="nr-summary-row">
-                        <span class="nr-summary-row-label">Price / Seat</span>
-                        <span class="nr-summary-row-value" id="sum-per-seat">—</span>
-                    </div>
 
-                    <div class="nr-fare-total">
-                        <p class="nr-fare-label">Estimated Total</p>
-                        <p class="nr-fare-value" id="sum-total">PKR —</p>
-                        <p class="nr-fare-note" id="sum-note">Final fare confirmed by staff</p>
+                <form id="booking-form" asp-controller="Customer" asp-action="NewRequest" method="POST">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="BusScheduleId" value="@ViewBag.PreScheduleId" />
+                    <input type="hidden" name="RouteId" value="@ViewBag.PreRouteId" />
+                    <input type="hidden" name="Origin" value="@ViewBag.PreOrigin" />
+                    <input type="hidden" name="Destination" value="@ViewBag.PreDest" />
+                    <input type="hidden" name="TravelDate" value="@ViewBag.PreDate" />
+                    <input type="hidden" name="PreferredBusType" value="@((int)busType)" />
+                    <input type="hidden" name="NumberOfSeats" id="hiddenSeatCount" value="0" />
+                    <input type="hidden" name="SelectedSeatNumbers" id="hiddenSeatNumbers" value="" />
+
+                    <div style="padding:1.25rem;">
+                        <!-- Trip Info -->
+                        <div style="background:var(--bg-primary);border-radius:10px;padding:0.9rem;margin-bottom:1rem;border:1px solid var(--border-color);">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem;">
+                                <span style="color:var(--text-muted);font-size:0.8rem;">From</span>
+                                <span style="color:var(--text-light);font-weight:700;">@ViewBag.PreOrigin</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem;">
+                                <span style="color:var(--text-muted);font-size:0.8rem;">To</span>
+                                <span style="color:var(--text-light);font-weight:700;">@ViewBag.PreDest</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem;">
+                                <span style="color:var(--text-muted);font-size:0.8rem;">Date</span>
+                                <span style="color:var(--text-light);font-weight:700;">@(ViewBag.PreDate is string pd ? DateTime.Parse(pd).ToString("MMM dd, yyyy") : "")</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;">
+                                <span style="color:var(--text-muted);font-size:0.8rem;">Class</span>
+                                <span style="color:var(--accent-cyan);font-weight:700;">@busType</span>
+                            </div>
+                        </div>
+
+                        <!-- Live seat count -->
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                            <span style="color:var(--text-muted);font-size:0.85rem;">Seats Selected</span>
+                            <span id="seatCount" style="color:var(--accent-cyan);font-size:1.25rem;font-weight:900;">0</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                            <span style="color:var(--text-muted);font-size:0.85rem;">Seat Numbers</span>
+                            <span id="seatNumbers" style="color:var(--text-light);font-size:0.8rem;font-weight:600;">—</span>
+                        </div>
+
+                        <div style="border-top:1px solid var(--border-color);padding-top:0.75rem;margin-bottom:1rem;">
+                            <p style="font-size:0.75rem;color:var(--text-muted);margin:0;line-height:1.6;">
+                                <i class="fa-solid fa-info-circle" style="color:var(--accent-cyan);margin-right:0.35rem;"></i>
+                                Your request will be reviewed by an employee. You will receive a notification once it is accepted or rejected.
+                            </p>
+                        </div>
+
+                        <button type="submit" id="submitBtn" disabled
+                            style="width:100%;padding:0.9rem;border-radius:10px;border:none;background:var(--accent-cyan);color:#000;font-size:0.95rem;font-weight:800;cursor:not-allowed;opacity:0.5;transition:all 0.2s;">
+                            <i class="fa-solid fa-paper-plane mr-2"></i> Submit Request
+                        </button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
 
@@ -220,90 +152,131 @@
 
 @section Scripts {
 <script>
-    // ── Real Fare Engine ──────────────────────────────────────────────────
-    // Calls GET /api/fare?origin=X&destination=Y and returns live DB prices.
-    // Falls back to 0 / "—" when no PriceList entry exists for that route.
+(function() {
+    const scheduleId = @(ViewBag.PreScheduleId ?? 0);
+    const travelDate = '@(ViewBag.PreDate ?? DateTime.Today.ToString("yyyy-MM-dd"))';
+    const isLuxury   = @(isLuxury ? "true" : "false");
+    const totalSeats = @totalSeats;
+    const maxSelect  = 6;
 
-    const classNames  = ['Economy', 'Standard', 'Luxury', 'Express'];
-    const classKeys   = ['economy', 'standard', 'luxury', 'express'];
-    let   liveFares   = { economy: 0, standard: 0, luxury: 0, express: 0, found: false };
-    let   fetchTimer  = null;
+    let selected = new Set();
+    let booked   = new Set();
 
-    function getSelectedBusType() {
-        const checked = document.querySelector('input[name="PreferredBusType"]:checked');
-        return parseInt(checked?.value ?? 0);
+    // ── Generate seat labels ───────────────────────────────
+    function buildSeatLabel(rowNum, col) {
+        const cols = isLuxury ? ['A','B','C'] : ['A','B','C','D'];
+        return rowNum + cols[col];
     }
 
-    async function fetchFares(origin, destination) {
-        const totalEl   = document.getElementById('sum-total');
-        const perSeatEl = document.getElementById('sum-per-seat');
-        totalEl.textContent   = 'Loading...';
-        perSeatEl.textContent = '...';
+    // ── Render the grid ────────────────────────────────────
+    function renderGrid() {
+        const grid = document.getElementById('seatGrid');
+        grid.innerHTML = '';
+        const rows = isLuxury ? 10 : 10;
+        const colsLeft = 2;
+        const colsRight = isLuxury ? 1 : 2;
 
-        try {
-            const res  = await fetch(`/api/fare?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`);
-            const data = await res.json();
-            liveFares  = data;
-        } catch {
-            liveFares = { economy: 0, standard: 0, luxury: 0, express: 0, found: false };
+        for (let row = 1; row <= rows; row++) {
+            // Left block
+            for (let c = 0; c < colsLeft; c++) {
+                const label = buildSeatLabel(row, c);
+                grid.appendChild(createSeat(label));
+            }
+            // Aisle
+            const aisle = document.createElement('div');
+            aisle.className = 'seat-aisle';
+            grid.appendChild(aisle);
+            // Right block
+            for (let c = colsLeft; c < colsLeft + colsRight; c++) {
+                const label = buildSeatLabel(row, c);
+                grid.appendChild(createSeat(label));
+            }
+        }
+    }
+
+    function createSeat(label) {
+        const el = document.createElement('div');
+        el.className = 'seat';
+        el.textContent = label;
+        el.dataset.seat = label;
+
+        if (booked.has(label)) {
+            el.classList.add('booked');
+            el.title = 'Already booked';
+        } else {
+            el.addEventListener('click', () => toggleSeat(label, el));
+        }
+        return el;
+    }
+
+    function toggleSeat(label, el) {
+        if (selected.has(label)) {
+            selected.delete(label);
+            el.classList.remove('selected');
+        } else {
+            if (selected.size >= maxSelect) {
+                showToast('You can select a maximum of 6 seats.', 'warning');
+                return;
+            }
+            selected.add(label);
+            el.classList.add('selected');
         }
         updateSummary();
     }
 
     function updateSummary() {
-        const origin      = document.getElementById('origin').value;
-        const destination = document.getElementById('destination').value;
-        const dateVal     = document.getElementById('travel-date').value;
-        const seats       = parseInt(document.getElementById('seats').value) || 1;
-        const busType     = getSelectedBusType();
+        const count = selected.size;
+        const nums  = [...selected].sort().join(', ');
 
-        document.getElementById('sum-route').textContent =
-            (origin && destination && origin !== destination) ? `${origin} → ${destination}` : '—';
-        document.getElementById('sum-date').textContent =
-            dateVal ? new Date(dateVal).toLocaleDateString('en-PK', {day:'numeric',month:'short',year:'numeric'}) : '—';
-        document.getElementById('sum-class').textContent = classNames[busType] ?? 'Economy';
-        document.getElementById('sum-seats').textContent = seats;
+        document.getElementById('seatCount').textContent    = count;
+        document.getElementById('seatNumbers').textContent  = count > 0 ? nums : '—';
+        document.getElementById('hiddenSeatCount').value    = count;
+        document.getElementById('hiddenSeatNumbers').value  = nums;
 
-        const key          = classKeys[busType] ?? 'economy';
-        const pricePerSeat = liveFares[key] ?? 0;
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = count === 0;
+        btn.style.opacity = count > 0 ? '1' : '0.5';
+        btn.style.cursor  = count > 0 ? 'pointer' : 'not-allowed';
 
-        if (origin && destination && origin !== destination && pricePerSeat > 0) {
-            const total = pricePerSeat * seats;
-            document.getElementById('sum-per-seat').textContent = `PKR ${pricePerSeat.toLocaleString()}`;
-            document.getElementById('sum-total').textContent    = `PKR ${total.toLocaleString()}`;
-            document.getElementById('sum-note').textContent     = liveFares.found ? '✅ Live fare from price list' : 'Final fare confirmed by staff';
+        // Chips
+        const strip = document.getElementById('selectedStrip');
+        const hint  = document.getElementById('emptyHint');
+        // Remove old chips
+        strip.querySelectorAll('.seat-chip').forEach(c => c.remove());
+
+        if (count === 0) {
+            hint.style.display = '';
         } else {
-            document.getElementById('sum-per-seat').textContent = '—';
-            document.getElementById('sum-total').textContent    = 'PKR —';
-            document.getElementById('sum-note').textContent     = 'Final fare confirmed by staff';
+            hint.style.display = 'none';
+            [...selected].sort().forEach(s => {
+                const chip = document.createElement('span');
+                chip.className = 'seat-chip';
+                chip.textContent = s;
+                strip.appendChild(chip);
+            });
         }
     }
 
-    function onRouteChange() {
-        const origin      = document.getElementById('origin').value;
-        const destination = document.getElementById('destination').value;
-
-        // Same-city guard
-        if (origin && destination && origin === destination) {
-            document.getElementById('destination').value = '';
-            alert('Origin and destination cannot be the same city.');
-            return;
-        }
-
-        updateSummary();
-
-        // Debounce the API call — fetch only when both are selected
-        if (origin && destination && origin !== destination) {
-            clearTimeout(fetchTimer);
-            fetchTimer = setTimeout(() => fetchFares(origin, destination), 250);
-        }
+    function showToast(msg, type) {
+        // fallback simple alert
+        alert(msg);
     }
 
-    document.getElementById('origin').addEventListener('change', onRouteChange);
-    document.getElementById('destination').addEventListener('change', onRouteChange);
-    document.getElementById('travel-date').addEventListener('change', updateSummary);
-    document.getElementById('seats').addEventListener('change', updateSummary);
-    document.querySelectorAll('input[name="PreferredBusType"]').forEach(r =>
-        r.addEventListener('change', updateSummary));
+    // ── Fetch booked seats from API ────────────────────────
+    async function loadBookedSeats() {
+        if (!scheduleId) { renderGrid(); return; }
+        try {
+            const url = `/Customer/GetBookedSeats?scheduleId=${scheduleId}&travelDate=${travelDate}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            booked = new Set(data);
+        } catch(e) {
+            console.warn('Could not load booked seats', e);
+        }
+        renderGrid();
+    }
+
+    loadBookedSeats();
+})();
 </script>
 }
