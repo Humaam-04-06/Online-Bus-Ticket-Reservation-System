@@ -1,160 +1,70 @@
-# SRCTravel — Online Bus Ticket Reservation System
+# SRCTravel — Modern Online Bus Ticket Reservation System
 
-## Current Status
-✅ **Phase 2 — Customer Portal: FULLY COMPLETE**
-Authentication + Customer Dashboard + Booking Requests + Profile Management + Sign Out + Notifications are all working.
+## 🚀 Current Project Status
+The system is in an advanced state of development. The core portals (Admin, Employee, Customer) are fully operational. We have successfully integrated an AI Chatbot and completed **Phase 1** of our advanced ticketing roadmap (Bus Schedules & Public Search).
 
 ---
 
-## UI / UX Design System
-- **Theme Style**: Frosted Aura (Clean Light Theme)
+## 🎨 UI / UX Design System
+- **Theme**: Urban Nocturne (Premium Dark Mode)
 - **Typography**: Inter (Google Fonts)
-- **Color Palette** (`wwwroot/css/variables.css`):
-  - `var(--bg-primary)`: `#D4DDE2` — Frosted gray page background
-  - `var(--bg-secondary)`: `#FFFFFF` — White cards and panels
-  - `var(--accent-cyan)`: `#5C7E8F` — Buttons, highlights, sidebar
-  - `var(--text-light)`: `#1F2937` — Primary readable text
-  - `var(--text-muted)`: `#4B5563` — Muted / secondary text
-  - `var(--border-color)`: `#A2A2A2` — Pewter gray borders
-  - `var(--success)`: `#3FB950`
-  - `var(--danger)`: `#F85149`
+- **Primary Colors**: Cyan (`#00D1FF`), Blue (`#007BFF`), Purple (`#8A2BE2`)
+- **Style**: Glassmorphism, blurred panels, neon glow accents.
 
 ---
 
-## Phase 1 — Authentication ✅ COMPLETE
+## ✅ Completed Modules
 
-- ✅ Cookie Authentication configured in `Program.cs` (30-day expiry).
-- ✅ `BCrypt.Net-Next` for secure password hashing.
-- ✅ `AuthController` fully implemented:
-  - `GET  /Auth/Login` — Premium sliding panel view.
-  - `POST /Auth/Register` — Validates, hashes password, saves Customer, auto-login.
-  - `POST /Auth/Login` — Verifies hash, issues role-based auth cookie.
-  - `GET  /Auth/Logout` — Destroys cookie, redirects to Login. *(GET + POST both supported)*
-- ✅ Real-time Password Strength Meter (5-level, Red → Green).
-- ✅ Role-based `[Authorize]` attributes:
-  - `CustomerController` → `[Authorize(Roles = "Customer")]`
-  - `AdminController` → `[Authorize(Roles = "Admin")]`
-  - `EmployeeController` → `[Authorize(Roles = "Employee,Admin")]`
-- ✅ Database migration `InitialCreate` — all 8 tables in `SRCTravelDb`.
+### 1. Authentication & Security
+- Cookie-based Auth with `[Authorize]` role checks (Admin, Employee, Customer).
+- BCrypt password hashing.
+- Password strength meters and CSRF protection (`[ValidateAntiForgeryToken]`).
 
----
+### 2. Admin Portal
+- **Manage Employees:** Create, view, and block employee accounts.
+- **Manage Buses:** Configure Standard, Luxury, Express, Economy fleets.
+- **Manage Routes & Prices:** Set up origin/destination routes and class-based fare lists.
+- **Manage Schedules:** Create daily/recurring `BusSchedule` entries with specific Departure and Arrival times.
+- **Reports & History:** View total revenue, monthly trends, and global booking history.
 
-## Phase 2 — Customer Portal ✅ COMPLETE
+### 3. Employee Portal
+- **Dashboard:** Live active booking requests and today's operations.
+- **Process Requests:** Accept or Reject customer requests (automatically creates `Booking` and `Notification` records).
+- **Print Ticket:** HTML ticket view for accepted bookings.
 
-### Layout & Theme
-- ✅ `_CustomerLayout.cshtml` — Fixed sidebar + fixed topbar + responsive hamburger.
-- ✅ Profile picture shown in sidebar & topbar avatars dynamically after upload.
-- ✅ **Notification bell** — Working dropdown with real DB notifications, unread badge, "Mark all read" button, closes on outside click.
-- ✅ Logout link works from sidebar, topbar dropdown, and Profile danger zone.
+### 4. Customer Portal
+- **Dashboard:** Personal stats, active requests, and a dynamic notification bell.
+- **New Request:** Modern 60/40 split-screen booking form. Automatically pre-fills data if initiated from the Public Search Engine.
+- **My Requests:** Track all Pending, Accepted, Rejected, and Cancelled requests.
+- **Profile:** Upload profile pictures and banner images dynamically.
 
-### C-02 — Dashboard (`/Customer/Dashboard`) — 100% DYNAMIC
-- ✅ Welcome banner with first name greeting.
-- ✅ 4 live stat cards: Total / Pending / Accepted / Rejected+Cancelled (from DB).
-- ✅ **Active Request Status card** — Shows real route, travel date, bus class, seats, status badge.
-- ✅ Shows empty state when no active request.
-- ✅ **Notifications panel** — Real DB records with time-ago formatting ("Just now", "2h ago", etc.)
-- ✅ Empty state when no notifications.
-- ✅ Quick Actions grid (Book, My Requests, Profile).
+### 5. ARIA AI Chatbot (Gemini Integration)
+- Floating, interactive AI assistant injected into all layouts (`_AdminLayout`, `_EmployeeLayout`, `_CustomerLayout`, `_PublicLayout`).
+- Powered by Google's `gemini-3-flash-preview` model.
+- Features multi-key round-robin failover to prevent rate limits.
+- Context-aware: It knows if you are logged in and can retrieve your personal booking history to answer specific questions.
 
-### C-03 — New Booking Request (`/Customer/NewRequest`)
-- ✅ 60/40 split-screen — Form + sticky Fare Summary panel.
-- ✅ 7 city origin/destination dropdowns with same-city validation.
-- ✅ 4 bus type selector cards: Economy, Standard, Luxury, Express.
-- ✅ Real-time JavaScript fare calculator.
-- ✅ Active-request guard — blocks duplicate pending/accepted requests.
-- ✅ Auto-creates DB `Route` if combination doesn't exist.
+### 6. Background Services
+- `RequestExpiryService`: Runs silently every hour to automatically cancel `Pending` requests if the `TravelDate` has already passed, keeping the database clean.
 
-### C-04 — My Requests (`/Customer/MyRequests`)
-- ✅ Full request history from DB (with Route & AssignedBooking).
-- ✅ Client-side filter tabs: All / Pending / Accepted / Rejected / Cancelled.
-- ✅ Real-time search bar.
-- ✅ Cancel Request modal (Pending requests only).
-- ✅ "View Ticket" link appears when `AssignedBooking` is populated.
-
-### C-05 — My Profile (`/Customer/Profile`)
-- ✅ Hero cover banner with gradient background.
-- ✅ **Custom Banner Upload** — Hover cover → "Change Cover" overlay → click → live preview → saves to `wwwroot/uploads/banners/`.
-- ✅ **Profile Picture Upload** — Click avatar → live preview → saves to `wwwroot/uploads/profiles/`.
-- ✅ Both uploads: old file deleted, new file saved with timestamped name.
-- ✅ 3-tab interface:
-  - **Personal Info** — Edit Full Name, Email, Phone. Duplicate email check.
-  - **Security** — Change Password with BCrypt verification + live strength meter.
-  - **Account Stats** — Member Since, stat boxes, account detail card.
-- ✅ Tab state preserved across redirects via `TempData["ActiveTab"]`.
+### 7. Public Search Engine (Phase 1 of Roadmap)
+- Modern, animated homepage with a glassmorphic Search Bar.
+- Unregistered users can search routes and dates.
+- Search results show available `BusSchedules`, bus classes, departure/arrival times, and fares.
+- Clicking "Book Now" locks in the specific schedule and routes the user to the Customer Portal.
 
 ---
 
-## Database Migrations Applied
+## 🗺️ Master Roadmap (Remaining Work)
 
-| Migration | Change |
-|---|---|
-| `InitialCreate` | All 8 core tables |
-| `AddBannerUrl` | Added `CoverPictureUrl` column to `Customers` |
+We are currently tracking against a 4-Phase advanced upgrade plan:
 
----
-
-## Project Structure (Key Files)
-
-```
-Controllers/
-  AuthController.cs         — Login, Register, Logout (GET+POST)
-  CustomerController.cs     — Dashboard, NewRequest, MyRequests, CancelRequest,
-                              Profile, UpdateProfile, UpdatePassword,
-                              UploadPicture, UploadBanner, MarkNotificationsRead
-
-Models/
-  Customer.cs               — FullName, Email, PhoneNumber,
-                              ProfilePictureUrl, CoverPictureUrl, CreatedAt
-  BookingRequest.cs         — Status (Pending/Accepted/Rejected/Cancelled)
-  Notification.cs           — Title, Message, IsRead, CreatedAt
-  Route.cs, Bus.cs, Booking.cs, PriceList.cs
-  ViewModels/
-    AuthPageViewModel.cs, RegisterViewModel.cs, LoginViewModel.cs
-    ProfileViewModels.cs    — UpdateProfileViewModel, UpdatePasswordViewModel
-
-Views/
-  Shared/_CustomerLayout.cshtml   — Sidebar, topbar, notification bell dropdown
-  Customer/
-    Dashboard.cshtml        — 100% dynamic stats + active request + notifications
-    NewRequest.cshtml       — Booking form + live fare calculator
-    MyRequests.cshtml       — Filter tabs, request cards, cancel modal
-    Profile.cshtml          — Hero cover, banner/avatar upload, 3 tabs
-
-wwwroot/css/customer/
-  customer-dashboard.css    — Layout, sidebar, topbar, cards, toasts, notif dropdown
-  new-request.css           — Booking form, bus type grid, fare summary
-  my-requests.css           — Filter tabs, request cards, cancel modal
-  customer-profile.css      — Hero cover+overlay, avatar, 3-tab interface
-
-wwwroot/uploads/
-  profiles/                 — Customer profile pictures
-  banners/                  — Customer cover banner photos
-```
-
----
-
-## Known Gaps in Customer Portal (Needs Other Portals First)
-
-| Gap | Root Cause | Resolved By |
+| Phase | Status | Description |
 |---|---|---|
-| "View Ticket" button never shows | `AssignedBooking` only populated when Employee/Admin creates a `Booking` | Employee Dashboard |
-| Notifications DB is empty | Nothing writes to `Notifications` table yet | Notification service (Phase 3) |
-| Real fare prices | `PriceList` table exists but unused | Admin manages PriceList |
-| Auto-expire past requests | No scheduler or check-on-load logic | Phase 3 background service |
-| Google OAuth | Button exists, logic not implemented | Phase 3 |
-
----
-
-## What to Build Next (Recommended Order)
-
-| # | Portal | Feature | Unlocks |
-|---|---|---|---|
-| 🔴 1 | **Employee Dashboard** | View requests, Accept/Reject with remarks, create Booking record | Customer "View Ticket", full status lifecycle |
-| 🔴 2 | **Notification Service** | Write to `Notifications` DB on status changes & registration | Customer notification bell + panel |
-| 🟡 3 | **Admin Dashboard** | Manage Routes, Buses, Employees, PriceLists | Real fare calculation |
-| 🟡 4 | **Ticket Printing** | Generate PDF ticket when Booking is created | Customer downloads ticket |
-| 🟢 5 | **Auto-Expiry** | Auto-cancel pending requests past travel date | Accurate dashboard stats |
-| 🟢 6 | **Google OAuth** | Google login button logic | Social login |
+| **Phase 1** | ✅ COMPLETE | **Schedules & Public Search:** Created `BusSchedule` entity, Admin CRUD, and Public Homepage Search API. |
+| **Phase 2** | ⏳ UP NEXT | **Interactive Seat Selection:** A modern CSS grid showing the physical bus layout. Customers will click specific seats (e.g. 1A, 2B) preventing double-booking. |
+| **Phase 3** | 📅 PLANNED | **PDF Ticket Generation:** Use a C# library to generate a formal, downloadable PDF boarding pass with a scannable QR code. |
+| **Phase 4** | 📅 PLANNED | **Customer Reviews & Ratings:** Add `Completed` status so employees can mark who actually boarded the bus. Only verified passengers can leave a star rating displayed on the homepage. |
 
 ---
 
