@@ -211,6 +211,43 @@
     .strength-label { font-size: 0.72rem; text-align: left; margin-top: 3px; }
 
     .field-error { color: #ef4444; font-size: 0.72rem; margin-top: -0.5rem; margin-bottom: 0.5rem; text-align: left; width: 100%; }
+
+    .mobile-toggle { display: none; }
+
+    @@media (max-width: 768px) {
+        .auth-wrapper { padding: 1rem; }
+        .auth-container { min-height: auto; padding-bottom: 2rem; }
+        .overlay-container { display: none; }
+        
+        .sign-in-container, .sign-up-container {
+            width: 100%;
+            position: relative;
+            transform: none !important;
+            opacity: 1 !important;
+            transition: none;
+            animation: none;
+        }
+
+        /* Default state: Show Sign In, Hide Sign Up */
+        .sign-up-container { display: none; }
+        
+        /* Active state: Show Sign Up, Hide Sign In */
+        .auth-container.right-panel-active .sign-in-container { display: none; }
+        .auth-container.right-panel-active .sign-up-container { display: block; }
+        
+        .mobile-toggle {
+            display: block;
+            margin-top: 1.5rem;
+            color: var(--accent-cyan);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+        .mobile-toggle:hover { text-decoration: underline; }
+    }
 </style>
 
 <div class="auth-wrapper">
@@ -260,7 +297,8 @@
                     <p class="field-error">@ViewData.ModelState["Register.Password"]!.Errors[0].ErrorMessage</p>
                 }
 
-                <button type="submit" class="auth-btn" id="reg-submit-btn">Sign Up</button>
+                <button type="submit" class="auth-btn" id="reg-submit-btn" style="margin-top:0.75rem;">Sign Up</button>
+                <button type="button" class="mobile-toggle" onclick="document.getElementById('auth-container').classList.remove('right-panel-active')">Already have an account? Sign In</button>
             </form>
         </div>
 
@@ -293,6 +331,7 @@
                 </a>
 
                 <button type="submit" class="auth-btn">Sign In</button>
+                <button type="button" class="mobile-toggle" onclick="document.getElementById('auth-container').classList.add('right-panel-active')">Don't have an account? Sign Up</button>
             </form>
         </div>
 
@@ -377,5 +416,10 @@
             // Prevent submission if not strong enough (score < 4 = less than 5/5)
             submitBtn.disabled = (score < 3);
         });
+
+        // ── Auto-open Sign Up panel if ?register=true in URL ──────────
+        if (new URLSearchParams(window.location.search).get('register') === 'true') {
+            document.getElementById('auth-container')?.classList.add('right-panel-active');
+        }
     });
 </script>

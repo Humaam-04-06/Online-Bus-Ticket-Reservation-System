@@ -1,7 +1,27 @@
 @using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using Second_Try.Data
+@inject ApplicationDbContext _context
 @{
     var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
-    // isAuthenticated = true; // UNCOMMENT THIS LINE TO TEST LOGGED-IN NAVBAR VIEW
+    string userEmail = User.FindFirstValue(ClaimTypes.Email) ?? "";
+    string userName = User.Identity?.Name ?? "User";
+    
+    string? picUrl = null;
+    if (isAuthenticated && !string.IsNullOrEmpty(userEmail))
+    {
+        var role = User.FindFirstValue(ClaimTypes.Role);
+        if (role == "Customer")
+        {
+            var cust = _context.Customers.FirstOrDefault(c => c.Email == userEmail);
+            picUrl = cust?.ProfilePictureUrl;
+        }
+        else
+        {
+            var emp = _context.Employees.FirstOrDefault(e => e.Email == userEmail);
+            picUrl = emp?.ProfilePictureUrl;
+        }
+    }
 }
 
 <nav class="fixed w-full z-50 glass-panel border-b border-border transition-all duration-300 shadow-lg" id="navbar">
@@ -45,7 +65,16 @@
                     <!-- Profile Dropdown -->
                     <div class="relative ml-2" id="profileDropdownContainer">
                         <button type="button" class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-cyan transition-all" id="user-menu-button" aria-expanded="false" aria-haspopup="true" onclick="toggleDropdown()">
-                            <img class="h-10 w-10 rounded-full object-cover border-2 border-border hover:border-cyan shadow-[0_0_10px_rgba(110,86,207,0.3)] transition-all" src="https://ui-avatars.com/api/?name=User&background=6E56CF&color=fff&bold=true" alt="Profile">
+                            <div class="h-10 w-10 rounded-full border-2 border-border hover:border-cyan shadow-[0_0_10px_rgba(110,86,207,0.3)] transition-all" style="@(!string.IsNullOrEmpty(picUrl) ? "background:transparent;overflow:hidden;padding:0;" : "background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;")">
+                                @if (!string.IsNullOrEmpty(picUrl))
+                                {
+                                    <img src="@picUrl" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="avatar" />
+                                }
+                                else
+                                {
+                                    <span>@userName.Substring(0, 1).ToUpper()</span>
+                                }
+                            </div>
                             <span class="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-success ring-2 ring-primary"></span>
                         </button>
                         
@@ -53,7 +82,7 @@
                         <div class="origin-top-right absolute right-0 mt-3 w-56 rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.6)] bg-secondary/95 backdrop-blur-md border border-border divide-y divide-border hidden transform transition-all opacity-0 scale-95 z-50" id="profileDropdown" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
                             <div class="px-4 py-3 bg-primary/30 rounded-t-xl">
                                 <p class="text-xs text-muted font-medium">Signed in as</p>
-                                <p class="text-sm font-bold text-light truncate mt-0.5">user@example.com</p>
+                                <p class="text-sm font-bold text-light truncate mt-0.5">@userEmail</p>
                             </div>
                             <div class="py-1" role="none">
                                 <a href="@Url.Action("Dashboard", "Customer")" class="group flex items-center px-4 py-2.5 text-sm text-muted hover:text-light hover:bg-primary/50 transition-colors" role="menuitem">
@@ -83,9 +112,9 @@
                 else
                 {
                     <a href="@Url.Action("Login", "Auth")" class="text-light hover:text-cyan font-medium transition-colors text-sm">Log in</a>
-                    <a href="@Url.Action("Login", "Customer")" class="relative inline-flex items-center justify-center px-5 py-2 overflow-hidden font-bold text-primary bg-gradient-to-r from-cyan to-blue rounded-lg shadow-[0_0_15px_var(--accent-blue)] hover:shadow-[0_0_25px_var(--accent-cyan)] transition-all group hover:-translate-y-0.5">
+                    <a href="@Url.Action("Login", "Auth")?register=true" class="relative inline-flex items-center justify-center px-5 py-2 overflow-hidden font-bold text-primary bg-gradient-to-r from-cyan to-blue rounded-lg shadow-[0_0_15px_var(--accent-blue)] hover:shadow-[0_0_25px_var(--accent-cyan)] transition-all group hover:-translate-y-0.5">
                         <span class="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-20"></span>
-                        <span class="relative flex items-center gap-2 text-sm"><i class="fa-brands fa-google text-primary"></i> Sign In</span>
+                        <span class="relative flex items-center gap-2 text-sm"><i class="fa-solid fa-user-plus text-primary"></i> Sign Up</span>
                     </a>
                 }
             </div>
@@ -111,12 +140,19 @@
             @if (isAuthenticated)
             {
                 <div class="flex items-center px-4 py-4 border-b border-border/50 mb-2 bg-primary/30 rounded-lg mx-2">
-                    <div class="flex-shrink-0">
-                        <img class="h-10 w-10 rounded-full border-2 border-cyan" src="https://ui-avatars.com/api/?name=User&background=6E56CF&color=fff" alt="Profile">
+                    <div class="flex-shrink-0" style="@(!string.IsNullOrEmpty(picUrl) ? "background:transparent;overflow:hidden;padding:0;" : "background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:bold;height:2.5rem;width:2.5rem;border-radius:50%;")">
+                        @if (!string.IsNullOrEmpty(picUrl))
+                        {
+                            <img class="h-10 w-10 rounded-full object-cover border-2 border-cyan" src="@picUrl" alt="Profile">
+                        }
+                        else
+                        {
+                            <span>@userName.Substring(0, 1).ToUpper()</span>
+                        }
                     </div>
                     <div class="ml-3">
-                        <div class="text-base font-medium text-light">User Name</div>
-                        <div class="text-sm font-medium text-cyan">user@example.com</div>
+                        <div class="text-base font-medium text-light">@userName</div>
+                        <div class="text-sm font-medium text-cyan">@userEmail</div>
                     </div>
                 </div>
                 <a href="@Url.Action("MyRequests", "Customer")" class="block px-4 py-3 rounded-lg text-base font-medium text-light hover:bg-primary/50 transition-colors mx-2"><i class="fa-solid fa-route w-6 text-purple"></i> Track Order</a>
@@ -131,7 +167,7 @@
             {
                 <div class="mt-4 flex flex-col gap-3 mx-2 pb-2">
                     <a href="@Url.Action("Login", "Auth")" class="block text-center px-4 py-3 rounded-lg text-base font-medium text-light border border-border hover:bg-primary/50 transition-colors">Log in</a>
-                    <a href="@Url.Action("Login", "Customer")" class="block text-center px-4 py-3 rounded-lg text-base font-medium text-primary bg-gradient-to-r from-cyan to-blue shadow-[0_0_15px_var(--accent-blue)]">Sign in with Google</a>
+                    <a href="@Url.Action("Login", "Auth")?register=true" class="block text-center px-4 py-3 rounded-lg text-base font-medium text-primary bg-gradient-to-r from-cyan to-blue shadow-[0_0_15px_var(--accent-blue)]">Sign Up</a>
                 </div>
             }
         </div>

@@ -57,6 +57,42 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
     }
+
+    /* Scale-Up on Scroll Effect (Initial state for GSAP) */
+    .scale-on-scroll {
+        opacity: 0;
+        transform: scale(0.6);
+        will-change: transform, opacity;
+    }
+
+    /* ── MOBILE RESPONSIVENESS ───────────────────────────────── */
+    @@media (max-width: 1024px) {
+        /* On tablets & phones, disable the sticky stacking effect.
+           Each section becomes a normal block that scrolls in sequence. */
+        .stack-section {
+            position: relative;
+            top: auto;
+            min-height: auto;
+            padding: 5rem 0;
+        }
+        /* Disable GSAP scale animation on mobile for performance */
+        .scale-on-scroll {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .stack-section {
+            padding: 4rem 0;
+        }
+        /* Fix hero heading on small phones */
+        h1.text-5xl { font-size: 2.25rem; }
+        /* Stat card grids collapse to single column */
+        .cp-stats-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
 </style>
 
 <div class="stack-container">
@@ -156,7 +192,7 @@
 
     <!-- Section 2: The SRC Advantage (z-10) - STICKY STACK -->
     <div class="stack-section z-[10] bg-primary border-t border-border rounded-t-[3rem] shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full scale-on-scroll">
             <div class="text-center mb-16">
                 <div class="inline-flex items-center gap-3 px-5 py-2.5 rounded-full border border-cyan/30 bg-cyan/10 mb-8 shadow-lg">
                     <i class="fa-solid fa-bolt text-cyan"></i>
@@ -256,7 +292,7 @@
 
     <!-- Section 4: Premium Fleet Amenities (z-30) - STICKY STACK -->
     <div class="stack-section z-[30] bg-primary shadow-[0_-20px_50px_rgba(0,0,0,0.8)] border-t border-border rounded-t-[3rem]">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full relative z-10 scale-on-scroll">
             <div class="absolute -left-40 top-20 w-[500px] h-[500px] bg-cyan/5 rounded-full blur-[100px] pointer-events-none"></div>
             <div class="absolute -right-40 bottom-20 w-[500px] h-[500px] bg-blue/5 rounded-full blur-[100px] pointer-events-none"></div>
 
@@ -524,6 +560,98 @@
             </div>
         </div>
     </div>
+
+    <!-- Section 8: Customer Reviews -->
+    <div class="relative z-10 bg-primary border-t border-border py-24 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-5xl font-bold text-light tracking-tight mb-4">What Our Passengers Say</h2>
+                <p class="text-muted text-lg max-w-2xl mx-auto">Real stories from our travelers who've experienced the comfort and reliability of SRCTravel.</p>
+            </div>
+
+            @if (ViewBag.Reviews != null && ((List<Second_Try.Models.Review>)ViewBag.Reviews).Any())
+            {
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    @foreach (var review in (List<Second_Try.Models.Review>)ViewBag.Reviews)
+                    {
+                        <div class="glass-panel p-8 rounded-2xl border border-border shadow-lg relative overflow-hidden group hover:-translate-y-2 transition-transform duration-300">
+                            <!-- Decorative blur -->
+                            <div class="absolute -top-10 -right-10 w-32 h-32 bg-cyan/10 rounded-full blur-3xl group-hover:bg-cyan/20 transition-colors"></div>
+                            
+                            <div class="flex items-center gap-4 mb-6">
+                                <div class="w-14 h-14 rounded-full bg-secondary border border-cyan/30 flex items-center justify-center text-cyan font-bold text-xl shadow-[0_0_15px_rgba(0,209,255,0.2)]">
+                                    @string.Join("", (review.Customer?.FullName ?? "?").Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()))
+                                </div>
+                                <div>
+                                    <h4 class="text-light font-bold">@(review.Customer?.FullName ?? "Traveler")</h4>
+                                    <p class="text-muted text-xs">
+                                        <i class="fa-solid fa-route text-cyan/70 mr-1"></i>
+                                        @(review.BookingRequest?.Route?.Origin ?? "—") to @(review.BookingRequest?.Route?.Destination ?? "—")
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-1 mb-4 text-[#F59E0B] text-sm">
+                                @for (int i = 0; i < review.Rating; i++)
+                                {
+                                    <i class="fa-solid fa-star"></i>
+                                }
+                                @for (int i = review.Rating; i < 5; i++)
+                                {
+                                    <i class="fa-regular fa-star text-muted"></i>
+                                }
+                            </div>
+
+                            <p class="text-light/90 italic leading-relaxed text-sm">
+                                "@review.Comment"
+                            </p>
+                            
+                            <div class="mt-6 text-xs text-muted/60 text-right">
+                                @review.CreatedAt.ToString("MMM dd, yyyy")
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center p-12 glass-panel rounded-2xl border border-border max-w-2xl mx-auto">
+                    <i class="fa-solid fa-star text-muted text-4xl mb-4"></i>
+                    <h3 class="text-xl text-light font-bold mb-2">Be the first to leave a review!</h3>
+                    <p class="text-muted">Once you complete a journey with us, you can share your experience.</p>
+                </div>
+            }
+        </div>
+    </div>
 </div>
 
+@section Scripts {
+    <!-- GSAP Core and ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            gsap.registerPlugin(ScrollTrigger);
 
+            const sections = document.querySelectorAll('.stack-section');
+
+            sections.forEach(section => {
+                const scaleContent = section.querySelector('.scale-on-scroll');
+                if (scaleContent) {
+                    gsap.to(scaleContent, {
+                        opacity: 1,
+                        scale: 1,
+                        ease: "none",
+                        scrollTrigger: {
+                            trigger: section,
+                            start: "top 95%", // Start scaling when the top of the section enters the bottom of the screen
+                            end: "top 15%",   // Finish scaling right before it hits its sticky position at the top
+                            scrub: 1          // 1 second of smoothing for the scrub effect
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

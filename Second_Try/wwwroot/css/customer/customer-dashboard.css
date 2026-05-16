@@ -600,6 +600,13 @@
     .cp-hamburger {
         display: flex;
     }
+
+    .cp-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .cp-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 640px) {
@@ -613,6 +620,10 @@
 
     .cp-avatar-name {
         display: none;
+    }
+
+    .cp-stats-grid {
+        grid-template-columns: 1fr;
     }
 }
 

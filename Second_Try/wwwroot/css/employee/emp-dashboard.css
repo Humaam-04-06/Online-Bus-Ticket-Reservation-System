@@ -948,7 +948,7 @@
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .emp-sidebar {
         transform: translateX(-100%);
     }
@@ -959,7 +959,7 @@
 
     .emp-main {
         margin-left: 0;
-        padding: 1rem;
+        padding: 1.25rem;
     }
 
     .emp-topbar {
@@ -974,12 +974,36 @@
     .emp-stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .emp-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
+    .emp-main {
+        padding: 1rem;
+    }
     .emp-stats-grid {
         grid-template-columns: 1fr;
     }
+    .emp-avatar-name {
+        display: none;
+    }
+}
+
+/* ── Mobile Overlay (sidebar backdrop) ─────────────────────── */
+.emp-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 190;
+    backdrop-filter: blur(2px);
+}
+
+.emp-overlay.open {
+    display: block;
 }
 
 /* ============================================================

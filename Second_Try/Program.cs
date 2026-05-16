@@ -1,8 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using QuestPDF.Infrastructure;
 using Second_Try.Data;
 using Second_Try.Services;
+
+// Configure QuestPDF community license (free for open-source / internal use)
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +35,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // ── Application Services ──────────────────────────────────
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddHostedService<RequestExpiryService>();
+builder.Services.AddScoped<TicketPdfService>();
 
 // ── AI Chat Service ───────────────────────────────────────
 builder.Services.AddHttpClient();

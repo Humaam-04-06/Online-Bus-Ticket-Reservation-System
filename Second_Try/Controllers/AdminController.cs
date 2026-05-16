@@ -102,6 +102,30 @@ namespace Second_Try.Controllers
             return RedirectToAction(nameof(ManageEmployees));
         }
 
+        [HttpPost][ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteRoute(int id)
+        {
+            var route = await _context.Routes.FindAsync(id);
+            if (route != null)
+            {
+                bool hasSchedules = await _context.BusSchedules.AnyAsync(s => s.RouteId == id);
+                bool hasBookings = await _context.BookingRequests.AnyAsync(b => b.RouteId == id);
+                bool hasPrices = await _context.PriceLists.AnyAsync(p => p.RouteId == id);
+
+                if (hasSchedules || hasBookings || hasPrices)
+                {
+                    TempData["ErrorMessage"] = "Cannot delete this route because it has active schedules, prices, or bookings. Please deactivate it instead.";
+                }
+                else
+                {
+                    _context.Routes.Remove(route);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Route deleted successfully.";
+                }
+            }
+            return RedirectToAction(nameof(ManageRoutes));
+        }
+
         // ══════════════════════════════════════════════════════════
         // MANAGE BUSES
         // ══════════════════════════════════════════════════════════
@@ -246,9 +270,17 @@ namespace Second_Try.Controllers
             var sched = await _context.BusSchedules.FindAsync(id);
             if (sched != null)
             {
-                _context.BusSchedules.Remove(sched);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Schedule deleted.";
+                bool hasBookings = await _context.BookingRequests.AnyAsync(b => b.BusScheduleId == id);
+                if (hasBookings)
+                {
+                    TempData["ErrorMessage"] = "Cannot delete this schedule because there are booking requests associated with it. Please deactivate it instead.";
+                }
+                else
+                {
+                    _context.BusSchedules.Remove(sched);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Schedule deleted successfully.";
+                }
             }
             return RedirectToAction(nameof(ManageSchedules));
         }

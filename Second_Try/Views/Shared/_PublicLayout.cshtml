@@ -169,6 +169,67 @@
             });
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    // ── Global SweetAlert2 Form Confirmation ─────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        const forms = document.querySelectorAll('form[onsubmit*="return confirm"]');
+        forms.forEach(form => {
+            const onsubmitAttr = form.getAttribute('onsubmit');
+            const match = onsubmitAttr.match(/confirm\s*\(\s*['"](.*?)['"]\s*\)/);
+            if (match && match[1]) {
+                const message = match[1];
+                form.removeAttribute('onsubmit');
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: message,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#06b6d4',
+                        cancelButtonColor: '#ef4444',
+                        confirmButtonText: 'Yes, proceed',
+                        background: '#09090b',
+                        color: '#f8fafc'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            }
+        });
+
+        // ── TempData SweetAlert2 Handlers ──────────────────────────────
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: '@Html.Raw(TempData["SuccessMessage"]?.ToString()?.Replace("'", "\\'") ?? "")',
+                timer: 3000,
+                showConfirmButton: false,
+                background: '#09090b',
+                color: '#f8fafc'
+            });
+            </text>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '@Html.Raw(TempData["ErrorMessage"]?.ToString()?.Replace("'", "\\'") ?? "")',
+                background: '#09090b',
+                color: '#f8fafc'
+            });
+            </text>
+        }
+    });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 

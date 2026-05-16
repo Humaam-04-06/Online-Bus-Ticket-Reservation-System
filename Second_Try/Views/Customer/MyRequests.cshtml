@@ -22,7 +22,7 @@
                 Track the status of all your booking requests.
             </p>
         </div>
-        <a href="/Customer/NewRequest" class="cp-btn cp-btn-primary">
+        <a href="/Customer/BookTrip" class="cp-btn cp-btn-primary">
             <i class="fa-solid fa-plus"></i> New Request
         </a>
     </div>
@@ -57,7 +57,7 @@
                 <div class="mr-empty-icon"><i class="fa-solid fa-ticket"></i></div>
                 <p class="mr-empty-title">No Booking Requests Yet</p>
                 <p class="mr-empty-sub">You haven't submitted any booking requests. Start by submitting your first one!</p>
-                <a href="/Customer/NewRequest" class="cp-btn cp-btn-primary">
+                <a href="/Customer/BookTrip" class="cp-btn cp-btn-primary">
                     <i class="fa-solid fa-plus"></i> Submit First Request
                 </a>
             </div>
@@ -107,6 +107,13 @@
                             <i class="fa-solid fa-users"></i>
                             <span>@req.NumberOfSeats seat(s)</span>
                         </div>
+                        @if (!string.IsNullOrEmpty(req.SelectedSeatNumbers))
+                        {
+                            <div class="mr-detail-item">
+                                <i class="fa-solid fa-couch" style="color:var(--accent-cyan)"></i>
+                                <span>Seats: <strong style="color:var(--accent-cyan)">@req.SelectedSeatNumbers</strong></span>
+                            </div>
+                        }
                     </div>
 
                     @if (!string.IsNullOrEmpty(req.AdminRemarks))
@@ -121,19 +128,29 @@
                         <span style="font-size:0.78rem;color:var(--text-muted);">
                             <i class="fa-regular fa-clock"></i> Updated @req.RequestDate.ToString("dd MMM yyyy, hh:mm tt")
                         </span>
-                        <div style="display:flex;gap:0.5rem;">
-                            @if (req.Status.ToString() == "Pending")
+                        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                            @if (req.Status == BookingRequestStatus.Pending)
                             {
                                 <button class="cp-btn cp-btn-danger"
                                         onclick="openCancelModal(@req.Id, 'REQ-@req.Id.ToString("D4")')">
                                     <i class="fa-solid fa-xmark"></i> Cancel Request
                                 </button>
                             }
-                            @if (req.Status.ToString() == "Accepted" && req.AssignedBooking != null)
+                            @if (req.Status == BookingRequestStatus.Accepted || req.Status == BookingRequestStatus.Completed)
                             {
-                                <a href="/Employee/PrintTicket/@req.AssignedBooking.Id" target="_blank" class="cp-btn cp-btn-outline">
-                                    <i class="fa-solid fa-print"></i> View Ticket
+                                <a href="/Customer/DownloadTicket?requestId=@req.Id"
+                                   class="cp-btn cp-btn-primary"
+                                   style="background:linear-gradient(135deg,var(--accent-cyan),#007BFF);color:#000;font-weight:800;">
+                                    <i class="fa-solid fa-file-pdf"></i> Download Ticket
                                 </a>
+                            }
+                            @if (req.Status == BookingRequestStatus.Completed)
+                            {
+                                <button class="cp-btn cp-btn-outline"
+                                        onclick="openReviewModal(@req.Id, 'REQ-@req.Id.ToString("D4")')"
+                                        style="border-color:#F59E0B;color:#F59E0B;">
+                                    <i class="fa-solid fa-star"></i> Leave Review
+                                </button>
                             }
                         </div>
                     </div>
@@ -164,6 +181,48 @@
                 </button>
             </form>
         </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div class="mr-modal-overlay" id="review-modal">
+    <div class="mr-modal">
+        <div class="mr-modal-icon" style="background:rgba(245, 158, 11, 0.15);color:#F59E0B;"><i class="fa-solid fa-star"></i></div>
+        <p class="mr-modal-title">Rate Your Trip</p>
+        <p class="mr-modal-msg">
+            How was your journey on request <strong id="modal-review-req-id"></strong>?
+        </p>
+        <form id="review-form" asp-controller="Customer" asp-action="SubmitReview" method="POST">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="BookingRequestId" id="review-request-id" />
+            
+            <div style="margin:1rem 0;text-align:center;">
+                <div class="star-rating" style="font-size:2rem;color:var(--border-color);cursor:pointer;display:flex;justify-content:center;gap:0.5rem;">
+                    <i class="fa-solid fa-star star-ico" data-val="1"></i>
+                    <i class="fa-solid fa-star star-ico" data-val="2"></i>
+                    <i class="fa-solid fa-star star-ico" data-val="3"></i>
+                    <i class="fa-solid fa-star star-ico" data-val="4"></i>
+                    <i class="fa-solid fa-star star-ico" data-val="5"></i>
+                </div>
+                <input type="hidden" name="Rating" id="review-rating" value="0" />
+            </div>
+
+            <div style="margin-bottom:1.5rem;text-align:left;">
+                <label style="display:block;color:var(--text-muted);font-size:0.8rem;margin-bottom:0.5rem;font-weight:700;text-transform:uppercase;">Your Comment</label>
+                <textarea name="Comment" required minlength="10" maxlength="1000" rows="3"
+                          style="width:100%;background:var(--bg-primary);border:1px solid var(--border-color);border-radius:8px;padding:0.75rem;color:var(--text-light);font-size:0.9rem;"
+                          placeholder="Tell us about your experience..."></textarea>
+            </div>
+
+            <div class="mr-modal-btns">
+                <button type="button" class="cp-btn cp-btn-outline" onclick="closeReviewModal()">
+                    <i class="fa-solid fa-arrow-left"></i> Cancel
+                </button>
+                <button type="submit" class="cp-btn cp-btn-primary" id="submit-review-btn" disabled style="background:#F59E0B;color:#000;">
+                    <i class="fa-solid fa-paper-plane"></i> Submit Review
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -201,6 +260,65 @@
     // Close modal on overlay click
     document.getElementById('cancel-modal').addEventListener('click', function(e) {
         if (e.target === this) closeCancelModal();
+    });
+
+    // Review modal
+    function openReviewModal(id, label) {
+        document.getElementById('modal-review-req-id').textContent = label;
+        document.getElementById('review-request-id').value = id;
+        document.getElementById('review-modal').classList.add('open');
+        // Reset stars
+        document.getElementById('review-rating').value = 0;
+        document.querySelectorAll('.star-ico').forEach(s => {
+            s.style.color = 'var(--border-color)';
+        });
+        document.getElementById('submit-review-btn').disabled = true;
+    }
+
+    function closeReviewModal() {
+        document.getElementById('review-modal').classList.remove('open');
+    }
+
+    document.getElementById('review-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeReviewModal();
+    });
+
+    // Star rating logic
+    const stars = document.querySelectorAll('.star-ico');
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const val = this.dataset.val;
+            document.getElementById('review-rating').value = val;
+            document.getElementById('submit-review-btn').disabled = false;
+            
+            stars.forEach(s => {
+                if (s.dataset.val <= val) {
+                    s.style.color = '#F59E0B'; // Gold
+                } else {
+                    s.style.color = 'var(--border-color)'; // Gray
+                }
+            });
+        });
+
+        // Hover effect
+        star.addEventListener('mouseenter', function() {
+            const val = this.dataset.val;
+            stars.forEach(s => {
+                if (s.dataset.val <= val && s.dataset.val > document.getElementById('review-rating').value) {
+                    s.style.color = 'rgba(245, 158, 11, 0.5)';
+                }
+            });
+        });
+        star.addEventListener('mouseleave', function() {
+            const currentVal = document.getElementById('review-rating').value;
+            stars.forEach(s => {
+                if (s.dataset.val <= currentVal) {
+                    s.style.color = '#F59E0B';
+                } else {
+                    s.style.color = 'var(--border-color)';
+                }
+            });
+        });
     });
 </script>
 }

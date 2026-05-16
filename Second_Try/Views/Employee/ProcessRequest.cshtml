@@ -185,14 +185,16 @@
                         <label class="pr-label">Seat Numbers</label>
                         <input type="text" name="seatNumbers" class="pr-input"
                                placeholder="e.g. 12A, 12B, 13A" required
+                               value="@(string.IsNullOrEmpty(Model.SelectedSeatNumbers) ? "" : Model.SelectedSeatNumbers)"
                                title="Enter comma-separated seat numbers" />
-                        <span class="pr-hint">Enter @Model.NumberOfSeats seat number(s), comma separated</span>
+                        <span class="pr-hint">Customer selected: @(string.IsNullOrEmpty(Model.SelectedSeatNumbers) ? "None" : Model.SelectedSeatNumbers)</span>
                     </div>
 
                     <div class="pr-form-group">
                         <label class="pr-label">Total Fare (PKR)</label>
                         <input type="number" name="totalFare" id="total-fare" class="pr-input"
-                               min="0" step="0.01" placeholder="e.g. 2500" required />
+                               min="0" step="0.01" placeholder="e.g. 2500" required 
+                               value="@(ViewBag.CalculatedFare != null && ViewBag.CalculatedFare > 0 ? ViewBag.CalculatedFare : "")" />
                     </div>
 
                     <button type="submit" class="emp-btn emp-btn-success pr-submit-btn" @(buses.Any() ? "" : "disabled")>
@@ -236,7 +238,7 @@
                 </p>
                 @if (booking != null)
                 {
-                    <a href="/Employee/PrintTicket/@booking.Id" class="emp-btn emp-btn-primary" style="margin-top:1rem;width:100%;justify-content:center;">
+                    <a href="/Employee/PrintTicket/@booking.Id" class="emp-btn emp-btn-outline" style="margin-top:1rem;width:100%;justify-content:center;">
                         <i class="fa-solid fa-print"></i> Print Ticket
                     </a>
                 }
@@ -244,6 +246,27 @@
                     <i class="fa-solid fa-arrow-left"></i> Back to Requests
                 </a>
             </div>
+
+            @if (Model.Status == BookingRequestStatus.Accepted)
+            {
+                <div class="emp-card pr-section pr-completed-card" style="margin-top:1.5rem;">
+                    <div class="emp-card-header">
+                        <div class="emp-card-title"><i class="fa-solid fa-flag-checkered"></i> Complete Trip</div>
+                    </div>
+                    <div style="padding:1.25rem;">
+                        <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:1rem;">
+                            Marking this request as Completed means the passenger has boarded. This allows the customer to leave a review.
+                        </p>
+                        <form asp-controller="Employee" asp-action="MarkCompleted" method="POST">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="requestId" value="@Model.Id" />
+                            <button type="submit" class="emp-btn emp-btn-primary" style="width:100%;justify-content:center;background:linear-gradient(135deg,var(--accent-cyan),#007BFF);color:#000;">
+                                <i class="fa-solid fa-flag-checkered"></i> Mark as Completed
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
         }
     </div>
 

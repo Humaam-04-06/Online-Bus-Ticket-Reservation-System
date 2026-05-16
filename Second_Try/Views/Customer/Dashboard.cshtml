@@ -32,7 +32,7 @@
             <h1 class="cp-welcome-heading">Welcome back, @(User.Identity!.Name!.Split(' ')[0])! 👋</h1>
             <p class="cp-welcome-sub">Here's a summary of your travel activity with SRC Travel.</p>
         </div>
-        <a href="/Customer/NewRequest" class="cp-btn cp-btn-primary" style="z-index:1;">
+        <a href="/Customer/BookTrip" class="cp-btn cp-btn-primary" style="z-index:1;">
             <i class="fa-solid fa-plus"></i> New Booking Request
         </a>
     </div>
@@ -131,7 +131,7 @@
                         <div class="cp-empty-icon"><i class="fa-solid fa-inbox"></i></div>
                         <p class="cp-empty-title">No Active Request</p>
                         <p class="cp-empty-sub">You don't have any pending booking request right now.</p>
-                        <a href="/Customer/NewRequest" class="cp-btn cp-btn-primary" style="margin-top:1rem;">
+                        <a href="/Customer/BookTrip" class="cp-btn cp-btn-primary" style="margin-top:1rem;">
                             <i class="fa-solid fa-plus"></i> Submit a New Request
                         </a>
                     </div>
@@ -144,7 +144,7 @@
                     <div class="cp-card-title"><i class="fa-solid fa-bolt"></i> Quick Actions</div>
                 </div>
                 <div class="cp-quick-actions">
-                    <a href="/Customer/NewRequest" class="cp-quick-action-btn">
+                    <a href="/Customer/BookTrip" class="cp-quick-action-btn">
                         <div class="cp-qa-icon cyan"><i class="fa-solid fa-ticket"></i></div>
                         <span>Book a Trip</span>
                     </a>

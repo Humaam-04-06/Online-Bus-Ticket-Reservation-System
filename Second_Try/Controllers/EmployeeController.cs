@@ -131,6 +131,17 @@ namespace Second_Try.Controllers
                 .Where(b => b.Type == request.PreferredBusType && b.IsActive)
                 .ToListAsync();
 
+            // Calculate auto-fare
+            var price = await _context.PriceLists
+                .FirstOrDefaultAsync(p => p.RouteId == request.RouteId && p.BusType == request.PreferredBusType);
+            
+            decimal calculatedFare = 0;
+            if (price != null)
+            {
+                calculatedFare = price.FareAmount * request.NumberOfSeats;
+            }
+            ViewBag.CalculatedFare = calculatedFare;
+
             ViewBag.Employee = employee;
             return View(request);
         }
@@ -195,6 +206,57 @@ namespace Second_Try.Controllers
                     request.NumberOfSeats, request.PreferredBusType.ToString());
             }
 
+            // ── Seat Conflict Resolution ────────────────────────────────────
+            // Find all other pending requests for the same schedule and date
+            if (request.BusScheduleId.HasValue)
+            {
+                var confirmedSeats = seatNumbers.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+                
+                var overlappingRequests = await _context.BookingRequests
+                    .Include(r => r.Customer)
+                    .Where(r => r.Id != request.Id && 
+                                r.Status == BookingRequestStatus.Pending && 
+                                r.BusScheduleId == request.BusScheduleId && 
+                                r.TravelDate.Date == request.TravelDate.Date)
+                    .ToListAsync();
+
+                foreach (var otherReq in overlappingRequests)
+                {
+                    if (string.IsNullOrEmpty(otherReq.SelectedSeatNumbers)) continue;
+                    
+                    var otherSeats = otherReq.SelectedSeatNumbers.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+                    
+                    bool hasOverlap = confirmedSeats.Intersect(otherSeats).Any();
+                    if (hasOverlap)
+                    {
+                        otherReq.Status = BookingRequestStatus.Cancelled;
+                        otherReq.AdminRemarks = "Automatically cancelled because the requested seats were just booked by another passenger. Please create a new request with available seats.";
+                        
+                        // Notify
+                        _context.Notifications.Add(new Notification
+                        {
+                            CustomerId = otherReq.CustomerId,
+                            Title      = "Booking Cancelled (Seat Conflict)",
+                            Message    = $"Your request REQ-{otherReq.Id:D4} was cancelled because your selected seats were just booked by someone else. Please try again.",
+                            IsRead     = false,
+                            CreatedAt  = DateTime.UtcNow
+                        });
+
+                        // Email
+                        if (otherReq.Customer != null)
+                        {
+                            var route = await _context.Routes.FindAsync(otherReq.RouteId);
+                            string routeStr = route != null ? $"{route.Origin} → {route.Destination}" : "N/A";
+                            _ = _email.SendBookingCancelledEmailAsync(
+                                otherReq.Customer.Email, otherReq.Customer.FullName,
+                                routeStr, otherReq.TravelDate);
+                        }
+                    }
+                }
+                
+                await _context.SaveChangesAsync();
+            }
+
             TempData["SuccessMessage"] = $"Request REQ-{request.Id:D4} accepted and ticket confirmed!";
             return RedirectToAction(nameof(BookingRequests));
         }
@@ -244,6 +306,41 @@ namespace Second_Try.Controllers
             }
 
             TempData["SuccessMessage"] = $"Request REQ-{request.Id:D4} has been rejected.";
+            return RedirectToAction(nameof(BookingRequests));
+        }
+
+        // ── E-03b: Mark Request as Completed (POST) ───────────────────────
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkCompleted(int requestId)
+        {
+            var employee = await GetCurrentEmployeeAsync();
+            if (employee == null) return RedirectToAction("Logout", "Auth");
+
+            var request = await _context.BookingRequests
+                .FirstOrDefaultAsync(r => r.Id == requestId);
+
+            if (request == null || request.Status != BookingRequestStatus.Accepted)
+            {
+                TempData["ErrorMessage"] = "Request not found or is not currently Accepted.";
+                return RedirectToAction(nameof(BookingRequests));
+            }
+
+            request.Status = BookingRequestStatus.Completed;
+
+            // Notify customer they can leave a review
+            _context.Notifications.Add(new Notification
+            {
+                CustomerId = request.CustomerId,
+                Title      = "Trip Completed",
+                Message    = $"Your trip for REQ-{request.Id:D4} is marked as completed! We'd love to hear your feedback. Please leave a review on your 'My Requests' page.",
+                IsRead     = false,
+                CreatedAt  = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Request REQ-{request.Id:D4} marked as Completed.";
             return RedirectToAction(nameof(BookingRequests));
         }
 

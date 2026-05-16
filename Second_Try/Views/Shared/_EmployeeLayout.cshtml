@@ -1,9 +1,19 @@
 @using System.Security.Claims
+@using Second_Try.Data
+@inject ApplicationDbContext _context
 @{
     string empName     = User.Identity?.Name ?? "Employee";
+    string empEmail    = User.FindFirstValue(ClaimTypes.Email) ?? "";
     string initials    = string.Join("", empName.Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()));
     string currentPage = ViewData["ActivePage"]?.ToString() ?? "";
     bool   isAdmin     = User.IsInRole("Admin");
+    
+    string? picUrl = null;
+    if (!string.IsNullOrEmpty(empEmail))
+    {
+        var emp = _context.Employees.FirstOrDefault(e => e.Email == empEmail);
+        picUrl = emp?.ProfilePictureUrl;
+    }
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -41,7 +51,16 @@
 
     <!-- User card -->
     <div class="emp-sidebar-user">
-        <div class="emp-sidebar-avatar">@initials</div>
+        <div class="emp-sidebar-avatar" style="@(!string.IsNullOrEmpty(picUrl) ? "background:transparent;overflow:hidden;padding:0;" : "")">
+            @if (!string.IsNullOrEmpty(picUrl))
+            {
+                <img src="@picUrl" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="avatar" />
+            }
+            else
+            {
+                @initials
+            }
+        </div>
         <div>
             <div class="emp-sidebar-user-name">@empName</div>
             <div class="emp-role-badge @(isAdmin ? "admin" : "standard")">
@@ -92,7 +111,16 @@
         <!-- Avatar dropdown -->
         <div class="emp-avatar-wrapper">
             <button class="emp-avatar-btn" id="emp-avatar-btn" aria-expanded="false">
-                <div class="emp-avatar-circle">@initials</div>
+                <div class="emp-avatar-circle" style="@(!string.IsNullOrEmpty(picUrl) ? "background:transparent;overflow:hidden;padding:0;" : "")">
+                    @if (!string.IsNullOrEmpty(picUrl))
+                    {
+                        <img src="@picUrl" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="avatar" />
+                    }
+                    else
+                    {
+                        @initials
+                    }
+                </div>
                 <span class="emp-avatar-name">@empName.Split(' ')[0]</span>
                 <i class="fa-solid fa-chevron-down emp-avatar-chevron" id="emp-chevron"></i>
             </button>
@@ -140,13 +168,68 @@
             dropdown?.classList.remove('open');
             chevron.style.transform = 'rotate(0)';
         });
+    });
 
-        // Auto-dismiss toasts
-        document.querySelectorAll('.emp-toast').forEach(t => {
-            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 4000);
+    // ── Global SweetAlert2 Form Confirmation ─────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        const forms = document.querySelectorAll('form[onsubmit*="return confirm"]');
+        forms.forEach(form => {
+            const onsubmitAttr = form.getAttribute('onsubmit');
+            const match = onsubmitAttr.match(/confirm\s*\(\s*['"](.*?)['"]\s*\)/);
+            if (match && match[1]) {
+                const message = match[1];
+                form.removeAttribute('onsubmit');
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: message,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, proceed',
+                        background: '#1f2937',
+                        color: '#f9fafb'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            }
         });
+
+        // ── TempData SweetAlert2 Handlers ──────────────────────────────
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: '@Html.Raw(TempData["SuccessMessage"]?.ToString()?.Replace("'", "\\'") ?? "")',
+                timer: 3000,
+                showConfirmButton: false,
+                background: '#1f2937',
+                color: '#f9fafb'
+            });
+            </text>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '@Html.Raw(TempData["ErrorMessage"]?.ToString()?.Replace("'", "\\'") ?? "")',
+                background: '#1f2937',
+                color: '#f9fafb'
+            });
+            </text>
+        }
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @RenderSection("Scripts", required: false)
 
 @* ── ARIA AI Chat Widget ──────────────────────────────────── *@

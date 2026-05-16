@@ -258,8 +258,17 @@
     }
 
     function showToast(msg, type) {
-        // fallback simple alert
-        alert(msg);
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: type === 'warning' ? 'warning' : 'info',
+                title: 'Notice',
+                text: msg,
+                background: '#151b23',
+                color: '#f8fafc'
+            });
+        } else {
+            alert(msg);
+        }
     }
 
     // ── Fetch booked seats from API ────────────────────────

@@ -1,71 +1,67 @@
 # SRCTravel — Modern Online Bus Ticket Reservation System
 
-## 🚀 Current Project Status
-The system is in an advanced state of development. The core portals (Admin, Employee, Customer) are fully operational. We have successfully integrated an AI Chatbot and completed **Phase 1** of our advanced ticketing roadmap (Bus Schedules & Public Search).
+## 🚀 Current Project Status: **Full System Responsiveness & Advanced UI**
+The system has reached a critical milestone. We have achieved **100% Mobile Responsiveness** across every module, from the public landing page to the deep admin dashboards. The UI now features state-of-the-art **GSAP Scroll-Triggered Animations** and a premium glassmorphic aesthetic that adapts fluidly to any device size.
 
 ---
 
-## 🎨 UI / UX Design System
+## 🎨 UI / UX Design System (Premium Experience)
 - **Theme**: Urban Nocturne (Premium Dark Mode)
-- **Typography**: Inter (Google Fonts)
-- **Primary Colors**: Cyan (`#00D1FF`), Blue (`#007BFF`), Purple (`#8A2BE2`)
-- **Style**: Glassmorphism, blurred panels, neon glow accents.
+- **Design Philosophy**: Glassmorphism, blurred panels, and neon glow accents.
+- **Animations**: 
+    - **GSAP Stacking**: Section-on-section stacking effect on the landing page.
+    - **Scroll Scaling**: Interactive section scaling (0.6 → 1.0) as users explore.
+    - **Micro-interactions**: Hover effects, smooth transitions, and loading skeletons.
+- **Responsiveness**: Mobile-first architecture using Tailwind CSS and targeted Media Queries.
 
 ---
 
-## ✅ Completed Modules
+## ✅ Core Features & Completed Modules
 
-### 1. Authentication & Security
-- Cookie-based Auth with `[Authorize]` role checks (Admin, Employee, Customer).
-- BCrypt password hashing.
-- Password strength meters and CSRF protection (`[ValidateAntiForgeryToken]`).
+### 1. 📱 Universal Responsiveness
+- **Adaptive Dashboards**: Grid systems for Admin, Employee, and Customer portals automatically reconfigure (4-col → 2-col → 1-col).
+- **Mobile Navigation**: Slide-out sidebars with glassmorphic overlays for portal management on the go.
+- **Touch-Friendly Tables**: Horizontal scroll wrappers for all data tables, ensuring usability on small viewports.
+- **Responsive Auth**: Sliding login/register panels stack vertically on mobile with dedicated toggle switches.
 
-### 2. Admin Portal
-- **Manage Employees:** Create, view, and block employee accounts.
-- **Manage Buses:** Configure Standard, Luxury, Express, Economy fleets.
-- **Manage Routes & Prices:** Set up origin/destination routes and class-based fare lists.
-- **Manage Schedules:** Create daily/recurring `BusSchedule` entries with specific Departure and Arrival times.
-- **Reports & History:** View total revenue, monthly trends, and global booking history.
+### 2. 🔐 Authentication & Security
+- **Dynamic Auth UX**: Navbar "Sign Up" button intelligently routes to the registration panel via `?register=true` query parameters.
+- **Security**: BCrypt hashing, CSRF protection, and role-based access control (`Admin`, `Employee`, `Customer`).
+- **Validation**: Real-time password strength meter with visual feedback and submission blocking.
 
-### 3. Employee Portal
-- **Dashboard:** Live active booking requests and today's operations.
-- **Process Requests:** Accept or Reject customer requests (automatically creates `Booking` and `Notification` records).
-- **Print Ticket:** HTML ticket view for accepted bookings.
+### 3. 🏢 Admin Portal (The Command Center)
+- **Fleet Management**: Configure and track various bus classes (Standard, Luxury, etc.).
+- **Operations Control**: Manage Routes, Prices, and detailed Bus Schedules.
+- **Personnel Management**: Full CRUD and blocking capabilities for Employee accounts.
+- **Global Insights**: High-level stats, revenue reports, and booking trends.
 
-### 4. Customer Portal
-- **Dashboard:** Personal stats, active requests, and a dynamic notification bell.
-- **New Request:** Modern 60/40 split-screen booking form. Automatically pre-fills data if initiated from the Public Search Engine.
-- **My Requests:** Track all Pending, Accepted, Rejected, and Cancelled requests.
-- **Profile:** Upload profile pictures and banner images dynamically.
+### 4. 🛠️ Employee Portal (Field Operations)
+- **Request Processing**: Accept or Reject customer booking requests with real-time feedback.
+- **Ticketing**: Instant HTML ticket generation for confirmed passengers.
+- **Active Tracking**: Dashboard for today's departures and pending tasks.
 
-### 5. ARIA AI Chatbot (Gemini Integration)
-- Floating, interactive AI assistant injected into all layouts (`_AdminLayout`, `_EmployeeLayout`, `_CustomerLayout`, `_PublicLayout`).
-- Powered by Google's `gemini-3-flash-preview` model.
-- Features multi-key round-robin failover to prevent rate limits.
-- Context-aware: It knows if you are logged in and can retrieve your personal booking history to answer specific questions.
+### 5. 👤 Customer Portal (Traveler Experience)
+- **Smart Booking**: 60/40 split-screen booking form with auto-fill from public search.
+- **Request Tracking**: Categorized list of all travel requests (Pending, Accepted, Rejected, Expired).
+- **Dynamic Profiles**: Integrated profile and banner image management.
 
-### 6. Background Services
-- `RequestExpiryService`: Runs silently every hour to automatically cancel `Pending` requests if the `TravelDate` has already passed, keeping the database clean.
-
-### 7. Public Search Engine (Phase 1 of Roadmap)
-- Modern, animated homepage with a glassmorphic Search Bar.
-- Unregistered users can search routes and dates.
-- Search results show available `BusSchedules`, bus classes, departure/arrival times, and fares.
-- Clicking "Book Now" locks in the specific schedule and routes the user to the Customer Portal.
+### 6. 🤖 ARIA AI Chatbot (Gemini Integration)
+- **Hyper-Contextual**: Directly integrated with the database to answer questions about *your* specific bookings.
+- **Advanced Failover**: Round-robin API key management for 100% uptime.
+- **Universal Presence**: Accessible from every page in the application.
 
 ---
 
-## 🗺️ Master Roadmap (Remaining Work)
-
-We are currently tracking against a 4-Phase advanced upgrade plan:
+## 🗺️ Master Roadmap
 
 | Phase | Status | Description |
 |---|---|---|
-| **Phase 1** | ✅ COMPLETE | **Schedules & Public Search:** Created `BusSchedule` entity, Admin CRUD, and Public Homepage Search API. |
-| **Phase 2** | ⏳ UP NEXT | **Interactive Seat Selection:** A modern CSS grid showing the physical bus layout. Customers will click specific seats (e.g. 1A, 2B) preventing double-booking. |
-| **Phase 3** | 📅 PLANNED | **PDF Ticket Generation:** Use a C# library to generate a formal, downloadable PDF boarding pass with a scannable QR code. |
-| **Phase 4** | 📅 PLANNED | **Customer Reviews & Ratings:** Add `Completed` status so employees can mark who actually boarded the bus. Only verified passengers can leave a star rating displayed on the homepage. |
+| **Phase 1** | ✅ COMPLETE | **Schedules & Public Search:** Core search engine and backend scheduling logic. |
+| **Phase 2** | ✅ COMPLETE | **Mobile UX & UI Overhaul:** GSAP animations, 100% responsiveness, and premium design polish. |
+| **Phase 3** | ⏳ UP NEXT | **Interactive Seat Selection:** Physical bus layout grid for seat-specific bookings. |
+| **Phase 4** | 📅 PLANNED | **PDF & QR Ticketing:** Formal downloadable boarding passes with QR validation. |
+| **Phase 5** | 📅 PLANNED | **Review System:** Verified passenger ratings and star reviews. |
 
 ---
 
-*This README is continuously updated as the project progresses.*
+*This project is built with ASP.NET Core MVC, Entity Framework Core, and a heavy emphasis on modern Front-end excellence.*

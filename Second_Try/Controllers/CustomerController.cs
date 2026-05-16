@@ -13,11 +13,13 @@ namespace Second_Try.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IEmailService _email;
+        private readonly TicketPdfService _ticketPdf;
 
-        public CustomerController(ApplicationDbContext context, IEmailService email)
+        public CustomerController(ApplicationDbContext context, IEmailService email, TicketPdfService ticketPdf)
         {
-            _context = context;
-            _email   = email;
+            _context   = context;
+            _email     = email;
+            _ticketPdf = ticketPdf;
         }
 
         // ── helper: get current customer from DB ──────────────────────────
@@ -76,14 +78,66 @@ namespace Second_Try.Controllers
             return View();
         }
 
+        // ── C-02b: Book Trip / Internal Search (GET) ──────────────────────
+        [HttpGet]
+        public async Task<IActionResult> BookTrip(string? origin, string? destination, DateTime? travelDate)
+        {
+            var customer = await GetCurrentCustomerAsync();
+            if (customer == null) return RedirectToAction("Logout", "Auth");
+            SetCommonViewBag(customer);
+
+            // Fetch distinct locations for search dropdowns
+            var origins = await _context.Routes.Select(r => r.Origin).Distinct().ToListAsync();
+            var destinations = await _context.Routes.Select(r => r.Destination).Distinct().ToListAsync();
+            ViewBag.Locations = origins.Concat(destinations).Distinct().OrderBy(l => l).ToList();
+
+            ViewBag.Origin = origin;
+            ViewBag.Destination = destination;
+            ViewBag.TravelDate = travelDate?.ToString("yyyy-MM-dd");
+
+            if (string.IsNullOrEmpty(origin) || string.IsNullOrEmpty(destination) || travelDate == null)
+            {
+                return View(new List<BusSchedule>()); // Just show search form
+            }
+
+            if (travelDate.Value.Date < DateTime.Today)
+            {
+                TempData["ErrorMessage"] = "Please select a future date.";
+                return View(new List<BusSchedule>());
+            }
+
+            // Perform Search
+            var routeIds = await _context.Routes
+                .Where(r => r.IsActive && r.Origin.ToLower() == origin.ToLower() && r.Destination.ToLower() == destination.ToLower())
+                .Select(r => r.Id)
+                .ToListAsync();
+
+            var schedules = await _context.BusSchedules
+                .Include(s => s.Route)
+                .Where(s => routeIds.Contains(s.RouteId) && s.IsActive)
+                .OrderBy(s => s.DepartureTime)
+                .ToListAsync();
+
+            var prices = await _context.PriceLists
+                .Where(p => routeIds.Contains(p.RouteId))
+                .ToListAsync();
+            ViewBag.Prices = prices;
+
+            if (!schedules.Any())
+            {
+                ViewBag.NoResults = true;
+            }
+
+            return View(schedules);
+        }
+
         // ── C-03: New Request (GET) ───────────────────────────────────────
         public async Task<IActionResult> NewRequest(int? preselectRouteId = null, int? preselectScheduleId = null, string? preselectDate = null)
         {
-            // If no schedule preselected, send to public search to pick a bus first
+            // If no schedule preselected, send to portal's internal search
             if (!preselectScheduleId.HasValue)
             {
-                TempData["InfoMessage"] = "Please search for a bus first, then click 'Book Now' to select your seats.";
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction(nameof(BookTrip));
             }
 
             var customer = await GetCurrentCustomerAsync();
@@ -226,6 +280,42 @@ namespace Second_Try.Controllers
             return View();
         }
 
+        // ── C-04b: Download PDF Ticket ────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> DownloadTicket(int requestId)
+        {
+            var customer = await GetCurrentCustomerAsync();
+            if (customer == null) return RedirectToAction("Logout", "Auth");
+
+            var req = await _context.BookingRequests
+                .Include(r => r.Route)
+                .Include(r => r.Customer)
+                .Include(r => r.BusSchedule)
+                .Include(r => r.AssignedBooking)
+                .FirstOrDefaultAsync(r => r.Id == requestId && r.CustomerId == customer.Id);
+
+            if (req == null) return NotFound();
+
+            // Only allow download if request is Accepted or Completed
+            if (req.Status != BookingRequestStatus.Accepted && req.Status != BookingRequestStatus.Completed)
+            {
+                TempData["ErrorMessage"] = "Ticket is only available for accepted requests.";
+                return RedirectToAction(nameof(MyRequests));
+            }
+
+            try
+            {
+                byte[] pdfBytes = _ticketPdf.GenerateTicket(req);
+                string filename = $"SRCTravel-Ticket-TKT{req.Id:D6}.pdf";
+                return File(pdfBytes, "application/pdf", filename);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Could not generate ticket: {ex.Message}";
+                return RedirectToAction(nameof(MyRequests));
+            }
+        }
+
         // ── Cancel a pending request ──────────────────────────────────────
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -259,6 +349,80 @@ namespace Second_Try.Controllers
                 customer.Email, customer.FullName, routeStr, request.TravelDate);
 
             TempData["SuccessMessage"] = $"Request REQ-{requestId:D4} has been cancelled successfully.";
+            return RedirectToAction(nameof(MyRequests));
+        }
+
+        // ── C-04: Get Booked Seats API ────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> GetBookedSeats(int scheduleId, string travelDate)
+        {
+            if (!DateTime.TryParse(travelDate, out DateTime parsedDate)) 
+                return Json(new List<string>());
+
+            var requests = await _context.BookingRequests
+                .Include(r => r.AssignedBooking)
+                .Where(r => r.BusScheduleId == scheduleId && 
+                            r.TravelDate.Date == parsedDate.Date && 
+                            (r.Status == BookingRequestStatus.Accepted || r.Status == BookingRequestStatus.Completed))
+                .ToListAsync();
+
+            var bookedSeats = new HashSet<string>();
+            foreach (var r in requests)
+            {
+                if (r.AssignedBooking != null && !string.IsNullOrEmpty(r.AssignedBooking.SeatNumbers))
+                {
+                    var seats = r.AssignedBooking.SeatNumbers.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var s in seats) bookedSeats.Add(s.Trim());
+                }
+            }
+            
+            return Json(bookedSeats.ToList());
+        }
+
+        // ── Download Ticket ─────────────────────────────────────────────────
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitReview(Second_Try.Models.ViewModels.SubmitReviewViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Invalid review data provided.";
+                return RedirectToAction(nameof(MyRequests));
+            }
+
+            var customer = await GetCurrentCustomerAsync();
+            if (customer == null) return RedirectToAction("Logout", "Auth");
+
+            var request = await _context.BookingRequests
+                .FirstOrDefaultAsync(r => r.Id == model.BookingRequestId && r.CustomerId == customer.Id);
+
+            if (request == null || request.Status != BookingRequestStatus.Completed)
+            {
+                TempData["ErrorMessage"] = "You can only review completed trips.";
+                return RedirectToAction(nameof(MyRequests));
+            }
+
+            // Check if review already exists
+            bool hasReview = await _context.Reviews.AnyAsync(r => r.BookingRequestId == model.BookingRequestId);
+            if (hasReview)
+            {
+                TempData["ErrorMessage"] = "You have already reviewed this trip.";
+                return RedirectToAction(nameof(MyRequests));
+            }
+
+            var review = new Review
+            {
+                CustomerId       = customer.Id,
+                BookingRequestId = model.BookingRequestId,
+                Rating           = model.Rating,
+                Comment          = model.Comment,
+                CreatedAt        = DateTime.UtcNow
+            };
+
+            _context.Reviews.Add(review);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Thank you for your review!";
             return RedirectToAction(nameof(MyRequests));
         }
 

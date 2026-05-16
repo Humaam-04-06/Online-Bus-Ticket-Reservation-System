@@ -1,0 +1,145 @@
+@using Second_Try.Models
+@model List<BusSchedule>
+@{
+    ViewData["Title"] = "Book a Trip";
+    ViewData["ActivePage"] = "NewRequest";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+
+    var prices = ViewBag.Prices as List<PriceList> ?? new List<PriceList>();
+    var locations = ViewBag.Locations as List<string> ?? new List<string>();
+    bool hasSearched = !string.IsNullOrEmpty(ViewBag.Origin) && !string.IsNullOrEmpty(ViewBag.Destination) && ViewBag.TravelDate != null;
+    bool noResults = ViewBag.NoResults == true;
+}
+
+<div class="cp-shell-content">
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="cp-toast cp-toast-error">
+            <i class="fa-solid fa-triangle-exclamation"></i> @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <!-- Page Header -->
+    <div style="margin-bottom:1.5rem;">
+        <h2 style="font-size:1.4rem;font-weight:800;color:var(--text-light);margin:0 0 0.25rem;">
+            <i class="fa-solid fa-magnifying-glass" style="color:var(--accent-cyan);margin-right:0.5rem;"></i> Search Buses
+        </h2>
+        <p style="color:var(--text-muted);font-size:0.875rem;margin:0;">
+            Find available schedules and book your trip instantly.
+        </p>
+    </div>
+
+    <!-- Search Form Card -->
+    <div class="cp-card" style="margin-bottom:2rem; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); padding:1.5rem; border-radius:12px;">
+        <form asp-controller="Customer" asp-action="BookTrip" method="get" style="display:flex; flex-wrap:wrap; gap:1rem; align-items:flex-end;">
+            
+            <div style="flex:1; min-width:200px;">
+                <label style="display:block; color:var(--text-muted); font-size:0.8rem; margin-bottom:0.4rem; font-weight:700; text-transform:uppercase;">
+                    <i class="fa-solid fa-location-dot" style="color:var(--accent-cyan);"></i> From
+                </label>
+                <select name="origin" required style="width:100%; background:var(--bg-primary); border:1px solid var(--border-color); color:var(--text-light); padding:0.6rem 1rem; border-radius:8px;">
+                    <option value="">Origin City</option>
+                    @foreach (var loc in locations)
+                    {
+                        if (ViewBag.Origin == loc) { <option value="@loc" selected>@loc</option> }
+                        else { <option value="@loc">@loc</option> }
+                    }
+                </select>
+            </div>
+
+            <!-- Swap Icon -->
+            <div style="display:flex; justify-content:center; align-items:center; padding-bottom:0.6rem; color:var(--text-muted);">
+                <i class="fa-solid fa-arrow-right-arrow-left"></i>
+            </div>
+
+            <div style="flex:1; min-width:200px;">
+                <label style="display:block; color:var(--text-muted); font-size:0.8rem; margin-bottom:0.4rem; font-weight:700; text-transform:uppercase;">
+                    <i class="fa-solid fa-location-dot" style="color:var(--accent-cyan);"></i> To
+                </label>
+                <select name="destination" required style="width:100%; background:var(--bg-primary); border:1px solid var(--border-color); color:var(--text-light); padding:0.6rem 1rem; border-radius:8px;">
+                    <option value="">Destination City</option>
+                    @foreach (var loc in locations)
+                    {
+                        if (ViewBag.Destination == loc) { <option value="@loc" selected>@loc</option> }
+                        else { <option value="@loc">@loc</option> }
+                    }
+                </select>
+            </div>
+
+            <div style="flex:1; min-width:200px;">
+                <label style="display:block; color:var(--text-muted); font-size:0.8rem; margin-bottom:0.4rem; font-weight:700; text-transform:uppercase;">
+                    <i class="fa-regular fa-calendar" style="color:var(--accent-cyan);"></i> Date
+                </label>
+                <input type="date" name="travelDate" required value="@ViewBag.TravelDate" 
+                       min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                       style="width:100%; background:var(--bg-primary); border:1px solid var(--border-color); color:var(--text-light); padding:0.6rem 1rem; border-radius:8px;" />
+            </div>
+
+            <div>
+                <button type="submit" class="cp-btn cp-btn-primary" style="padding:0.6rem 1.5rem;">
+                    <i class="fa-solid fa-magnifying-glass"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Search Results -->
+    @if (hasSearched)
+    {
+        <h3 style="font-size:1.2rem;font-weight:700;color:var(--text-light);margin-bottom:1rem;">
+            Search Results for @ViewBag.Origin to @ViewBag.Destination
+        </h3>
+
+        if (noResults || !Model.Any())
+        {
+            <div class="cp-card" style="text-align:center; padding:3rem 1rem;">
+                <i class="fa-solid fa-route" style="font-size:3rem; color:var(--text-muted); margin-bottom:1rem; opacity:0.5;"></i>
+                <h4 style="font-size:1.1rem; color:var(--text-light); margin-bottom:0.5rem;">No Buses Found</h4>
+                <p style="color:var(--text-muted); font-size:0.9rem;">
+                    We couldn't find any scheduled buses for this route on @ViewBag.TravelDate. Try changing the date or locations.
+                </p>
+            </div>
+        }
+        else
+        {
+            <div style="display:grid; grid-template-columns:1fr; gap:1rem;">
+                @foreach (var schedule in Model)
+                {
+                    var priceEntry = prices.FirstOrDefault(p => p.RouteId == schedule.RouteId && p.BusType == schedule.BusType);
+                    decimal fare = priceEntry?.FareAmount ?? 0;
+
+                    <div class="cp-card" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; padding:1.25rem; gap:1rem; border-left:4px solid var(--accent-cyan); transition:transform 0.2s, box-shadow 0.2s;">
+                        
+                        <div style="display:flex; flex-direction:column; gap:0.25rem; min-width:200px;">
+                            <div style="font-size:1.1rem; font-weight:800; color:var(--text-light);">
+                                @DateTime.Today.Add(schedule.DepartureTime).ToString("hh:mm tt") 
+                                <span style="color:var(--text-muted); font-size:0.9rem; margin:0 0.5rem;">—</span> 
+                                @DateTime.Today.Add(schedule.ArrivalTime).ToString("hh:mm tt")
+                            </div>
+                            <div style="color:var(--text-muted); font-size:0.85rem;">
+                                @schedule.Route?.Origin <i class="fa-solid fa-arrow-right" style="font-size:0.7rem; margin:0 0.25rem;"></i> @schedule.Route?.Destination
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                            <div style="font-weight:600; color:var(--text-light);">
+                                @schedule.BusType
+                            </div>
+                            <div style="color:var(--accent-cyan); font-weight:700; font-size:1.1rem;">
+                                PKR @fare.ToString("N0")
+                            </div>
+                        </div>
+
+                        <div>
+                            <a href="/Customer/NewRequest?preselectRouteId=@schedule.RouteId&preselectScheduleId=@schedule.Id&preselectDate=@ViewBag.TravelDate" 
+                               class="cp-btn cp-btn-primary" style="background:linear-gradient(135deg,var(--accent-cyan),#007BFF); color:#000;">
+                                Select Seats <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>

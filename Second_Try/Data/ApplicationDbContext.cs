@@ -20,6 +20,7 @@ namespace Second_Try.Data
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<BusSchedule> BusSchedules { get; set; }
+        public DbSet<Review> Reviews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -43,6 +44,18 @@ namespace Second_Try.Data
                 .WithMany(bus => bus.Bookings)
                 .HasForeignKey(b => b.BusId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.Customer)
+                .WithMany()
+                .HasForeignKey(r => r.CustomerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.BookingRequest)
+                .WithMany()
+                .HasForeignKey(r => r.BookingRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

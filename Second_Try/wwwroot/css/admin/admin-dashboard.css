@@ -1145,7 +1145,7 @@
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .adm-sidebar {
         transform: translateX(-100%);
     }
@@ -1156,7 +1156,7 @@
 
     .adm-main {
         margin-left: 0;
-        padding: 1rem;
+        padding: 1.25rem;
     }
 
     .adm-topbar {
@@ -1172,13 +1172,42 @@
         grid-template-columns: repeat(2, 1fr);
     }
 
+    .adm-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
     .adm-search-input {
         width: 100%;
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
+    .adm-main {
+        padding: 1rem;
+    }
     .adm-stats-grid {
         grid-template-columns: 1fr;
     }
+    .adm-avatar-name {
+        display: none;
+    }
+}
+
+/* ── Mobile Overlay (sidebar backdrop) ─────────────────────── */
+.adm-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 190;
+    backdrop-filter: blur(2px);
+}
+
+.adm-overlay.open {
+    display: block;
+}
+
+/* ── Welcome Banner Responsive ──────────────────────────────── */
+.adm-welcome-banner {
+    flex-wrap: wrap;
 }

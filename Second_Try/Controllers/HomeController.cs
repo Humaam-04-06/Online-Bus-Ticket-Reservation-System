@@ -17,7 +17,7 @@ namespace Second_Try.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Fetch distinct locations for search dropdowns (evaluated client-side to avoid LINQ translation errors)
+            // Fetch distinct locations for search dropdowns
             var origins = await _context.Routes.Select(r => r.Origin).Distinct().ToListAsync();
             var destinations = await _context.Routes.Select(r => r.Destination).Distinct().ToListAsync();
             
@@ -25,6 +25,18 @@ namespace Second_Try.Controllers
                                        .Distinct()
                                        .OrderBy(l => l)
                                        .ToList();
+
+            // Fetch top 3 latest 4+ star reviews
+            var latestReviews = await _context.Reviews
+                .Include(r => r.Customer)
+                .Include(r => r.BookingRequest)
+                    .ThenInclude(br => br!.Route)
+                .Where(r => r.Rating >= 4)
+                .OrderByDescending(r => r.CreatedAt)
+                .Take(3)
+                .ToListAsync();
+
+            ViewBag.Reviews = latestReviews;
 
             return View();
         }

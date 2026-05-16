@@ -1,8 +1,18 @@
+@using System.Security.Claims
+@using Second_Try.Data
+@inject ApplicationDbContext _context
 @{
     string userName    = User.Identity?.Name ?? "Customer";
-    string initials   = string.Join("", userName.Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()));
+    string userEmail   = User.FindFirstValue(ClaimTypes.Email) ?? "";
+    string initials    = string.Join("", userName.Split(' ').Take(2).Select(w => w[0].ToString().ToUpper()));
     string currentPage = ViewData["ActivePage"]?.ToString() ?? "";
-    string? picUrl    = ViewBag.ProfilePicUrl as string;
+    
+    string? picUrl = ViewBag.ProfilePicUrl as string;
+    if (string.IsNullOrEmpty(picUrl) && !string.IsNullOrEmpty(userEmail))
+    {
+        var cust = _context.Customers.FirstOrDefault(c => c.Email == userEmail);
+        picUrl = cust?.ProfilePictureUrl;
+    }
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -62,7 +72,7 @@
         <a href="/Customer/Dashboard" class="@(currentPage == "Dashboard" ? "active" : "")">
             <i class="fa-solid fa-gauge-high"></i> Dashboard
         </a>
-        <a href="/Customer/NewRequest" class="@(currentPage == "NewRequest" ? "active" : "")">
+        <a href="/Customer/BookTrip" class="@(currentPage == "NewRequest" ? "active" : "")">
             <i class="fa-solid fa-ticket"></i> New Booking Request
         </a>
         <a href="/Customer/MyRequests" class="@(currentPage == "MyRequests" ? "active" : "")">
@@ -241,7 +251,67 @@
             chevron.style.transform = 'rotate(0)';
         });
     });
+
+    // ── Global SweetAlert2 Form Confirmation ─────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        const forms = document.querySelectorAll('form[onsubmit*="return confirm"]');
+        forms.forEach(form => {
+            const onsubmitAttr = form.getAttribute('onsubmit');
+            const match = onsubmitAttr.match(/confirm\s*\(\s*['"](.*?)['"]\s*\)/);
+            if (match && match[1]) {
+                const message = match[1];
+                form.removeAttribute('onsubmit');
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: message,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0ea5e9',
+                        cancelButtonColor: '#ef4444',
+                        confirmButtonText: 'Yes, proceed',
+                        background: '#151b23',
+                        color: '#f8fafc'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            }
+        });
+
+        // ── TempData SweetAlert2 Handlers ──────────────────────────────
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: '@Html.Raw(TempData["SuccessMessage"]?.ToString()?.Replace("'", "\\'") ?? "")',
+                timer: 3000,
+                showConfirmButton: false,
+                background: '#151b23',
+                color: '#f8fafc'
+            });
+            </text>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '@Html.Raw(TempData["ErrorMessage"]?.ToString()?.Replace("'", "\\'") ?? "")',
+                background: '#151b23',
+                color: '#f8fafc'
+            });
+            </text>
+        }
+    });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @RenderSection("Scripts", required: false)
 
 @* ── ARIA AI Chat Widget ──────────────────────────────────── *@
