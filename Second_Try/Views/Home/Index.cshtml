@@ -21,6 +21,8 @@
         opacity: 0;
         animation: bg-slider 25s infinite;
         transition: transform 5s linear;
+        will-change: opacity, transform;
+        transform: translateZ(0); /* Force Hardware Acceleration */
     }
     .bg-slide::after {
         content: '';
@@ -91,6 +93,26 @@
         /* Stat card grids collapse to single column */
         .cp-stats-grid {
             grid-template-columns: 1fr !important;
+        }
+        
+        /* ── MOBILE PERFORMANCE: Disable BG Slider ── */
+        .bg-slide {
+            animation: none !important;
+            opacity: 0;
+        }
+        .bg-slide:nth-child(1) {
+            opacity: 1; /* Only show the first image statically */
+        }
+    }
+
+    /* ── REDUCED MOTION FALLBACK ─────────────────────────────── */
+    @@media (prefers-reduced-motion: reduce) {
+        .bg-slide { animation: none !important; opacity: 0; }
+        .bg-slide:nth-child(1) { opacity: 1; }
+        .scale-on-scroll {
+            opacity: 1 !important;
+            transform: scale(1) !important;
+            transition: none !important;
         }
     }
 </style>
@@ -643,11 +665,12 @@
                         opacity: 1,
                         scale: 1,
                         ease: "none",
+                        force3D: true, // Offload to GPU
                         scrollTrigger: {
                             trigger: section,
                             start: "top 95%", // Start scaling when the top of the section enters the bottom of the screen
                             end: "top 15%",   // Finish scaling right before it hits its sticky position at the top
-                            scrub: 1          // 1 second of smoothing for the scrub effect
+                            scrub: 0.5        // 0.5 second of smoothing for the scrub effect (reduced from 1s for better performance)
                         }
                     });
                 }

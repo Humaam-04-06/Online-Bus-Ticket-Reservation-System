@@ -50,18 +50,14 @@ The system has reached a critical milestone. We have achieved **100% Mobile Resp
 - **Advanced Failover**: Round-robin API key management for 100% uptime.
 - **Universal Presence**: Accessible from every page in the application.
 
----
+## 📚 Detailed Module Documentation
 
-## 🗺️ Master Roadmap
+For an in-depth look at each specific part of the system, please refer to the dedicated documentation files:
 
-| Phase | Status | Description |
-|---|---|---|
-| **Phase 1** | ✅ COMPLETE | **Schedules & Public Search:** Core search engine and backend scheduling logic. |
-| **Phase 2** | ✅ COMPLETE | **Mobile UX & UI Overhaul:** GSAP animations, 100% responsiveness, and premium design polish. |
-| **Phase 3** | ⏳ UP NEXT | **Interactive Seat Selection:** Physical bus layout grid for seat-specific bookings. |
-| **Phase 4** | 📅 PLANNED | **PDF & QR Ticketing:** Formal downloadable boarding passes with QR validation. |
-| **Phase 5** | 📅 PLANNED | **Review System:** Verified passenger ratings and star reviews. |
+- 👑 **[Admin Portal Documentation](./readme/ADMIN_README.md)**: Fleet management, personnel CRUD, reports, and global controls.
+- 🛠️ **[Employee Portal Documentation](./readme/EMPLOYEE_README.md)**: Operational processing, ticket generation, and booking history.
+- 👤 **[Customer Portal Documentation](./readme/CUSTOMER_README.md)**: Smart booking, status tracking, notifications, and profile management.
+- 🌐 **[Public Experience & Auth Documentation](./readme/PUBLIC_PAGES_README.md)**: GSAP animations, landing page search, and the dual-panel auth system.
 
----
 
 *This project is built with ASP.NET Core MVC, Entity Framework Core, and a heavy emphasis on modern Front-end excellence.*
