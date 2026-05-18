@@ -22,6 +22,32 @@
             picUrl = emp?.ProfilePictureUrl;
         }
     }
+
+    string dashUrl = "";
+    string profileUrl = "";
+    string trackUrl = "";
+
+    if (isAuthenticated)
+    {
+        if (User.IsInRole("Admin"))
+        {
+            dashUrl = Url.Action("Dashboard", "Admin") ?? "#";
+            profileUrl = Url.Action("Dashboard", "Admin") ?? "#";
+            trackUrl = Url.Action("Dashboard", "Admin") ?? "#";
+        }
+        else if (User.IsInRole("Employee"))
+        {
+            dashUrl = Url.Action("Dashboard", "Employee") ?? "#";
+            profileUrl = Url.Action("EmployeeProfile", "Employee") ?? "#";
+            trackUrl = Url.Action("Dashboard", "Employee") ?? "#";
+        }
+        else
+        {
+            dashUrl = Url.Action("Dashboard", "Customer") ?? "#";
+            profileUrl = Url.Action("Profile", "Customer") ?? "#";
+            trackUrl = Url.Action("MyRequests", "Customer") ?? "#";
+        }
+    }
 }
 
 <nav class="fixed w-full z-50 glass-panel border-b border-border transition-all duration-300 shadow-lg" id="navbar">
@@ -85,26 +111,20 @@
                                 <p class="text-sm font-bold text-light truncate mt-0.5">@userEmail</p>
                             </div>
                             <div class="py-1" role="none">
-                                <a href="@Url.Action("Dashboard", "Customer")" class="group flex items-center px-4 py-2.5 text-sm text-muted hover:text-light hover:bg-primary/50 transition-colors" role="menuitem">
+                                <a href="@dashUrl" class="group flex items-center px-4 py-2.5 text-sm text-muted hover:text-light hover:bg-primary/50 transition-colors" role="menuitem">
                                     <i class="fa-solid fa-table-columns w-5 mr-3 text-purple group-hover:text-cyan transition-colors"></i> Dashboard
                                 </a>
-                                <a href="@Url.Action("MyRequests", "Customer")" class="group flex items-center px-4 py-2.5 text-sm text-muted hover:text-light hover:bg-primary/50 transition-colors" role="menuitem">
+                                <a href="@trackUrl" class="group flex items-center px-4 py-2.5 text-sm text-muted hover:text-light hover:bg-primary/50 transition-colors" role="menuitem">
                                     <i class="fa-solid fa-ticket w-5 mr-3 text-purple group-hover:text-cyan transition-colors"></i> My Requests
                                 </a>
-                                <a href="#" class="group flex items-center px-4 py-2.5 text-sm text-muted hover:text-light hover:bg-primary/50 transition-colors" role="menuitem">
-                                    <i class="fa-solid fa-bell w-5 mr-3 text-purple group-hover:text-cyan transition-colors"></i> Notifications
-                                    <span class="ml-auto bg-danger text-light text-[10px] font-bold px-2 py-0.5 rounded-full">3</span>
-                                </a>
-                                <a href="#" class="group flex items-center px-4 py-2.5 text-sm text-muted hover:text-light hover:bg-primary/50 transition-colors" role="menuitem">
+                                <a href="@profileUrl" class="group flex items-center px-4 py-2.5 text-sm text-muted hover:text-light hover:bg-primary/50 transition-colors" role="menuitem">
                                     <i class="fa-solid fa-gear w-5 mr-3 text-purple group-hover:text-cyan transition-colors"></i> Settings
                                 </a>
                             </div>
                             <div class="py-1" role="none">
-                                <form method="post" action="@Url.Action("Logout", "Auth")" class="block">
-                                    <button type="submit" class="group flex w-full items-center px-4 py-2.5 text-sm text-danger hover:bg-danger/10 transition-colors rounded-b-xl" role="menuitem">
-                                        <i class="fa-solid fa-right-from-bracket w-5 mr-3 group-hover:-translate-x-1 transition-transform"></i> Sign out
-                                    </button>
-                                </form>
+                                <a href="@Url.Action("Logout", "Auth")" class="group flex w-full items-center px-4 py-2.5 text-sm text-danger hover:bg-danger/10 transition-colors rounded-b-xl" role="menuitem">
+                                    <i class="fa-solid fa-right-from-bracket w-5 mr-3 group-hover:-translate-x-1 transition-transform"></i> Sign out
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -155,13 +175,12 @@
                         <div class="text-sm font-medium text-cyan">@userEmail</div>
                     </div>
                 </div>
-                <a href="@Url.Action("MyRequests", "Customer")" class="block px-4 py-3 rounded-lg text-base font-medium text-light hover:bg-primary/50 transition-colors mx-2"><i class="fa-solid fa-route w-6 text-purple"></i> Track Order</a>
-                <a href="@Url.Action("Dashboard", "Customer")" class="block px-4 py-3 rounded-lg text-base font-medium text-light hover:bg-primary/50 transition-colors mx-2"><i class="fa-solid fa-table-columns w-6 text-purple"></i> Dashboard</a>
-                <a href="#" class="block px-4 py-3 rounded-lg text-base font-medium text-light hover:bg-primary/50 transition-colors mx-2"><i class="fa-solid fa-bell w-6 text-purple"></i> Notifications</a>
-                <a href="#" class="block px-4 py-3 rounded-lg text-base font-medium text-light hover:bg-primary/50 transition-colors mx-2"><i class="fa-solid fa-gear w-6 text-purple"></i> Settings</a>
-                <form method="post" action="@Url.Action("Logout", "Auth")" class="block mt-4 mx-2">
-                    <button type="submit" class="w-full text-left px-4 py-3 rounded-lg text-base font-medium text-danger hover:bg-danger/10 transition-colors"><i class="fa-solid fa-right-from-bracket w-6"></i> Sign out</button>
-                </form>
+                <a href="@trackUrl" class="block px-4 py-3 rounded-lg text-base font-medium text-light hover:bg-primary/50 transition-colors mx-2"><i class="fa-solid fa-route w-6 text-purple"></i> Track Order</a>
+                <a href="@dashUrl" class="block px-4 py-3 rounded-lg text-base font-medium text-light hover:bg-primary/50 transition-colors mx-2"><i class="fa-solid fa-table-columns w-6 text-purple"></i> Dashboard</a>
+                <a href="@profileUrl" class="block px-4 py-3 rounded-lg text-base font-medium text-light hover:bg-primary/50 transition-colors mx-2"><i class="fa-solid fa-gear w-6 text-purple"></i> Settings</a>
+                <a href="@Url.Action("Logout", "Auth")" class="block mt-4 mx-2">
+                    <button class="w-full text-left px-4 py-3 rounded-lg text-base font-medium text-danger hover:bg-danger/10 transition-colors"><i class="fa-solid fa-right-from-bracket w-6"></i> Sign out</button>
+                </a>
             }
             else
             {

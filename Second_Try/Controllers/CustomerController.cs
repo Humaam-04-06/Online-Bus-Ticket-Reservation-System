@@ -9,6 +9,7 @@ using Second_Try.Services;
 namespace Second_Try.Controllers
 {
     [Authorize(Roles = "Customer")]
+    [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public class CustomerController : Controller
     {
         private readonly ApplicationDbContext _context;

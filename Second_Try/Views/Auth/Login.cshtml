@@ -194,6 +194,46 @@
     }
     .social-link:hover { background: var(--accent-cyan); color: white; border-color: var(--accent-cyan); }
 
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        width: 100%;
+        margin: 1.5rem 0 1rem;
+    }
+    .divider::before, .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .divider span {
+        padding: 0 10px;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+    }
+
+    .google-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        background: transparent;
+        color: var(--text-light);
+        border: 1px solid var(--border-color);
+        border-radius: 9999px;
+        padding: 0.75rem 1rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        margin-bottom: 1rem;
+    }
+    .google-btn:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--text-light);
+    }
+
     /* Password strength bar */
     .strength-bar-wrapper { width: 100%; margin-bottom: 0.5rem; }
     .strength-bar-track {
@@ -257,14 +297,7 @@
         <div class="form-container sign-up-container">
             <form class="auth-form" asp-controller="Auth" asp-action="Register" method="POST">
                 @Html.AntiForgeryToken()
-                <h2 style="font-size:1.75rem;font-weight:700;color:var(--text-light);margin-bottom:0.25rem;">Create Account</h2>
-
-                <div style="margin:0.5rem 0 0.25rem;" class="social-container">
-                    <a href="/Auth/GoogleLogin" class="social-link google-link" title="Sign up with Google">
-                        <i class="fab fa-google"></i>
-                    </a>
-                </div>
-                <span style="color:var(--text-muted);font-size:0.8rem;margin-bottom:0.75rem;display:block;">or use your email for registration</span>
+                <h2 style="font-size:1.75rem;font-weight:700;color:var(--text-light);margin-bottom:1.5rem;">Create Account</h2>
 
                 @if (!ViewData.ModelState.IsValid && ViewData.ModelState["Register.Email"]?.Errors.Count > 0)
                 {
@@ -297,8 +330,28 @@
                     <p class="field-error">@ViewData.ModelState["Register.Password"]!.Errors[0].ErrorMessage</p>
                 }
 
-                <button type="submit" class="auth-btn" id="reg-submit-btn" style="margin-top:0.75rem;">Sign Up</button>
-                <button type="button" class="mobile-toggle" onclick="document.getElementById('auth-container').classList.remove('right-panel-active')">Already have an account? Sign In</button>
+                <div style="display:flex; align-items:center; width:100%; margin-bottom: 1rem; margin-top: 0.5rem; text-align:left;">
+                    <input type="checkbox" id="reg-remember" name="Register.RememberMe" value="true" @(Model.Register.RememberMe ? "checked" : "") style="margin-right:0.5rem; accent-color: var(--accent-cyan);" />
+                    <label for="reg-remember" style="color:var(--text-muted); font-size:0.8rem; cursor:pointer;">Remember me</label>
+                </div>
+
+                <button type="submit" class="auth-btn" id="reg-submit-btn" style="margin-top:0.75rem; width:100%;">Sign Up</button>
+                
+                <div class="divider">
+                    <span>or</span>
+                </div>
+                
+                <a href="/Auth/GoogleLogin" class="google-btn">
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" style="width:20px;height:20px;margin-right:10px;">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                    </svg>
+                    Sign up with Google
+                </a>
+
+                <button type="button" class="mobile-toggle" onclick="document.getElementById('auth-container').classList.remove('right-panel-active')" style="margin-top: 0.5rem;">Already have an account? Sign In</button>
             </form>
         </div>
 
@@ -306,14 +359,7 @@
         <div class="form-container sign-in-container">
             <form class="auth-form" asp-controller="Auth" asp-action="Login" method="POST">
                 @Html.AntiForgeryToken()
-                <h2 style="font-size:1.75rem;font-weight:700;color:var(--text-light);margin-bottom:0.25rem;">Sign In</h2>
-
-                <div style="margin:0.5rem 0 0.25rem;">
-                    <a href="/Auth/GoogleLogin" class="social-link google-link" title="Sign in with Google">
-                        <i class="fab fa-google"></i>
-                    </a>
-                </div>
-                <span style="color:var(--text-muted);font-size:0.8rem;margin-bottom:0.75rem;display:block;">or use your account</span>
+                <h2 style="font-size:1.75rem;font-weight:700;color:var(--text-light);margin-bottom:1.5rem;">Sign In</h2>
 
                 @if (!ViewData.ModelState.IsValid && ViewData.ModelState["Login.Email"]?.Errors.Count > 0)
                 {
@@ -324,14 +370,35 @@
                        value="@Model.Login.Email" required />
                 <input type="password" name="Login.Password" placeholder="Password" class="auth-input" required />
 
-                <a href="/Auth/ForgotPassword"
-                   style="color:var(--text-muted);font-size:0.8rem;margin-bottom:1rem;display:block;transition:color 0.2s;"
-                   onmouseover="this.style.color='var(--accent-cyan)'" onmouseout="this.style.color='var(--text-muted)'">
-                    Forgot your password?
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom: 1rem; margin-top: 0.5rem;">
+                    <div style="display:flex; align-items:center;">
+                        <input type="checkbox" id="login-remember" name="Login.RememberMe" value="true" @(Model.Login.RememberMe ? "checked" : "") style="margin-right:0.5rem; accent-color: var(--accent-cyan);" />
+                        <label for="login-remember" style="color:var(--text-muted); font-size:0.8rem; cursor:pointer;">Remember me</label>
+                    </div>
+                    <a href="/Auth/ForgotPassword"
+                       style="color:var(--text-muted);font-size:0.8rem;transition:color 0.2s;"
+                       onmouseover="this.style.color='var(--accent-cyan)'" onmouseout="this.style.color='var(--text-muted)'">
+                        Forgot password?
+                    </a>
+                </div>
+
+                <button type="submit" class="auth-btn" style="width:100%;">Sign In</button>
+
+                <div class="divider">
+                    <span>or</span>
+                </div>
+                
+                <a href="/Auth/GoogleLogin" class="google-btn">
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" style="width:20px;height:20px;margin-right:10px;">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                    </svg>
+                    Sign in with Google
                 </a>
 
-                <button type="submit" class="auth-btn">Sign In</button>
-                <button type="button" class="mobile-toggle" onclick="document.getElementById('auth-container').classList.add('right-panel-active')">Don't have an account? Sign Up</button>
+                <button type="button" class="mobile-toggle" onclick="document.getElementById('auth-container').classList.add('right-panel-active')" style="margin-top: 0.5rem;">Don't have an account? Sign Up</button>
             </form>
         </div>
 

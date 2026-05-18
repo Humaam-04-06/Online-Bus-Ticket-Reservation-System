@@ -9,6 +9,7 @@ using System.Security.Claims;
 namespace Second_Try.Controllers
 {
     [Authorize(Roles = "Employee,Admin")]
+    [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public class EmployeeController : Controller
     {
         private readonly ApplicationDbContext _context;

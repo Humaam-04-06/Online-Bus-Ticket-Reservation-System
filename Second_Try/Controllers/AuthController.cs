@@ -76,7 +76,7 @@ namespace Second_Try.Controllers
                 // 📧 Send welcome email (fire and forget — won't block)
                 _ = _email.SendWelcomeEmailAsync(customer.Email, customer.FullName);
 
-                await SignInUser(customer.Email, "Customer", customer.FullName);
+                await SignInUser(customer.Email, "Customer", customer.FullName, model.RememberMe);
                 TempData["WelcomeMessage"] = $"Welcome to SRC Travel, {customer.FullName}!";
                 return RedirectToAction("Dashboard", "Customer");
             }
@@ -101,7 +101,7 @@ namespace Second_Try.Controllers
                 if (customer != null && customer.PasswordHash != null &&
                     BCrypt.Net.BCrypt.Verify(model.Password, customer.PasswordHash))
                 {
-                    await SignInUser(customer.Email, "Customer", customer.FullName);
+                    await SignInUser(customer.Email, "Customer", customer.FullName, model.RememberMe);
                     return RedirectToAction("Dashboard", "Customer");
                 }
 
@@ -109,7 +109,7 @@ namespace Second_Try.Controllers
                 if (employee != null && BCrypt.Net.BCrypt.Verify(model.Password, employee.PasswordHash))
                 {
                     string roleString = employee.Role == EmployeeRole.Admin ? "Admin" : "Employee";
-                    await SignInUser(employee.Email, roleString, employee.FullName);
+                    await SignInUser(employee.Email, roleString, employee.FullName, model.RememberMe);
                     if (employee.Role == EmployeeRole.Admin) return RedirectToAction("Dashboard", "Admin");
                     return RedirectToAction("Dashboard", "Employee");
                 }
@@ -200,7 +200,7 @@ namespace Second_Try.Controllers
         }
 
         // ── Shared sign-in helper ─────────────────────────────────
-        private async Task SignInUser(string email, string role, string fullName)
+        private async Task SignInUser(string email, string role, string fullName, bool isPersistent = false)
         {
             var claims = new List<Claim>
             {
@@ -212,7 +212,13 @@ namespace Second_Try.Controllers
 
             var identity  = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+            
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = isPersistent
+            };
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
         }
 
         // ── Logout ────────────────────────────────────────────────

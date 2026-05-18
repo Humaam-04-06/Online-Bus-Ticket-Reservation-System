@@ -6,6 +6,7 @@ using System.Diagnostics;
 
 namespace Second_Try.Controllers
 {
+    [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public class HomeController : Controller
     {
         private readonly ApplicationDbContext _context;

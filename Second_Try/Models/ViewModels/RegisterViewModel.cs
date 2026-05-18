@@ -18,5 +18,7 @@ namespace Second_Try.Models.ViewModels
             @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;':"",./<>?]).{8,}$",
             ErrorMessage = "Password must be at least 8 characters and include an uppercase letter, lowercase letter, number, and special character (!@#$%...).")]
         public string Password { get; set; } = string.Empty;
+
+        public bool RememberMe { get; set; }
     }
 }

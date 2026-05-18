@@ -8,6 +8,7 @@ using System.Security.Claims;
 namespace Second_Try.Controllers
 {
     [Authorize(Roles = "Admin")]
+    [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _context;
