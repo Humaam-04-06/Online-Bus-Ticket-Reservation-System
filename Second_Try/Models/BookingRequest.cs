@@ -32,7 +32,7 @@ namespace Second_Try.Models
         public DateTime TravelDate { get; set; }
 
         [Required]
-        [Range(1, 6, ErrorMessage = "You can request between 1 and 6 seats.")]
+        [Range(1, 50, ErrorMessage = "You can request between 1 and 50 seats.")]
         public int NumberOfSeats { get; set; }
 
         [Required]

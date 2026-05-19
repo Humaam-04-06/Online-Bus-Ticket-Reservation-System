@@ -76,24 +76,34 @@
                        style="width:100%; background:var(--bg-primary); border:1px solid var(--border-color); color:var(--text-light); padding:0.6rem 1rem; border-radius:8px;" />
             </div>
 
-            <div>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
                 <button type="submit" class="cp-btn cp-btn-primary" style="padding:0.6rem 1.5rem;">
                     <i class="fa-solid fa-magnifying-glass"></i> Search
                 </button>
+                <a href="/Customer/BookTrip" class="cp-btn" style="padding:0.6rem 1.5rem; background: rgba(255,255,255,0.1); color: var(--text-light); border: 1px solid var(--border-color);">
+                    <i class="fa-solid fa-times"></i> Clear
+                </a>
             </div>
         </form>
     </div>
 
-    <!-- Search Results -->
+    <!-- Search Results / Available Trips -->
     @if (hasSearched)
     {
         <h3 style="font-size:1.2rem;font-weight:700;color:var(--text-light);margin-bottom:1rem;">
             Search Results for @ViewBag.Origin to @ViewBag.Destination
         </h3>
+    }
+    else
+    {
+        <h3 style="font-size:1.2rem;font-weight:700;color:var(--text-light);margin-bottom:1rem;">
+            Available Bus Schedules
+        </h3>
+    }
 
-        if (noResults || !Model.Any())
-        {
-            <div class="cp-card" style="text-align:center; padding:3rem 1rem;">
+    @if (noResults || !Model.Any())
+    {
+        <div class="cp-card" style="text-align:center; padding:3rem 1rem;">
                 <i class="fa-solid fa-route" style="font-size:3rem; color:var(--text-muted); margin-bottom:1rem; opacity:0.5;"></i>
                 <h4 style="font-size:1.1rem; color:var(--text-light); margin-bottom:0.5rem;">No Buses Found</h4>
                 <p style="color:var(--text-muted); font-size:0.9rem;">
@@ -127,7 +137,14 @@
                                 @schedule.BusType
                             </div>
                             <div style="color:var(--accent-cyan); font-weight:700; font-size:1.1rem;">
-                                PKR @fare.ToString("N0")
+                                @if (fare > 0)
+                                {
+                                    <text>PKR @fare.ToString("N0")</text>
+                                }
+                                else
+                                {
+                                    <span style="color:var(--text-muted); font-size: 0.9rem;">Price TBD</span>
+                                }
                             </div>
                         </div>
 
@@ -141,5 +158,4 @@
                 }
             </div>
         }
-    }
 </div>
