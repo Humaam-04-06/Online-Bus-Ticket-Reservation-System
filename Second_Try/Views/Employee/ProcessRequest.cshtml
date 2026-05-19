@@ -209,18 +209,17 @@
                     <div class="emp-card-title"><i class="fa-solid fa-circle-xmark"></i> Reject Request</div>
                 </div>
 
-                <form asp-controller="Employee" asp-action="RejectRequest" method="POST">
+                <form asp-controller="Employee" asp-action="RejectRequest" method="POST" onsubmit="return confirm('Are you sure you want to reject this request?')">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="requestId" value="@Model.Id" />
 
                     <div class="pr-form-group">
-                        <label class="pr-label">Rejection Reason <span class="pr-optional">(optional)</span></label>
+                        <label class="pr-label">Rejection Reason</label>
                         <textarea name="remarks" class="pr-textarea" rows="3"
-                                  placeholder="e.g. No available bus on requested date..."></textarea>
+                                  placeholder="e.g. No available bus on requested date..." required></textarea>
                     </div>
 
-                    <button type="submit" class="emp-btn emp-btn-danger pr-submit-btn"
-                            onclick="return confirm('Are you sure you want to reject this request?')">
+                    <button type="submit" class="emp-btn emp-btn-danger pr-submit-btn">
                         <i class="fa-solid fa-circle-xmark"></i> Reject Request
                     </button>
                 </form>

@@ -270,6 +270,12 @@ namespace Second_Try.Controllers
             var employee = await GetCurrentEmployeeAsync();
             if (employee == null) return RedirectToAction("Logout", "Auth");
 
+            if (string.IsNullOrWhiteSpace(remarks))
+            {
+                TempData["ErrorMessage"] = "Rejection reason is required.";
+                return RedirectToAction(nameof(ProcessRequest), new { id = requestId });
+            }
+
             var request = await _context.BookingRequests
                 .Include(r => r.Customer)
                 .FirstOrDefaultAsync(r => r.Id == requestId);

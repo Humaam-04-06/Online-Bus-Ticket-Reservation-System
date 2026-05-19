@@ -86,6 +86,18 @@ namespace Second_Try.Controllers
         {
             var emp = await _context.Employees.FindAsync(id);
             if (emp == null) return NotFound();
+
+            // Prevent deactivating the last active Admin
+            if (emp.IsActive && emp.Role == EmployeeRole.Admin)
+            {
+                var activeAdminsCount = await _context.Employees.CountAsync(e => e.Role == EmployeeRole.Admin && e.IsActive);
+                if (activeAdminsCount <= 1)
+                {
+                    TempData["ErrorMessage"] = "Cannot deactivate the last active administrator.";
+                    return RedirectToAction(nameof(ManageEmployees));
+                }
+            }
+
             emp.IsActive = !emp.IsActive;
             await _context.SaveChangesAsync();
             TempData["SuccessMessage"] = $"Employee '{emp.FullName}' {(emp.IsActive ? "activated" : "deactivated")}.";
@@ -139,14 +151,15 @@ namespace Second_Try.Controllers
         [HttpPost][ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateBus(string BusNumber, BusType Type, int Capacity, string? Amenities)
         {
-            if (await _context.Buses.AnyAsync(b => b.BusNumber == BusNumber))
+            var normalizedNumber = BusNumber.Trim().ToUpper();
+            if (await _context.Buses.AnyAsync(b => b.BusNumber == normalizedNumber))
             {
                 TempData["ErrorMessage"] = "A bus with this number already exists.";
                 return RedirectToAction(nameof(ManageBuses));
             }
-            _context.Buses.Add(new Bus { BusNumber = BusNumber.Trim().ToUpper(), Type = Type, Capacity = Capacity, Amenities = Amenities?.Trim(), IsActive = true });
+            _context.Buses.Add(new Bus { BusNumber = normalizedNumber, Type = Type, Capacity = Capacity, Amenities = Amenities?.Trim(), IsActive = true });
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = $"Bus {BusNumber} added.";
+            TempData["SuccessMessage"] = $"Bus {normalizedNumber} added.";
             return RedirectToAction(nameof(ManageBuses));
         }
 
@@ -155,7 +168,15 @@ namespace Second_Try.Controllers
         {
             var bus = await _context.Buses.FindAsync(id);
             if (bus == null) return NotFound();
-            bus.BusNumber  = BusNumber.Trim().ToUpper();
+
+            var normalizedNumber = BusNumber.Trim().ToUpper();
+            if (await _context.Buses.AnyAsync(b => b.BusNumber == normalizedNumber && b.Id != id))
+            {
+                TempData["ErrorMessage"] = $"A bus with the number {normalizedNumber} already exists.";
+                return RedirectToAction(nameof(ManageBuses));
+            }
+
+            bus.BusNumber  = normalizedNumber;
             bus.Type       = Type;
             bus.Capacity   = Capacity;
             bus.Amenities  = Amenities?.Trim();
