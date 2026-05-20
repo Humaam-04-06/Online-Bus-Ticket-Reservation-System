@@ -1,450 +1,706 @@
 @using Second_Try.Models.ViewModels
 @model AuthPageViewModel
 @{
-    ViewData["Title"] = "Sign In or Sign Up";
-    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+    ViewData["Title"] = "Sign In or Sign Up - SRC Travel";
+    Layout = null;
     bool showRegister = TempData["ShowRegister"] is bool sr && sr;
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="Sign in or create your SRC Travel account to book bus tickets, manage trips, and explore routes across the country." />
 
-<style>
-    .auth-wrapper {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: calc(100vh - 64px);
-        padding: 2rem;
-        background-color: var(--bg-primary);
-    }
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    .auth-container {
-        position: relative;
-        width: 100%;
-        max-width: 1000px;
-        min-height: 600px;
-        background-color: var(--bg-secondary);
-        border-radius: 2rem;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-        overflow: hidden;
-    }
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    .form-container {
-        position: absolute;
-        top: 0;
-        height: 100%;
-        transition: all 0.6s ease-in-out;
-        background-color: var(--bg-secondary);
-    }
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    .sign-in-container {
-        left: 0;
-        width: 50%;
-        z-index: 2;
-    }
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .sign-up-container {
-        left: 0;
-        width: 50%;
-        opacity: 0;
-        z-index: 1;
-    }
-
-    .overlay-container {
-        position: absolute;
-        top: 0;
-        left: 50%;
-        width: 50%;
-        height: 100%;
-        overflow: hidden;
-        transition: transform 0.6s ease-in-out;
-        z-index: 100;
-    }
-
-    .overlay {
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 200%;
-        height: 100%;
-        transition: transform 0.6s ease-in-out;
-    }
-
-    .overlay::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background-image: url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2069&auto=format&fit=crop');
-        background-size: cover;
-        background-position: center;
-        z-index: -2;
-    }
-
-    .overlay::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to right, rgba(92, 126, 143, 0.88), rgba(92, 126, 143, 0.96));
-        z-index: -1;
-    }
-
-    .overlay-panel {
-        position: absolute;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        padding: 0 40px;
-        text-align: center;
-        top: 0;
-        height: 100%;
-        width: 50%;
-        transition: transform 0.6s ease-in-out;
-    }
-
-    .overlay-left  { transform: translateX(-20%); }
-    .overlay-right { right: 0; transform: translateX(0); }
-
-    /* Active (Sign Up Mode) */
-    .auth-container.right-panel-active .sign-in-container {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    .auth-container.right-panel-active .sign-up-container {
-        transform: translateX(100%);
-        opacity: 1;
-        z-index: 5;
-        animation: show 0.6s;
-    }
-    .auth-container.right-panel-active .overlay-container { transform: translateX(-100%); }
-    .auth-container.right-panel-active .overlay           { transform: translateX(50%); }
-    .auth-container.right-panel-active .overlay-left      { transform: translateX(0); }
-    .auth-container.right-panel-active .overlay-right     { transform: translateX(20%); }
-
-    @@keyframes show {
-        0%, 49.99% { opacity: 0; z-index: 1; }
-        50%, 100%  { opacity: 1; z-index: 5; }
-    }
-
-    .auth-form {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        padding: 0 40px;
-        height: 100%;
-        text-align: center;
-    }
-
-    .auth-input {
-        width: 100%;
-        background: #F5F7FA;
-        border: 1.5px solid var(--border-color);
-        border-radius: 0.6rem;
-        padding: 0.75rem 1rem;
-        margin-bottom: 0.75rem;
-        color: var(--text-light);
-        font-size: 0.9rem;
-        transition: border-color 0.2s;
-        outline: none;
-    }
-    .auth-input:focus { border-color: var(--accent-cyan); }
-
-    .auth-btn {
-        background: var(--accent-cyan);
-        color: white;
-        border: none;
-        border-radius: 9999px;
-        padding: 0.75rem 3rem;
-        font-weight: 700;
-        font-size: 0.85rem;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        cursor: pointer;
-        transition: all 0.3s;
-        margin-top: 0.5rem;
-    }
-    .auth-btn:hover { box-shadow: 0 0 15px rgba(92,126,143,0.5); transform: translateY(-2px); }
-
-    .overlay-btn {
-        background: transparent;
-        color: white;
-        border: 2px solid white;
-        border-radius: 9999px;
-        padding: 0.75rem 3rem;
-        font-weight: 700;
-        font-size: 0.85rem;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    .overlay-btn:hover { background: white; color: var(--accent-cyan); }
-
-    .social-link {
-        border: 1px solid var(--border-color);
-        border-radius: 50%;
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        margin: 0 5px;
-        height: 38px;
-        width: 38px;
-        color: var(--text-light);
-        text-decoration: none;
-        transition: all 0.3s;
-    }
-    .social-link:hover { background: var(--accent-cyan); color: white; border-color: var(--accent-cyan); }
-
-    .divider {
-        display: flex;
-        align-items: center;
-        text-align: center;
-        width: 100%;
-        margin: 1.5rem 0 1rem;
-    }
-    .divider::before, .divider::after {
-        content: '';
-        flex: 1;
-        border-bottom: 1px solid var(--border-color);
-    }
-    .divider span {
-        padding: 0 10px;
-        color: var(--text-muted);
-        font-size: 0.85rem;
-    }
-
-    .google-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        background: transparent;
-        color: var(--text-light);
-        border: 1px solid var(--border-color);
-        border-radius: 9999px;
-        padding: 0.75rem 1rem;
-        font-weight: 600;
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: all 0.3s;
-        text-decoration: none;
-        margin-bottom: 1rem;
-    }
-    .google-btn:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-color: var(--text-light);
-    }
-
-    /* Password strength bar */
-    .strength-bar-wrapper { width: 100%; margin-bottom: 0.5rem; }
-    .strength-bar-track {
-        height: 4px;
-        background: #e5e7eb;
-        border-radius: 2px;
-        overflow: hidden;
-    }
-    .strength-bar-fill {
-        height: 100%;
-        width: 0%;
-        border-radius: 2px;
-        transition: width 0.3s, background 0.3s;
-    }
-    .strength-label { font-size: 0.72rem; text-align: left; margin-top: 3px; }
-
-    .field-error { color: #ef4444; font-size: 0.72rem; margin-top: -0.5rem; margin-bottom: 0.5rem; text-align: left; width: 100%; }
-
-    .mobile-toggle { display: none; }
-
-    @@media (max-width: 768px) {
-        .auth-wrapper { padding: 1rem; }
-        .auth-container { min-height: auto; padding-bottom: 2rem; }
-        .overlay-container { display: none; }
-        
-        .sign-in-container, .sign-up-container {
+        html, body {
             width: 100%;
-            position: relative;
-            transform: none !important;
-            opacity: 1 !important;
-            transition: none;
-            animation: none;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
         }
 
-        /* Default state: Show Sign In, Hide Sign Up */
-        .sign-up-container { display: none; }
-        
-        /* Active state: Show Sign Up, Hide Sign In */
-        .auth-container.right-panel-active .sign-in-container { display: none; }
-        .auth-container.right-panel-active .sign-up-container { display: block; }
-        
-        .mobile-toggle {
+        /* ═══════════════════════════════════════════════
+           FULL VIEWPORT WRAPPER
+        ═══════════════════════════════════════════════ */
+        .auth-page {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ═══════════════════════════════════════════════
+           LEFT BRANDING PANEL
+        ═══════════════════════════════════════════════ */
+        .brand-panel {
+            position: relative;
+            width: 50%;
+            height: 100%;
+            background: #02040A;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* Animated glow blobs */
+        .brand-panel::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(92, 126, 143, 0.25) 0%, transparent 70%);
+            top: -100px;
+            left: -100px;
+            animation: floatBlob 8s ease-in-out infinite;
+        }
+        .brand-panel::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(92, 126, 143, 0.18) 0%, transparent 70%);
+            bottom: -80px;
+            right: -80px;
+            animation: floatBlob 10s ease-in-out infinite reverse;
+        }
+
+        @@keyframes floatBlob {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, 30px) scale(1.05); }
+        }
+
+        /* Stars background */
+        .stars {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            z-index: 0;
+        }
+        .stars-layer {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: transparent;
+            animation: twinkleLayer 5s ease-in-out infinite alternate;
+            will-change: opacity;
+        }
+        @@keyframes twinkleLayer {
+            0% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+
+
+
+        .brand-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+        .brand-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+            text-decoration: none;
+        }
+        .brand-logo-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid rgba(92,126,143,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #5C7E8F;
+            background: rgba(92,126,143,0.1);
+            box-shadow: 0 0 20px rgba(92,126,143,0.3);
+        }
+        .brand-logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.02em;
+        }
+        .brand-logo-text span { color: #5C7E8F; }
+
+        .brand-title {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: white;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            letter-spacing: -0.03em;
+        }
+        .brand-title span {
+            background: linear-gradient(135deg, #5C7E8F, #8ab0c0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .brand-subtitle {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.55);
+            line-height: 1.7;
+            max-width: 340px;
+            margin: 0 auto 2.5rem;
+        }
+
+        .brand-stats {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #5C7E8F;
             display: block;
-            margin-top: 1.5rem;
-            color: var(--accent-cyan);
-            font-size: 0.85rem;
+        }
+        .stat-label {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* ═══════════════════════════════════════════════
+           RIGHT FORM PANEL
+        ═══════════════════════════════════════════════ */
+        .form-panel {
+            width: 50%;
+            height: 100%;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .form-panel-inner {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 3.5rem;
+            min-height: 100%;
+        }
+
+        /* Tab switcher */
+        .auth-tabs {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 4px;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 2rem;
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 0.65rem 1rem;
+            border: none;
+            background: transparent;
+            border-radius: 9px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .auth-tab.active {
+            background: white;
+            color: #1e293b;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        /* Form styles */
+        .auth-form-wrap {
+            width: 100%;
+            max-width: 400px;
+        }
+        .form-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.03em;
+        }
+        .form-subtitle {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 1.75rem;
+        }
+        .form-subtitle a {
+            color: #5C7E8F;
             font-weight: 600;
             text-decoration: none;
-            cursor: pointer;
-            border: none;
-            background: none;
         }
-        .mobile-toggle:hover { text-decoration: underline; }
-    }
-</style>
+        .form-subtitle a:hover { text-decoration: underline; }
 
-<div class="auth-wrapper">
-    <div class="auth-container @(showRegister ? "right-panel-active" : "")" id="auth-container">
+        /* Google button */
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background: white;
+            color: #1e293b;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .google-btn:hover {
+            border-color: #5C7E8F;
+            background: #f8fafc;
+            box-shadow: 0 4px 12px rgba(92,126,143,0.12);
+            color: #1e293b;
+        }
 
-        <!-- ===== SIGN UP FORM ===== -->
-        <div class="form-container sign-up-container">
-            <form class="auth-form" asp-controller="Auth" asp-action="Register" method="POST">
-                @Html.AntiForgeryToken()
-                <h2 style="font-size:1.75rem;font-weight:700;color:var(--text-light);margin-bottom:1.5rem;">Create Account</h2>
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1.5rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+        .divider span {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
 
-                @if (!ViewData.ModelState.IsValid && ViewData.ModelState["Register.Email"]?.Errors.Count > 0)
-                {
-                    <p class="field-error">@ViewData.ModelState["Register.Email"]!.Errors[0].ErrorMessage</p>
-                }
+        /* Inputs */
+        .input-group {
+            margin-bottom: 1rem;
+        }
+        .input-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.4rem;
+        }
+        .auth-input {
+            width: 100%;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            color: #0f172a;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+        .auth-input:focus {
+            border-color: #5C7E8F;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(92,126,143,0.12);
+        }
+        .auth-input::placeholder { color: #94a3b8; }
 
-                <input type="text" name="Register.FullName" placeholder="Full Name" class="auth-input"
-                       value="@Model.Register.FullName" required />
-                @if (ViewData.ModelState["Register.FullName"]?.Errors.Count > 0)
-                {
-                    <p class="field-error">@ViewData.ModelState["Register.FullName"]!.Errors[0].ErrorMessage</p>
-                }
+        /* Password strength */
+        .strength-bar-wrapper { margin-top: 0.5rem; }
+        .strength-bar-track {
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .strength-bar-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 2px;
+            transition: width 0.3s, background 0.3s;
+        }
+        .strength-label {
+            font-size: 0.72rem;
+            margin-top: 4px;
+            color: #94a3b8;
+        }
 
-                <input type="email" name="Register.Email" placeholder="Email Address" class="auth-input"
-                       value="@Model.Register.Email" required />
+        .field-error {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 0.3rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-                <input type="password" id="reg-password" name="Register.Password" placeholder="Password (min 8 chars)"
-                       class="auth-input" required />
+        /* Remember & Forgot row */
+        .remember-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+        }
+        .remember-check {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .remember-check input[type="checkbox"] {
+            accent-color: #5C7E8F;
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+        }
+        .remember-check label {
+            font-size: 0.8rem;
+            color: #64748b;
+            cursor: pointer;
+        }
+        .forgot-link {
+            font-size: 0.8rem;
+            color: #5C7E8F;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .forgot-link:hover { text-decoration: underline; }
 
-                <!-- Live Password Strength Bar -->
-                <div class="strength-bar-wrapper">
-                    <div class="strength-bar-track">
-                        <div class="strength-bar-fill" id="strength-fill"></div>
-                    </div>
-                    <p class="strength-label" id="strength-label" style="color:var(--text-muted);">Enter a password</p>
+        /* Submit button */
+        .auth-btn {
+            width: 100%;
+            background: #5C7E8F;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.02em;
+            font-family: 'Inter', sans-serif;
+        }
+        .auth-btn:hover {
+            background: #4a6b7b;
+            box-shadow: 0 8px 20px rgba(92,126,143,0.35);
+            transform: translateY(-1px);
+        }
+        .auth-btn:active { transform: translateY(0); }
+        .auth-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Back to home link */
+        .back-home {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: #64748b;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .back-home:hover { color: #5C7E8F; }
+
+        /* ═══════════════════════════════════════════════
+           PANEL VISIBILITY
+        ═══════════════════════════════════════════════ */
+        .auth-form-wrap { display: none; }
+        .auth-form-wrap.active { display: block; }
+
+        /* ═══════════════════════════════════════════════
+           RESPONSIVE — MOBILE
+        ═══════════════════════════════════════════════ */
+        @@media (max-width: 768px) {
+            html, body { overflow: auto; }
+            .auth-page { flex-direction: column; height: auto; min-height: 100vh; }
+            .brand-panel {
+                width: 100%;
+                height: 220px;
+                padding: 2rem;
+                flex-shrink: 0;
+            }
+            .bus-illustration { display: none; }
+            .brand-stats { gap: 1.5rem; }
+            .brand-title { font-size: 1.6rem; }
+            .brand-subtitle { display: none; }
+            .form-panel { width: 100%; height: auto; overflow-y: visible; }
+            .form-panel-inner { padding: 2rem 1.5rem; justify-content: flex-start; }
+            .back-home { top: 1rem; right: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="auth-page">
+
+    <!-- ═══════════ LEFT BRANDING PANEL ═══════════ -->
+    <div class="brand-panel">
+        <!-- Star field -->
+        <div class="stars" id="stars-container"></div>
+
+        <div class="brand-content">
+            <a href="/" class="brand-logo">
+                <div class="brand-logo-icon">
+                    <i class="fa-solid fa-bus"></i>
                 </div>
+                <span class="brand-logo-text">SRC <span>Travel</span></span>
+            </a>
 
-                @if (ViewData.ModelState["Register.Password"]?.Errors.Count > 0)
-                {
-                    <p class="field-error">@ViewData.ModelState["Register.Password"]!.Errors[0].ErrorMessage</p>
-                }
+            <h1 class="brand-title">Your Journey<br><span>Starts Here</span></h1>
+            <p class="brand-subtitle">Book bus tickets across the country with ease. Track your trips, manage bookings, and travel smarter.</p>
 
-                <div style="display:flex; align-items:center; width:100%; margin-bottom: 1rem; margin-top: 0.5rem; text-align:left;">
-                    <input type="checkbox" id="reg-remember" name="Register.RememberMe" value="true" @(Model.Register.RememberMe ? "checked" : "") style="margin-right:0.5rem; accent-color: var(--accent-cyan);" />
-                    <label for="reg-remember" style="color:var(--text-muted); font-size:0.8rem; cursor:pointer;">Remember me</label>
+            <div class="brand-stats">
+                <div class="stat-item">
+                    <span class="stat-number">@(ViewBag.RoutesCount ?? 0)</span>
+                    <span class="stat-label">Routes</span>
                 </div>
-
-                <button type="submit" class="auth-btn" id="reg-submit-btn" style="margin-top:0.75rem; width:100%;">Sign Up</button>
-                
-                <div class="divider">
-                    <span>or</span>
+                <div class="stat-item">
+                    <span class="stat-number">@(ViewBag.TravelersCount ?? 0)</span>
+                    <span class="stat-label">Travelers</span>
                 </div>
-                
-                <a href="/Auth/GoogleLogin" class="google-btn">
-                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" style="width:20px;height:20px;margin-right:10px;">
-                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-                    </svg>
-                    Sign up with Google
-                </a>
-
-                <button type="button" class="mobile-toggle" onclick="document.getElementById('auth-container').classList.remove('right-panel-active')" style="margin-top: 0.5rem;">Already have an account? Sign In</button>
-            </form>
-        </div>
-
-        <!-- ===== SIGN IN FORM ===== -->
-        <div class="form-container sign-in-container">
-            <form class="auth-form" asp-controller="Auth" asp-action="Login" method="POST">
-                @Html.AntiForgeryToken()
-                <h2 style="font-size:1.75rem;font-weight:700;color:var(--text-light);margin-bottom:1.5rem;">Sign In</h2>
-
-                @if (!ViewData.ModelState.IsValid && ViewData.ModelState["Login.Email"]?.Errors.Count > 0)
-                {
-                    <p class="field-error" style="text-align:center;">@ViewData.ModelState["Login.Email"]!.Errors[0].ErrorMessage</p>
-                }
-
-                <input type="email" name="Login.Email" placeholder="Email Address" class="auth-input"
-                       value="@Model.Login.Email" required />
-                <input type="password" name="Login.Password" placeholder="Password" class="auth-input" required />
-
-                <div style="display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom: 1rem; margin-top: 0.5rem;">
-                    <div style="display:flex; align-items:center;">
-                        <input type="checkbox" id="login-remember" name="Login.RememberMe" value="true" @(Model.Login.RememberMe ? "checked" : "") style="margin-right:0.5rem; accent-color: var(--accent-cyan);" />
-                        <label for="login-remember" style="color:var(--text-muted); font-size:0.8rem; cursor:pointer;">Remember me</label>
-                    </div>
-                    <a href="/Auth/ForgotPassword"
-                       style="color:var(--text-muted);font-size:0.8rem;transition:color 0.2s;"
-                       onmouseover="this.style.color='var(--accent-cyan)'" onmouseout="this.style.color='var(--text-muted)'">
-                        Forgot password?
-                    </a>
-                </div>
-
-                <button type="submit" class="auth-btn" style="width:100%;">Sign In</button>
-
-                <div class="divider">
-                    <span>or</span>
-                </div>
-                
-                <a href="/Auth/GoogleLogin" class="google-btn">
-                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" style="width:20px;height:20px;margin-right:10px;">
-                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-                    </svg>
-                    Sign in with Google
-                </a>
-
-                <button type="button" class="mobile-toggle" onclick="document.getElementById('auth-container').classList.add('right-panel-active')" style="margin-top: 0.5rem;">Don't have an account? Sign Up</button>
-            </form>
-        </div>
-
-        <!-- ===== SLIDING IMAGE OVERLAY ===== -->
-        <div class="overlay-container">
-            <div class="overlay">
-                <!-- Left panel (shown when sign-up is active) -->
-                <div class="overlay-panel overlay-left">
-                    <div style="width:64px;height:64px;border-radius:50%;border:2px solid rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;font-size:1.75rem;margin-bottom:1.5rem;color:white;">
-                        <i class="fa-solid fa-bus"></i>
-                    </div>
-                    <h1 style="color:white;font-size:2rem;font-weight:700;margin-bottom:1rem;">Welcome Back!</h1>
-                    <p style="color:rgba(255,255,255,0.8);font-size:1rem;margin-bottom:2rem;line-height:1.6;">
-                        To keep connected with us please login with your personal info.
-                    </p>
-                    <button class="overlay-btn" id="signInBtn">Sign In</button>
-                </div>
-
-                <!-- Right panel (shown when sign-in is active) -->
-                <div class="overlay-panel overlay-right">
-                    <div style="width:64px;height:64px;border-radius:50%;border:2px solid rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;font-size:1.75rem;margin-bottom:1.5rem;color:white;">
-                        <i class="fa-solid fa-route"></i>
-                    </div>
-                    <h1 style="color:white;font-size:2rem;font-weight:700;margin-bottom:1rem;">Hello, Traveler!</h1>
-                    <p style="color:rgba(255,255,255,0.8);font-size:1rem;margin-bottom:2rem;line-height:1.6;">
-                        Enter your personal details and start your journey with us today.
-                    </p>
-                    <button class="overlay-btn" id="signUpBtn">Sign Up</button>
+                <div class="stat-item">
+                    <span class="stat-number">@((ViewBag.OnTimeRate ?? 99.0).ToString("0.0"))%</span>
+                    <span class="stat-label">On-Time</span>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- ═══════════ RIGHT FORM PANEL ═══════════ -->
+    <div class="form-panel">
+        <a href="/" class="back-home">
+            <i class="fa-solid fa-arrow-left"></i> Back to Home
+        </a>
+
+        <div class="form-panel-inner">
+
+            <!-- Tab Switcher -->
+            <div class="auth-tabs" style="max-width:400px;">
+                <button class="auth-tab @(!showRegister ? "active" : "")" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
+                <button class="auth-tab @(showRegister ? "active" : "")"  id="tab-signup"  onclick="switchTab('signup')">Create Account</button>
+            </div>
+
+            <!-- ── SIGN IN FORM ── -->
+            <div class="auth-form-wrap @(!showRegister ? "active" : "")" id="form-signin">
+                <h2 class="form-title">Welcome back</h2>
+                <p class="form-subtitle">Don't have an account? <a href="#" onclick="switchTab('signup'); return false;">Sign up for free</a></p>
+
+                <a href="/Auth/GoogleLogin" class="google-btn">
+                    <svg viewBox="0 0 48 48" style="width:18px;height:18px;">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    </svg>
+                    Continue with Google
+                </a>
+
+                <div class="divider"><span>or sign in with email</span></div>
+
+                <form asp-controller="Auth" asp-action="Login" method="POST">
+                    @Html.AntiForgeryToken()
+
+                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState["Login.Email"]?.Errors.Count > 0)
+                    {
+                        <div class="field-error" style="margin-bottom:0.75rem;">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            @ViewData.ModelState["Login.Email"]!.Errors[0].ErrorMessage
+                        </div>
+                    }
+
+                    <div class="input-group">
+                        <label class="input-label">Email address</label>
+                        <input type="email" name="Login.Email" placeholder="you@example.com" class="auth-input"
+                               value="@Model.Login.Email" required />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Password</label>
+                        <input type="password" name="Login.Password" placeholder="••••••••" class="auth-input" required />
+                    </div>
+
+                    <div class="remember-row">
+                        <div class="remember-check">
+                            <input type="checkbox" id="login-remember" name="Login.RememberMe" value="true" @(Model.Login.RememberMe ? "checked" : "") />
+                            <label for="login-remember">Remember me</label>
+                        </div>
+                        <a href="/Auth/ForgotPassword" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="auth-btn">Sign In <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i></button>
+                </form>
+            </div>
+
+            <!-- ── SIGN UP FORM ── -->
+            <div class="auth-form-wrap @(showRegister ? "active" : "")" id="form-signup">
+                <h2 class="form-title">Create account</h2>
+                <p class="form-subtitle">Already have an account? <a href="#" onclick="switchTab('signin'); return false;">Sign in</a></p>
+
+                <a href="/Auth/GoogleLogin" class="google-btn">
+                    <svg viewBox="0 0 48 48" style="width:18px;height:18px;">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    </svg>
+                    Continue with Google
+                </a>
+
+                <div class="divider"><span>or sign up with email</span></div>
+
+                <form asp-controller="Auth" asp-action="Register" method="POST">
+                    @Html.AntiForgeryToken()
+
+                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState["Register.Email"]?.Errors.Count > 0)
+                    {
+                        <div class="field-error" style="margin-bottom:0.75rem;">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            @ViewData.ModelState["Register.Email"]!.Errors[0].ErrorMessage
+                        </div>
+                    }
+
+                    <div class="input-group">
+                        <label class="input-label">Full name</label>
+                        <input type="text" name="Register.FullName" placeholder="John Doe" class="auth-input"
+                               value="@Model.Register.FullName" required />
+                        @if (ViewData.ModelState["Register.FullName"]?.Errors.Count > 0)
+                        {
+                            <div class="field-error"><i class="fa-solid fa-circle-exclamation"></i> @ViewData.ModelState["Register.FullName"]!.Errors[0].ErrorMessage</div>
+                        }
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Email address</label>
+                        <input type="email" name="Register.Email" placeholder="you@example.com" class="auth-input"
+                               value="@Model.Register.Email" required />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Password</label>
+                        <input type="password" id="reg-password" name="Register.Password" placeholder="Min. 8 characters" class="auth-input" required />
+                        <div class="strength-bar-wrapper">
+                            <div class="strength-bar-track">
+                                <div class="strength-bar-fill" id="strength-fill"></div>
+                            </div>
+                            <p class="strength-label" id="strength-label">Enter a password</p>
+                        </div>
+                        @if (ViewData.ModelState["Register.Password"]?.Errors.Count > 0)
+                        {
+                            <div class="field-error"><i class="fa-solid fa-circle-exclamation"></i> @ViewData.ModelState["Register.Password"]!.Errors[0].ErrorMessage</div>
+                        }
+                    </div>
+
+                    <div class="remember-row">
+                        <div class="remember-check">
+                            <input type="checkbox" id="reg-remember" name="Register.RememberMe" value="true" @(Model.Register.RememberMe ? "checked" : "") />
+                            <label for="reg-remember">Remember me</label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="auth-btn" id="reg-submit-btn">Create Account <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i></button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
 </div>
 
 <script>
-    // Panel toggle
-    document.addEventListener("DOMContentLoaded", () => {
-        const container = document.getElementById('auth-container');
-        document.getElementById('signUpBtn').addEventListener('click', () => container.classList.add("right-panel-active"));
-        document.getElementById('signInBtn').addEventListener('click', () => container.classList.remove("right-panel-active"));
+    // ── Tab Switcher ─────────────────────────────
+    function switchTab(tab) {
+        const signin = document.getElementById('form-signin');
+        const signup = document.getElementById('form-signup');
+        const tabSignin = document.getElementById('tab-signin');
+        const tabSignup = document.getElementById('tab-signup');
 
-        // Real-time password strength meter
+        if (tab === 'signin') {
+            signin.classList.add('active');
+            signup.classList.remove('active');
+            tabSignin.classList.add('active');
+            tabSignup.classList.remove('active');
+        } else {
+            signup.classList.add('active');
+            signin.classList.remove('active');
+            tabSignup.classList.add('active');
+            tabSignin.classList.remove('active');
+        }
+    }
+
+    // ── Auto-switch if ?register=true ────────────
+    if (new URLSearchParams(window.location.search).get('register') === 'true') {
+        switchTab('signup');
+    }
+
+    // ── Animated Stars ───────────────────────────
+    (function generateStars() {
+        const container = document.getElementById('stars-container');
+        if (!container) return;
+
+        const layer = document.createElement('div');
+        layer.className = 'stars-layer';
+
+        const count = 100;
+        let shadowString = '';
+        for (let i = 0; i < count; i++) {
+            const x = Math.round(Math.random() * 100);
+            const y = Math.round(Math.random() * 100);
+            const opacity = (Math.random() * 0.6 + 0.3).toFixed(2);
+            shadowString += `${x}vw ${y}vh 0 rgba(255, 255, 255, ${opacity}), `;
+        }
+        shadowString = shadowString.slice(0, -2);
+        layer.style.boxShadow = shadowString;
+
+        container.appendChild(layer);
+    })();
+
+    // ── Password Strength Meter ───────────────────
+    document.addEventListener('DOMContentLoaded', () => {
         const passwordInput = document.getElementById('reg-password');
-        const fill = document.getElementById('strength-fill');
-        const label = document.getElementById('strength-label');
+        const fill   = document.getElementById('strength-fill');
+        const label  = document.getElementById('strength-label');
         const submitBtn = document.getElementById('reg-submit-btn');
+
+        if (!passwordInput) return;
 
         function checkStrength(pwd) {
             let score = 0;
@@ -452,16 +708,16 @@
             if (/[A-Z]/.test(pwd)) score++;
             if (/[a-z]/.test(pwd)) score++;
             if (/\d/.test(pwd)) score++;
-            if (/[!@@#$%^&*()_+\-=\[\]{}|;':",./<>?]/.test(pwd)) score++;
+            if (/[!\x40#$%^&*()_+\-=\[\]{}|;':",.\/<>?]/.test(pwd)) score++;
             return score;
         }
 
         const levels = [
-            { color: '#ef4444', text: 'Too weak', pct: '15%' },
-            { color: '#f97316', text: 'Weak',     pct: '30%' },
-            { color: '#eab308', text: 'Fair',     pct: '55%' },
-            { color: '#22c55e', text: 'Good',     pct: '75%' },
-            { color: '#16a34a', text: 'Strong ✓', pct: '100%' }
+            { color: '#ef4444', text: 'Too weak',  pct: '15%' },
+            { color: '#f97316', text: 'Weak',      pct: '30%' },
+            { color: '#eab308', text: 'Fair',      pct: '55%' },
+            { color: '#22c55e', text: 'Good',      pct: '75%' },
+            { color: '#16a34a', text: 'Strong ✓',  pct: '100%' }
         ];
 
         passwordInput.addEventListener('input', () => {
@@ -469,24 +725,42 @@
             if (!pwd) {
                 fill.style.width = '0%';
                 label.textContent = 'Enter a password';
-                label.style.color = 'var(--text-muted)';
+                label.style.color = '#94a3b8';
                 submitBtn.disabled = false;
                 return;
             }
             const score = checkStrength(pwd) - 1;
-            const lvl = levels[Math.max(0, score)];
-            fill.style.width = lvl.pct;
+            const lvl   = levels[Math.max(0, score)];
+            fill.style.width      = lvl.pct;
             fill.style.background = lvl.color;
-            label.textContent = lvl.text;
-            label.style.color = lvl.color;
-
-            // Prevent submission if not strong enough (score < 4 = less than 5/5)
-            submitBtn.disabled = (score < 3);
+            label.textContent     = lvl.text;
+            label.style.color     = lvl.color;
+            submitBtn.disabled    = (score < 3);
         });
-
-        // ── Auto-open Sign Up panel if ?register=true in URL ──────────
-        if (new URLSearchParams(window.location.search).get('register') === 'true') {
-            document.getElementById('auth-container')?.classList.add('right-panel-active');
-        }
     });
+
+    // ── SweetAlert2 TempData Messages ───────────
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <text>
+        Swal.fire({
+            icon: 'success', title: 'Success',
+            text: '@Html.Raw(TempData["SuccessMessage"]?.ToString()?.Replace("'", "\\'") ?? "")',
+            timer: 3000, showConfirmButton: false,
+            background: '#ffffff', color: '#0f172a'
+        });
+        </text>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <text>
+        Swal.fire({
+            icon: 'error', title: 'Oops...',
+            text: '@Html.Raw(TempData["ErrorMessage"]?.ToString()?.Replace("'", "\\'") ?? "")',
+            background: '#ffffff', color: '#0f172a'
+        });
+        </text>
+    }
 </script>
+</body>
+</html>

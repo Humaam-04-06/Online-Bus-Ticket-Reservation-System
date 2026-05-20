@@ -4,37 +4,39 @@
 }
 
 <style>
-    /* Background Image Slider Animation */
-    @@keyframes bg-slider {
-        0%, 16% { opacity: 1; transform: scale(1); }
-        20%, 96% { opacity: 0; transform: scale(1.05); }
-        100% { opacity: 1; transform: scale(1); }
-    }
-    .bg-slide {
+    /* Premium Background Image Slider style */
+    .bg-slide-item {
         position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        inset: 0;
         background-size: cover;
         background-position: center;
         opacity: 0;
-        animation: bg-slider 25s infinite;
-        transition: transform 5s linear;
+        transform: scale(1.03);
+        transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1), transform 6s cubic-bezier(0.1, 0.8, 0.2, 1);
         will-change: opacity, transform;
-        transform: translateZ(0); /* Force Hardware Acceleration */
+        z-index: 0;
     }
-    .bg-slide::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(to bottom, rgba(2, 4, 10, 0.75), rgba(2, 4, 10, 0.98));
+    .bg-slide-item.active {
+        opacity: 1;
+        transform: scale(1);
     }
-    .bg-slide:nth-child(1) { animation-delay: 0s; background-image: url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2069&auto=format&fit=crop'); }
-    .bg-slide:nth-child(2) { animation-delay: 5s; background-image: url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop'); }
-    .bg-slide:nth-child(3) { animation-delay: 10s; background-image: url('https://images.unsplash.com/photo-1570125909232-eb263c188f7e?q=80&w=2071&auto=format&fit=crop'); }
-    .bg-slide:nth-child(4) { animation-delay: 15s; background-image: url('https://images.unsplash.com/photo-1494515843206-f3117d3f51b7?q=80&w=2072&auto=format&fit=crop'); }
-    .bg-slide:nth-child(5) { animation-delay: 20s; background-image: url('https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?q=80&w=2070&auto=format&fit=crop'); }
+    
+    /* Hero Text Slide-Up & Fade Transition */
+    .hero-text-transition {
+        transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        will-change: opacity, transform;
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .hero-text-transition.hero-text-hidden {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    /* Override layout padding-top for a full-bleed immersive hero slider */
+    main {
+        padding-top: 0 !important;
+    }
 
     /* Sticky Stacking wrapper adjustments */
     .stack-container {
@@ -43,9 +45,9 @@
     }
     .stack-section {
         position: sticky;
-        top: 64px; /* Matches navbar height */
+        top: 0;
         width: 100%;
-        min-height: calc(100vh - 64px); 
+        min-height: 100vh; 
         display: flex;
         align-items: center;
         overflow: hidden;
@@ -96,19 +98,20 @@
         }
         
         /* ── MOBILE PERFORMANCE: Disable BG Slider ── */
-        .bg-slide {
-            animation: none !important;
-            opacity: 0;
+        .bg-slide-item {
+            transition: none !important;
+            transform: none !important;
+            opacity: 0 !important;
         }
-        .bg-slide:nth-child(1) {
-            opacity: 1; /* Only show the first image statically */
+        .bg-slide-item:nth-child(1) {
+            opacity: 1 !important; /* Only show the first image statically */
         }
     }
 
     /* ── REDUCED MOTION FALLBACK ─────────────────────────────── */
     @@media (prefers-reduced-motion: reduce) {
-        .bg-slide { animation: none !important; opacity: 0; }
-        .bg-slide:nth-child(1) { opacity: 1; }
+        .bg-slide-item { transition: none !important; transform: none !important; opacity: 0 !important; }
+        .bg-slide-item:nth-child(1) { opacity: 1 !important; }
         .scale-on-scroll {
             opacity: 1 !important;
             transform: scale(1) !important;
@@ -122,12 +125,16 @@
     <!-- Section 1: Hero Section (z-0) - STICKY STACK -->
     <div class="stack-section z-[0] bg-primary border-b border-border">
         <!-- Image Slider Background -->
-        <div class="absolute inset-0 z-0">
-            <div class="bg-slide"></div>
-            <div class="bg-slide"></div>
-            <div class="bg-slide"></div>
-            <div class="bg-slide"></div>
-            <div class="bg-slide"></div>
+        <div class="absolute inset-0 z-0 overflow-hidden">
+            <div id="hero-bg-slides" class="absolute inset-0 z-0">
+                <div class="bg-slide-item" style="background-image: url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2069&auto=format&fit=crop');"></div>
+                <div class="bg-slide-item" style="background-image: url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop');"></div>
+                <div class="bg-slide-item" style="background-image: url('https://images.unsplash.com/photo-1570125909232-eb263c188f7e?q=80&w=2071&auto=format&fit=crop');"></div>
+                <div class="bg-slide-item" style="background-image: url('https://images.unsplash.com/photo-1494515843206-f3117d3f51b7?q=80&w=2072&auto=format&fit=crop');"></div>
+                <div class="bg-slide-item" style="background-image: url('https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?q=80&w=2070&auto=format&fit=crop');"></div>
+            </div>
+            <!-- Global Dark Overlay with custom opacity gradient to match premium styling -->
+            <div class="absolute inset-0 bg-gradient-to-b from-[#02040a]/75 to-[#02040a]/98 z-10 pointer-events-none"></div>
         </div>
         
         <!-- Premium Glow Effects -->
@@ -141,17 +148,17 @@
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-3 w-3 bg-cyan"></span>
                 </span>
-                <span class="text-xs md:text-sm font-semibold tracking-wide text-light">Next-Gen Booking Engine</span>
+                <span class="text-xs md:text-sm font-semibold tracking-wide text-white">Next-Gen Booking Engine</span>
             </div>
             
             <!-- Main Heading -->
-            <h1 class="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-6 leading-tight drop-shadow-2xl">
+            <h1 id="hero-heading" class="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter mb-6 leading-tight drop-shadow-2xl text-white hero-text-transition">
                 Redefining Your <br />
-                <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan via-blue to-purple pb-2 inline-block drop-shadow-[0_0_15px_rgba(0,209,255,0.4)]">Travel Experience</span>
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-[#00d1ff] via-[#2e5bff] to-[#a855f7] pb-2 inline-block drop-shadow-[0_0_15px_rgba(0,209,255,0.4)]">Travel Experience</span>
             </h1>
             
             <!-- Subtitle -->
-            <p class="text-light/80 text-lg md:text-2xl mx-auto mb-12 leading-relaxed max-w-3xl font-light">
+            <p id="hero-subtext" class="text-slate-100 text-lg md:text-2xl mx-auto mb-12 leading-relaxed max-w-3xl font-light hero-text-transition">
                 Book your journey seamlessly. With our premium modern platform, discovering routes and tracking buses is faster and easier than ever before.
             </p>
             
@@ -159,7 +166,7 @@
             <div class="glass-panel p-4 md:p-6 rounded-2xl border border-cyan/30 bg-secondary/40 backdrop-blur-xl shadow-2xl max-w-4xl mx-auto mb-8 relative z-20">
                 <form action="/Home/SearchBuses" method="get" class="flex flex-col md:flex-row gap-4 md:items-end">
                     <div class="w-full">
-                        <label class="block text-light text-sm font-semibold mb-2 text-left"><i class="fa-solid fa-location-dot text-cyan mr-2"></i>From</label>
+                        <label class="block text-slate-100 text-sm font-semibold mb-2 text-left"><i class="fa-solid fa-location-dot text-cyan mr-2"></i>From</label>
                         <select name="origin" class="w-full bg-primary/80 border border-border rounded-xl px-4 py-3 text-light focus:outline-none focus:border-cyan focus:ring-1 focus:ring-cyan transition-all" required>
                             <option value="">Origin City</option>
                             @if(ViewBag.Locations != null)
@@ -179,7 +186,7 @@
                     </div>
 
                     <div class="w-full">
-                        <label class="block text-light text-sm font-semibold mb-2 text-left"><i class="fa-solid fa-location-dot text-blue mr-2"></i>To</label>
+                        <label class="block text-slate-100 text-sm font-semibold mb-2 text-left"><i class="fa-solid fa-location-dot text-blue mr-2"></i>To</label>
                         <select name="destination" class="w-full bg-primary/80 border border-border rounded-xl px-4 py-3 text-light focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all" required>
                             <option value="">Destination City</option>
                             @if(ViewBag.Locations != null)
@@ -193,8 +200,8 @@
                     </div>
 
                     <div class="w-full">
-                        <label class="block text-light text-sm font-semibold mb-2 text-left"><i class="fa-regular fa-calendar text-purple mr-2"></i>Date</label>
-                        <input type="date" name="travelDate" min="@DateTime.Today.ToString("yyyy-MM-dd")" value="@DateTime.Today.ToString("yyyy-MM-dd")" class="w-full bg-primary/80 border border-border rounded-xl px-4 py-3 text-light focus:outline-none focus:border-purple focus:ring-1 focus:ring-purple transition-all" required style="color-scheme: dark;" />
+                        <label class="block text-slate-100 text-sm font-semibold mb-2 text-left"><i class="fa-regular fa-calendar text-purple mr-2"></i>Date</label>
+                        <input type="date" name="travelDate" min="@DateTime.Today.ToString("yyyy-MM-dd")" value="@DateTime.Today.ToString("yyyy-MM-dd")" class="w-full bg-white border border-border rounded-xl px-4 py-3 text-[#1F2937] focus:outline-none focus:border-purple focus:ring-1 focus:ring-purple transition-all" required style="color-scheme: light;" />
                     </div>
 
                     <button type="submit" class="w-full md:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-cyan to-blue text-primary font-bold text-lg shadow-[0_0_15px_var(--accent-blue)] hover:shadow-[0_0_25px_var(--accent-cyan)] hover:-translate-y-1 transition-all duration-300 h-[50px] flex items-center justify-center">
@@ -204,7 +211,7 @@
             </div>
 
             <div class="flex justify-center">
-                <a href="@Url.Action("Login", "Customer")" class="inline-flex px-8 py-3 rounded-full glass-panel border border-border text-light font-medium hover:border-cyan hover:bg-secondary/60 shadow-lg transition-all duration-300 items-center justify-center group z-20">
+                <a href="@Url.Action("Login", "Customer")" class="inline-flex px-8 py-3 rounded-full glass-panel border border-border text-white font-medium hover:border-cyan hover:bg-secondary/60 shadow-lg transition-all duration-300 items-center justify-center group z-20">
                     Go to Customer Portal 
                     <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform text-cyan"></i>
                 </a>
@@ -265,8 +272,8 @@
     <div class="stack-section z-[20] bg-[#0a0d14] shadow-[0_-20px_50px_rgba(0,0,0,0.8)] border-t border-border rounded-t-[2rem] md:rounded-t-[3rem]">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-24 w-full relative z-10">
             <div class="text-center mb-12 md:mb-20">
-                <h2 class="text-3xl md:text-5xl font-bold text-light mb-4 tracking-tight">Your Journey in 4 Simple Steps</h2>
-                <p class="text-muted text-sm md:text-lg max-w-2xl mx-auto">We've removed all the friction. Booking your premium travel is now incredibly effortless.</p>
+                <h2 class="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight">Your Journey in 4 Simple Steps</h2>
+                <p class="text-slate-300 text-sm md:text-lg max-w-2xl mx-auto">We've removed all the friction. Booking your premium travel is now incredibly effortless.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
@@ -278,8 +285,8 @@
                     <div class="w-20 h-20 mx-auto rounded-full bg-[#0a0d14] border-2 border-cyan flex items-center justify-center text-3xl font-black text-cyan mb-6 shadow-[0_0_20px_rgba(0,209,255,0.2)] group-hover:bg-cyan group-hover:text-primary transition-all duration-300">
                         1
                     </div>
-                    <h3 class="text-xl font-bold text-light mb-2">Search Route</h3>
-                    <p class="text-muted text-sm px-4">Enter your origin, destination, and travel date to find available luxury buses.</p>
+                    <h3 class="text-xl font-bold text-white mb-2">Search Route</h3>
+                    <p class="text-slate-300 text-sm px-4">Enter your origin, destination, and travel date to find available luxury buses.</p>
                 </div>
 
                 <!-- Step 2 -->
@@ -287,8 +294,8 @@
                     <div class="w-20 h-20 mx-auto rounded-full bg-[#0a0d14] border-2 border-purple flex items-center justify-center text-3xl font-black text-purple mb-6 shadow-[0_0_20px_rgba(110,86,207,0.2)] group-hover:bg-purple group-hover:text-primary transition-all duration-300">
                         2
                     </div>
-                    <h3 class="text-xl font-bold text-light mb-2">Select Bus</h3>
-                    <p class="text-muted text-sm px-4">Compare fares, view amenities, and choose the perfect schedule for your trip.</p>
+                    <h3 class="text-xl font-bold text-white mb-2">Select Bus</h3>
+                    <p class="text-slate-300 text-sm px-4">Compare fares, view amenities, and choose the perfect schedule for your trip.</p>
                 </div>
 
                 <!-- Step 3 -->
@@ -296,8 +303,8 @@
                     <div class="w-20 h-20 mx-auto rounded-full bg-[#0a0d14] border-2 border-blue flex items-center justify-center text-3xl font-black text-blue mb-6 shadow-[0_0_20px_rgba(46,91,255,0.2)] group-hover:bg-blue group-hover:text-primary transition-all duration-300">
                         3
                     </div>
-                    <h3 class="text-xl font-bold text-light mb-2">Confirm Request</h3>
-                    <p class="text-muted text-sm px-4">Submit your booking request instantly. Our agents review and confirm in minutes.</p>
+                    <h3 class="text-xl font-bold text-white mb-2">Confirm Request</h3>
+                    <p class="text-slate-300 text-sm px-4">Submit your booking request instantly. Our agents review and confirm in minutes.</p>
                 </div>
 
                 <!-- Step 4 -->
@@ -305,8 +312,8 @@
                     <div class="w-20 h-20 mx-auto rounded-full bg-[#0a0d14] border-2 border-success flex items-center justify-center text-3xl font-black text-success mb-6 shadow-[0_0_20px_rgba(63,185,80,0.2)] group-hover:bg-success group-hover:text-primary transition-all duration-300">
                         <i class="fa-solid fa-check"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-light mb-2">Ready to Travel</h3>
-                    <p class="text-muted text-sm px-4">Pay at the counter on the travel day and enjoy our premium amenities.</p>
+                    <h3 class="text-xl font-bold text-white mb-2">Ready to Travel</h3>
+                    <p class="text-slate-300 text-sm px-4">Pay at the counter on the travel day and enjoy our premium amenities.</p>
                 </div>
             </div>
         </div>
@@ -385,12 +392,12 @@
                             <div class="absolute top-0 right-0 w-32 h-32 bg-cyan/20 rounded-full blur-2xl -mr-10 -mt-10"></div>
                             <div class="flex justify-between items-start">
                                 <i class="fa-solid fa-crown text-3xl text-cyan drop-shadow-[0_0_10px_rgba(0,209,255,0.8)]"></i>
-                                <span class="text-xs font-bold tracking-widest text-muted uppercase">Elite Tier</span>
+                                <span class="text-xs font-bold tracking-widest text-slate-400 uppercase">Elite Tier</span>
                             </div>
                             <div>
-                                <div class="font-mono text-light/80 tracking-widest text-lg mb-1">•••• •••• •••• 8923</div>
+                                <div class="font-mono text-white/80 tracking-widest text-lg mb-1">•••• •••• •••• 8923</div>
                                 <div class="flex justify-between items-end">
-                                    <span class="font-bold text-light uppercase tracking-widest">VIP Member</span>
+                                    <span class="font-bold text-white uppercase tracking-widest">VIP Member</span>
                                     <i class="fa-brands fa-nfc-symbol text-2xl text-cyan/70"></i>
                                 </div>
                             </div>
@@ -402,8 +409,8 @@
                         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan/10 text-cyan text-sm font-semibold tracking-wide border border-cyan/20 mb-6">
                             <i class="fa-solid fa-star"></i> Introducing SRC Elite
                         </div>
-                        <h2 class="text-3xl md:text-5xl font-bold text-light mb-6 tracking-tight">Unlock Premium Perks</h2>
-                        <p class="text-muted text-lg mb-8 leading-relaxed max-w-2xl">
+                        <h2 class="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">Unlock Premium Perks</h2>
+                        <p class="text-slate-300 text-lg mb-8 leading-relaxed max-w-2xl">
                             Join our exclusive loyalty program and elevate your travel experience. Earn points on every journey, get priority boarding, and enjoy complimentary lounge access at major terminals.
                         </p>
                         
@@ -412,25 +419,25 @@
                                 <div class="w-10 h-10 rounded-full bg-cyan/10 flex items-center justify-center text-cyan border border-cyan/30 shadow-[0_0_10px_rgba(0,209,255,0.2)]">
                                     <i class="fa-solid fa-gem text-sm"></i>
                                 </div>
-                                <span class="text-light font-medium">Double Reward Points</span>
+                                <span class="text-slate-200 font-medium">Double Reward Points</span>
                             </div>
                             <div class="flex items-center gap-4">
                                 <div class="w-10 h-10 rounded-full bg-purple/10 flex items-center justify-center text-purple border border-purple/30 shadow-[0_0_10px_rgba(110,86,207,0.2)]">
                                     <i class="fa-solid fa-couch text-sm"></i>
                                 </div>
-                                <span class="text-light font-medium">Priority Seat Selection</span>
+                                <span class="text-slate-200 font-medium">Priority Seat Selection</span>
                             </div>
                             <div class="flex items-center gap-4">
                                 <div class="w-10 h-10 rounded-full bg-blue/10 flex items-center justify-center text-blue border border-blue/30 shadow-[0_0_10px_rgba(46,91,255,0.2)]">
                                     <i class="fa-solid fa-mug-hot text-sm"></i>
                                 </div>
-                                <span class="text-light font-medium">Free Lounge Access</span>
+                                <span class="text-slate-200 font-medium">Free Lounge Access</span>
                             </div>
                             <div class="flex items-center gap-4">
                                 <div class="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center text-success border border-success/30 shadow-[0_0_10px_rgba(63,185,80,0.2)]">
                                     <i class="fa-solid fa-percent text-sm"></i>
                                 </div>
-                                <span class="text-light font-medium">Exclusive Discounts</span>
+                                <span class="text-slate-200 font-medium">Exclusive Discounts</span>
                             </div>
                         </div>
                         
@@ -503,10 +510,10 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-24 w-full relative z-10">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-4 md:gap-6">
                 <div>
-                    <h2 class="text-3xl md:text-5xl font-bold text-light mb-2 md:mb-4 tracking-tight">Popular Routes</h2>
-                    <p class="text-muted text-sm md:text-lg">Our most frequently traveled destinations across the country.</p>
+                    <h2 class="text-3xl md:text-5xl font-bold text-white mb-2 md:mb-4 tracking-tight">Popular Routes</h2>
+                    <p class="text-slate-300 text-sm md:text-lg">Our most frequently traveled destinations across the country.</p>
                 </div>
-                <a href="#" class="text-cyan hover:text-light transition-colors font-semibold flex items-center gap-2 group border border-border px-6 py-3 rounded-xl glass-panel hover:bg-cyan/10">
+                <a href="#" class="text-cyan hover:text-white transition-colors font-semibold flex items-center gap-2 group border border-border px-6 py-3 rounded-xl glass-panel hover:bg-cyan/10">
                     View All Routes <i class="fa-solid fa-arrow-right-long group-hover:translate-x-2 transition-transform"></i>
                 </a>
             </div>
@@ -520,7 +527,7 @@
                         <div class="flex justify-between items-end">
                             <div>
                                 <p class="text-cyan text-sm font-bold mb-1 uppercase tracking-wider">Express</p>
-                                <h3 class="text-2xl font-bold text-light leading-tight">City A <br/><span class="text-muted text-lg font-medium">to</span> City B</h3>
+                                <h3 class="text-2xl font-bold text-white leading-tight">City A <br/><span class="text-slate-300 text-lg font-medium">to</span> City B</h3>
                             </div>
                         </div>
                     </div>
@@ -534,7 +541,7 @@
                         <div class="flex justify-between items-end">
                             <div>
                                 <p class="text-purple text-sm font-bold mb-1 uppercase tracking-wider">Luxury</p>
-                                <h3 class="text-2xl font-bold text-light leading-tight">City C <br/><span class="text-muted text-lg font-medium">to</span> City D</h3>
+                                <h3 class="text-2xl font-bold text-white leading-tight">City C <br/><span class="text-slate-300 text-lg font-medium">to</span> City D</h3>
                             </div>
                         </div>
                     </div>
@@ -548,7 +555,7 @@
                         <div class="flex justify-between items-end">
                             <div>
                                 <p class="text-blue text-sm font-bold mb-1 uppercase tracking-wider">Standard</p>
-                                <h3 class="text-2xl font-bold text-light leading-tight">City E <br/><span class="text-muted text-lg font-medium">to</span> City F</h3>
+                                <h3 class="text-2xl font-bold text-white leading-tight">City E <br/><span class="text-slate-300 text-lg font-medium">to</span> City F</h3>
                             </div>
                         </div>
                     </div>
@@ -562,7 +569,7 @@
                         <div class="flex justify-between items-end">
                             <div>
                                 <p class="text-success text-sm font-bold mb-1 uppercase tracking-wider">Economy</p>
-                                <h3 class="text-2xl font-bold text-light leading-tight">City G <br/><span class="text-muted text-lg font-medium">to</span> City H</h3>
+                                <h3 class="text-2xl font-bold text-white leading-tight">City G <br/><span class="text-slate-300 text-lg font-medium">to</span> City H</h3>
                             </div>
                         </div>
                     </div>
@@ -663,6 +670,82 @@
                     });
                 }
             });
+
+            // Premium Image and Text Slider Logic
+            const heroSlides = [
+                {
+                    heading: 'Redefining Your <br /><span class="bg-clip-text text-transparent bg-gradient-to-r from-[#00d1ff] via-[#2e5bff] to-[#a855f7] pb-2 inline-block drop-shadow-[0_0_15px_rgba(0,209,255,0.4)]">Travel Experience</span>',
+                    subtext: 'Book your journey seamlessly. With our premium modern platform, discovering routes and tracking buses is faster and easier than ever before.'
+                },
+                {
+                    heading: 'Journey Into The <br /><span class="bg-clip-text text-transparent bg-gradient-to-r from-[#00f2fe] via-[#4facfe] to-[#00d1ff] pb-2 inline-block drop-shadow-[0_0_15px_rgba(0,209,255,0.4)]">Extraordinary</span>',
+                    subtext: 'Explore breathtaking destinations and create unforgettable memories with our ultra-comfortable, secure long-distance coaches.'
+                },
+                {
+                    heading: 'Modern Fleet, <br /><span class="bg-clip-text text-transparent bg-gradient-to-r from-[#a855f7] via-[#2e5bff] to-[#00d1ff] pb-2 inline-block drop-shadow-[0_0_15px_rgba(168,85,247,0.4)]">Premium Comfort</span>',
+                    subtext: 'Travel in style with high-speed Wi-Fi, fully reclining seats, climate control, and on-board power outlets on every single route.'
+                },
+                {
+                    heading: 'Connecting Cities <br /><span class="bg-clip-text text-transparent bg-gradient-to-r from-[#00d1ff] via-[#2e5bff] to-[#a855f7] pb-2 inline-block drop-shadow-[0_0_15px_rgba(0,209,255,0.4)]">Seamlessly</span>',
+                    subtext: 'Navigate the country\'s most popular intercity routes with reliable schedules, prompt departures, and live tracking every mile of the way.'
+                },
+                {
+                    heading: 'First-Class Travel, <br /><span class="bg-clip-text text-transparent bg-gradient-to-r from-[#00f2fe] via-[#2e5bff] to-[#a855f7] pb-2 inline-block drop-shadow-[0_0_15px_rgba(0,209,255,0.4)]">Every Seat</span>',
+                    subtext: 'Join SRC Elite to unlock double rewards, complimentary terminal lounge access, and exclusive discounts for your premium commute.'
+                }
+            ];
+
+            const slideItems = document.querySelectorAll('.bg-slide-item');
+            const heroHeading = document.getElementById('hero-heading');
+            const heroSubtext = document.getElementById('hero-subtext');
+            
+            let currentSlideIndex = 0;
+            const slideDuration = 6000; // 6 seconds per slide
+
+            function changeSlide() {
+                // Determine next slide index
+                const nextSlideIndex = (currentSlideIndex + 1) % heroSlides.length;
+
+                // 1. Transition background image: remove active class from current, add to next
+                if (slideItems.length > currentSlideIndex) {
+                    slideItems[currentSlideIndex].classList.remove('active');
+                }
+                if (slideItems.length > nextSlideIndex) {
+                    slideItems[nextSlideIndex].classList.add('active');
+                }
+
+                // 2. Transition text with a synchronized fade & slide-down, swap, slide-up fade-in
+                if (heroHeading && heroSubtext) {
+                    heroHeading.classList.add('hero-text-hidden');
+                    heroSubtext.classList.add('hero-text-hidden');
+
+                    // Wait for the text to fully fade out
+                    setTimeout(() => {
+                        // Update text content
+                        heroHeading.innerHTML = heroSlides[nextSlideIndex].heading;
+                        heroSubtext.textContent = heroSlides[nextSlideIndex].subtext;
+
+                        // Fade back in
+                        heroHeading.classList.remove('hero-text-hidden');
+                        heroSubtext.classList.remove('hero-text-hidden');
+                    }, 500);
+                }
+
+                currentSlideIndex = nextSlideIndex;
+            }
+
+            // Initialize first slide as active
+            if (slideItems.length > 0) {
+                slideItems[0].classList.add('active');
+            }
+
+            // Start slide interval if not on low-performance mobile or reduced motion
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const isMobile = window.innerWidth <= 640;
+
+            if (!prefersReducedMotion && !isMobile && slideItems.length > 1) {
+                setInterval(changeSlide, slideDuration);
+            }
         });
     </script>
 }
