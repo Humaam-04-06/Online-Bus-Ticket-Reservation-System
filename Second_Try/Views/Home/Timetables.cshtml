@@ -1,0 +1,89 @@
+@model IEnumerable<Second_Try.Models.BusSchedule>
+@{
+    ViewData["Title"] = "Timetables";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+}
+
+<div class="relative min-h-screen py-24 bg-primary overflow-hidden">
+    <!-- Background Accents -->
+    <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-blue/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                Bus <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue to-purple">Timetables</span>
+            </h1>
+            <p class="text-muted max-w-2xl mx-auto text-lg">
+                View our daily departure and arrival schedules. Plan your journey ahead of time with SRCTravel.
+            </p>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            var groupedSchedules = Model.GroupBy(s => s.Route);
+            foreach (var group in groupedSchedules)
+            {
+                var route = group.Key;
+                if (route == null) continue;
+
+                <div class="bg-secondary/40 backdrop-blur-md border border-border rounded-2xl p-6 mb-8 shadow-lg">
+                    <div class="flex items-center gap-4 mb-6 pb-4 border-b border-border/50">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue to-purple flex items-center justify-center text-white shadow-lg">
+                            <i class="fa-solid fa-map-location-dot text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-light">@route.Origin <span class="text-muted mx-2"><i class="fa-solid fa-arrow-right-long text-sm"></i></span> @route.Destination</h2>
+                            <p class="text-sm text-cyan">Est. Duration: @route.EstimatedDurationHours.ToString("0.0") Hours</p>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-muted">
+                            <thead class="text-xs uppercase bg-primary/50 text-light rounded-t-lg">
+                                <tr>
+                                    <th class="px-6 py-4 font-semibold tracking-wider rounded-tl-lg">Departure Time</th>
+                                    <th class="px-6 py-4 font-semibold tracking-wider">Arrival Time</th>
+                                    <th class="px-6 py-4 font-semibold tracking-wider rounded-tr-lg text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var schedule in group)
+                                {
+                                    <tr class="border-b border-border/50 hover:bg-primary/30 transition-colors">
+                                        <td class="px-6 py-4 font-medium text-light">
+                                            <div class="flex items-center gap-3">
+                                                <i class="fa-regular fa-clock text-cyan"></i>
+                                                @DateTime.Today.Add(schedule.DepartureTime).ToString("hh:mm tt")
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            @DateTime.Today.Add(schedule.ArrivalTime).ToString("hh:mm tt")
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <a href="@Url.Action("Index", "Home")" class="text-cyan hover:text-white transition-colors bg-cyan/10 hover:bg-cyan hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] px-4 py-2 rounded-lg font-medium text-xs tracking-wide">
+                                                Search Date
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-12 bg-secondary/40 backdrop-blur-md border border-border rounded-2xl">
+                <div class="w-16 h-16 rounded-full bg-primary flex items-center justify-center mx-auto mb-4 text-muted text-2xl">
+                    <i class="fa-solid fa-calendar-xmark"></i>
+                </div>
+                <h3 class="text-xl text-light font-medium mb-2">No schedules available</h3>
+                <p class="text-muted">Please check back later for updated timetables.</p>
+            </div>
+        }
+
+    </div>
+</div>

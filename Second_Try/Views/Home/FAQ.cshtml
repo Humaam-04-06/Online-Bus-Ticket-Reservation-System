@@ -1,0 +1,72 @@
+@{
+    ViewData["Title"] = "Help Center & FAQ";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+}
+
+<div class="relative min-h-screen py-24 bg-primary overflow-hidden">
+    <div class="absolute top-1/4 left-0 w-[500px] h-[500px] bg-cyan/10 rounded-full blur-[150px] pointer-events-none"></div>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                Help Center & <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan to-blue">FAQ</span>
+            </h1>
+            <p class="text-muted text-lg">
+                Find answers to common questions about booking, travel, and our services.
+            </p>
+        </div>
+
+        <div class="space-y-4">
+            
+            <div class="bg-secondary/40 backdrop-blur-md border border-border rounded-xl p-6 group hover:border-cyan/50 transition-colors">
+                <h3 class="text-xl font-bold text-light mb-3 flex items-center gap-3">
+                    <i class="fa-solid fa-circle-question text-cyan"></i>
+                    How do I book a ticket?
+                </h3>
+                <p class="text-muted leading-relaxed pl-8">
+                    Simply search for your origin and destination on the Home page, select a date, and click "Search Buses". From there, you can choose your preferred bus, select seats, and submit a booking request.
+                </p>
+            </div>
+
+            <div class="bg-secondary/40 backdrop-blur-md border border-border rounded-xl p-6 group hover:border-cyan/50 transition-colors">
+                <h3 class="text-xl font-bold text-light mb-3 flex items-center gap-3">
+                    <i class="fa-solid fa-circle-question text-cyan"></i>
+                    Can I select my own seats?
+                </h3>
+                <p class="text-muted leading-relaxed pl-8">
+                    Yes! During the booking process, if the bus layout is supported, you can request specific seat numbers. Our staff will try their best to allocate those exact seats to you.
+                </p>
+            </div>
+
+            <div class="bg-secondary/40 backdrop-blur-md border border-border rounded-xl p-6 group hover:border-cyan/50 transition-colors">
+                <h3 class="text-xl font-bold text-light mb-3 flex items-center gap-3">
+                    <i class="fa-solid fa-circle-question text-cyan"></i>
+                    What happens if my booking is rejected?
+                </h3>
+                <p class="text-muted leading-relaxed pl-8">
+                    If an employee rejects your booking (e.g. due to bus unavailability), you will receive an email and a notification in your dashboard with the reason. You can always submit a new request.
+                </p>
+            </div>
+
+            <div class="bg-secondary/40 backdrop-blur-md border border-border rounded-xl p-6 group hover:border-cyan/50 transition-colors">
+                <h3 class="text-xl font-bold text-light mb-3 flex items-center gap-3">
+                    <i class="fa-solid fa-circle-question text-cyan"></i>
+                    Do I need to print my ticket?
+                </h3>
+                <p class="text-muted leading-relaxed pl-8">
+                    No, an e-ticket on your smartphone is sufficient. You can download and view your confirmed tickets directly from the "My Bookings" section in your Customer Portal.
+                </p>
+            </div>
+
+        </div>
+        
+        <div class="mt-12 text-center">
+            <p class="text-muted mb-4">Still have questions?</p>
+            <a href="@Url.Action("Contact", "Home")" class="inline-block px-8 py-3 rounded-xl bg-gradient-to-r from-cyan to-blue text-primary font-bold tracking-wide hover:shadow-[0_0_20px_var(--accent-cyan)] transition-all">
+                Contact Support
+            </a>
+        </div>
+
+    </div>
+</div>

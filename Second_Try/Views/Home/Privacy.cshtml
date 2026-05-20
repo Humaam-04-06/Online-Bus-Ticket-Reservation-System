@@ -1,6 +1,44 @@
-﻿@{
+@{
     ViewData["Title"] = "Privacy Policy";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="relative min-h-screen py-24 bg-primary overflow-hidden">
+    <div class="absolute top-1/4 left-0 w-[500px] h-[500px] bg-green-500/10 rounded-full blur-[150px] pointer-events-none"></div>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                Privacy <span class="bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-cyan">Policy</span>
+            </h1>
+            <p class="text-muted text-lg">
+                Your privacy is critically important to us. Learn how we collect and use your data.
+            </p>
+        </div>
+
+        <div class="bg-secondary/40 backdrop-blur-md border border-border rounded-2xl p-8 lg:p-12 prose prose-invert max-w-none">
+            
+            <h3 class="text-xl font-bold text-light mb-4">1. Information We Collect</h3>
+            <p class="text-muted leading-relaxed mb-8">
+                We only collect information about you if we have a reason to do so—for example, to provide our Services, to communicate with you, or to make our Services better. We collect information you provide directly to us, such as when you register an account, book a ticket, or contact support.
+            </p>
+
+            <h3 class="text-xl font-bold text-light mb-4">2. How We Use Information</h3>
+            <p class="text-muted leading-relaxed mb-8">
+                We use the information we collect to provide, maintain, and improve our services, including processing your bookings, sending you travel updates, and providing customer support. We also use your email address to send marketing communications if you have opted in.
+            </p>
+
+            <h3 class="text-xl font-bold text-light mb-4">3. Sharing of Information</h3>
+            <p class="text-muted leading-relaxed mb-8">
+                We do not sell our users' private personal information. We share information about you in the limited circumstances spelled out below and with appropriate safeguards on your privacy: subsidiaries, employees, and independent contractors who need to know the information in order to help us provide our Services.
+            </p>
+
+            <h3 class="text-xl font-bold text-light mb-4">4. Security</h3>
+            <p class="text-muted leading-relaxed">
+                While no online service is 100% secure, we work very hard to protect information about you against unauthorized access, use, alteration, or destruction, and take reasonable measures to do so, such as monitoring our Services for potential vulnerabilities and attacks.
+            </p>
+
+        </div>
+    </div>
+</div>

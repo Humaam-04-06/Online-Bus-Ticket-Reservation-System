@@ -1,0 +1,72 @@
+@{
+    ViewData["Title"] = "Cancellation Policy";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+}
+
+<div class="relative min-h-screen py-24 bg-primary overflow-hidden">
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-danger/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                Cancellation <span class="bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-orange-400">Policy</span>
+            </h1>
+            <p class="text-muted text-lg">
+                We understand that plans change. Here is our policy regarding ticket cancellations and refunds.
+            </p>
+        </div>
+
+        <div class="bg-secondary/40 backdrop-blur-md border border-border rounded-2xl p-8 lg:p-12 prose prose-invert max-w-none">
+            
+            <div class="flex items-start gap-4 mb-8">
+                <div class="w-10 h-10 rounded-full bg-danger/20 flex items-center justify-center text-danger shrink-0 mt-1">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-light mb-2">1. Timeframes for Cancellation</h3>
+                    <p class="text-muted leading-relaxed">
+                        Tickets can be cancelled up to <strong>12 hours</strong> before the scheduled departure time for a full refund (minus processing fees). Cancellations made within 12 hours of departure are non-refundable.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-start gap-4 mb-8">
+                <div class="w-10 h-10 rounded-full bg-cyan/20 flex items-center justify-center text-cyan shrink-0 mt-1">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-light mb-2">2. Refund Processing</h3>
+                    <p class="text-muted leading-relaxed">
+                        Approved refunds will be processed back to the original payment method within 5-7 business days. Please note that bank processing times may vary.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-start gap-4 mb-8">
+                <div class="w-10 h-10 rounded-full bg-purple/20 flex items-center justify-center text-purple shrink-0 mt-1">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-light mb-2">3. Missed Departures (No Shows)</h3>
+                    <p class="text-muted leading-relaxed">
+                        If you fail to board the bus before the departure time without prior cancellation, it will be considered a "No Show" and the ticket will be entirely non-refundable.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-full bg-blue/20 flex items-center justify-center text-blue shrink-0 mt-1">
+                    <i class="fa-solid fa-headset"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-light mb-2">4. Exceptional Circumstances</h3>
+                    <p class="text-muted leading-relaxed">
+                        In case of severe weather, medical emergencies, or operational cancellations by SRCTravel, full refunds will be issued automatically. Please contact support for assistance in these cases.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
