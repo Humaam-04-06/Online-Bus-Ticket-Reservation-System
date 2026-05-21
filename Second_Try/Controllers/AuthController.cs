@@ -400,6 +400,15 @@ namespace Second_Try.Controllers
             ViewBag.RoutesCount = _context.Routes.Count();
             ViewBag.TravelersCount = _context.Customers.Count();
             ViewBag.OnTimeRate = _context.Bookings.Any() ? 95.0 + (_context.Bookings.Count() % 5) : 99.0;
+
+            // Dynamic register overlay stats
+            ViewBag.BusesCount = _context.Buses.Count();
+            ViewBag.SupportStaffCount = _context.Employees.Count();
+            
+            int totalBookings = _context.Bookings.Count();
+            ViewBag.SuccessRate = totalBookings > 0 
+                ? 100.0 - (100.0 * _context.Bookings.Count(b => b.Status == BookingStatus.Cancelled) / totalBookings)
+                : 100.0;
         }
     }
 }

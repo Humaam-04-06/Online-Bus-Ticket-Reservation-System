@@ -228,7 +228,7 @@
             animation: floatBlob 8s ease-in-out infinite reverse;
         }
 
-        @@keyframes floatBlob {
+        @keyframes floatBlob {
             0%, 100% { transform: translate(0, 0) scale(1); }
             50% { transform: translate(30px, 30px) scale(1.05); }
         }
@@ -248,7 +248,7 @@
             animation: twinkleLayer 5s ease-in-out infinite alternate;
             will-change: opacity;
         }
-        @@keyframes twinkleLayer {
+        @keyframes twinkleLayer {
             0% { opacity: 0.4; }
             100% { opacity: 1; }
         }
@@ -477,7 +477,7 @@
         .auth-input:focus {
             border-color: #5C7E8F;
             background: white;
-            box-shadow: 0 0 0 3px rgba(92, 126, 143, 0.12);
+            box-shadow: 0 0 0 3px rgba(92,126,143,0.12);
         }
         .auth-input::placeholder { color: #94a3b8; }
 
@@ -599,7 +599,7 @@
         /* ═══════════════════════════════════════════════
            RESPONSIVE DESIGN (Mobile viewports)
         ═══════════════════════════════════════════════ */
-        @@media (max-width: 768px) {
+        @media (max-width: 768px) {
             html, body {
                 overflow: auto;
             }
@@ -679,226 +679,197 @@
                 left: auto !important;
             }
         }
+    </style>�══
+           RESPONSIVE — MOBILE
+        ═══════════════════════════════════════════════ */
+        @@media (max-width: 768px) {
+            html, body { overflow: auto; }
+            .auth-page { flex-direction: column; height: auto; min-height: 100vh; }
+            .brand-panel {
+                width: 100%;
+                height: 220px;
+                padding: 2rem;
+                flex-shrink: 0;
+            }
+            .bus-illustration { display: none; }
+            .brand-stats { gap: 1.5rem; }
+            .brand-title { font-size: 1.6rem; }
+            .brand-subtitle { display: none; }
+            .form-panel { width: 100%; height: auto; overflow-y: visible; }
+            .form-panel-inner { padding: 2rem 1.5rem; justify-content: flex-start; }
+            .back-home { top: 1rem; right: 1rem; }
+        }
     </style>
 </head>
 <body>
-<div class="auth-page @(showRegister ? "signup-active" : "")" id="auth-page-root">
+<div class="auth-page">
 
-    <!-- ═══════════ MOBILE HEADER ═══════════ -->
-    <div class="mobile-brand-header">
-        <div class="stars" id="stars-mobile"></div>
-        <a href="/" class="brand-logo">
-            <div class="brand-logo-icon">
-                <i class="fa-solid fa-bus"></i>
-            </div>
-            <span class="brand-logo-text">SRC <span>Travel</span></span>
-        </a>
-        <h1 class="brand-title">Your Journey <span>Starts Here</span></h1>
-    </div>
+    <!-- ═══════════ LEFT BRANDING PANEL ═══════════ -->
+    <div class="brand-panel">
+        <!-- Star field -->
+        <div class="stars" id="stars-container"></div>
 
-    <!-- ═══════════ SIGN IN CONTAINER (LEFT FORM) ═══════════ -->
-    <div class="form-container signin-container">
-        <a href="/" class="back-home">
-            <i class="fa-solid fa-arrow-left"></i> Back to Home
-        </a>
-        <div class="auth-form-wrap">
-            <h2 class="form-title">Welcome back</h2>
-            <p class="form-subtitle">Don't have an account? <a href="#" onclick="toggleAuthMode('signup'); return false;">Sign up for free</a></p>
-
-            <a href="/Auth/GoogleLogin" class="google-btn">
-                <svg viewBox="0 0 48 48" style="width:18px;height:18px;">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                </svg>
-                Continue with Google
+        <div class="brand-content">
+            <a href="/" class="brand-logo">
+                <div class="brand-logo-icon">
+                    <i class="fa-solid fa-bus"></i>
+                </div>
+                <span class="brand-logo-text">SRC <span>Travel</span></span>
             </a>
 
-            <div class="divider"><span>or sign in with email</span></div>
+            <h1 class="brand-title">Your Journey<br><span>Starts Here</span></h1>
+            <p class="brand-subtitle">Book bus tickets across the country with ease. Track your trips, manage bookings, and travel smarter.</p>
 
-            <form asp-controller="Auth" asp-action="Login" method="POST">
-                @Html.AntiForgeryToken()
-
-                @if (!ViewData.ModelState.IsValid && ViewData.ModelState["Login.Email"]?.Errors.Count > 0)
-                {
-                    <div class="field-error" style="margin-bottom:0.75rem;">
-                        <i class="fa-solid fa-circle-exclamation"></i>
-                        @ViewData.ModelState["Login.Email"]!.Errors[0].ErrorMessage
-                    </div>
-                }
-
-                <div class="input-group">
-                    <label class="input-label">Email address</label>
-                    <input type="email" name="Login.Email" placeholder="you@example.com" class="auth-input"
-                           value="@Model.Login.Email" required />
+            <div class="brand-stats">
+                <div class="stat-item">
+                    <span class="stat-number">@(ViewBag.RoutesCount ?? 0)</span>
+                    <span class="stat-label">Routes</span>
                 </div>
-
-                <div class="input-group">
-                    <label class="input-label">Password</label>
-                    <input type="password" name="Login.Password" placeholder="••••••••" class="auth-input" required />
+                <div class="stat-item">
+                    <span class="stat-number">@(ViewBag.TravelersCount ?? 0)</span>
+                    <span class="stat-label">Travelers</span>
                 </div>
-
-                <div class="remember-row">
-                    <div class="remember-check">
-                        <input type="checkbox" id="login-remember" name="Login.RememberMe" value="true" @(Model.Login.RememberMe ? "checked" : "") />
-                        <label for="login-remember">Remember me</label>
-                    </div>
-                    <a href="/Auth/ForgotPassword" class="forgot-link">Forgot password?</a>
+                <div class="stat-item">
+                    <span class="stat-number">@((ViewBag.OnTimeRate ?? 99.0).ToString("0.0"))%</span>
+                    <span class="stat-label">On-Time</span>
                 </div>
-
-                <button type="submit" class="auth-btn">Sign In <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i></button>
-            </form>
+            </div>
         </div>
     </div>
 
-    <!-- ═══════════ SIGN UP CONTAINER (RIGHT FORM) ═══════════ -->
-    <div class="form-container signup-container">
+    <!-- ═══════════ RIGHT FORM PANEL ═══════════ -->
+    <div class="form-panel">
         <a href="/" class="back-home">
             <i class="fa-solid fa-arrow-left"></i> Back to Home
         </a>
-        <div class="auth-form-wrap">
-            <h2 class="form-title">Create account</h2>
-            <p class="form-subtitle">Already have an account? <a href="#" onclick="toggleAuthMode('signin'); return false;">Sign in</a></p>
 
-            <a href="/Auth/GoogleLogin" class="google-btn">
-                <svg viewBox="0 0 48 48" style="width:18px;height:18px;">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                </svg>
-                Continue with Google
-            </a>
+        <div class="form-panel-inner">
 
-            <div class="divider"><span>or sign up with email</span></div>
-
-            <form asp-controller="Auth" asp-action="Register" method="POST">
-                @Html.AntiForgeryToken()
-
-                @if (!ViewData.ModelState.IsValid && ViewData.ModelState["Register.Email"]?.Errors.Count > 0)
-                {
-                    <div class="field-error" style="margin-bottom:0.75rem;">
-                        <i class="fa-solid fa-circle-exclamation"></i>
-                        @ViewData.ModelState["Register.Email"]!.Errors[0].ErrorMessage
-                    </div>
-                }
-
-                <div class="input-group">
-                    <label class="input-label">Full name</label>
-                    <input type="text" name="Register.FullName" placeholder="John Doe" class="auth-input"
-                           value="@Model.Register.FullName" required />
-                    @if (ViewData.ModelState["Register.FullName"]?.Errors.Count > 0)
-                    {
-                        <div class="field-error"><i class="fa-solid fa-circle-exclamation"></i> @ViewData.ModelState["Register.FullName"]!.Errors[0].ErrorMessage</div>
-                    }
-                </div>
-
-                <div class="input-group">
-                    <label class="input-label">Email address</label>
-                    <input type="email" name="Register.Email" placeholder="you@example.com" class="auth-input"
-                           value="@Model.Register.Email" required />
-                </div>
-
-                <div class="input-group">
-                    <label class="input-label">Password</label>
-                    <input type="password" id="reg-password" name="Register.Password" placeholder="Min. 8 characters" class="auth-input" required />
-                    <div class="strength-bar-wrapper">
-                        <div class="strength-bar-track">
-                            <div class="strength-bar-fill" id="strength-fill"></div>
-                        </div>
-                        <p class="strength-label" id="strength-label">Enter a password</p>
-                    </div>
-                    @if (ViewData.ModelState["Register.Password"]?.Errors.Count > 0)
-                    {
-                        <div class="field-error"><i class="fa-solid fa-circle-exclamation"></i> @ViewData.ModelState["Register.Password"]!.Errors[0].ErrorMessage</div>
-                    }
-                </div>
-
-                <div class="remember-row">
-                    <div class="remember-check">
-                        <input type="checkbox" id="reg-remember" name="Register.RememberMe" value="true" @(Model.Register.RememberMe ? "checked" : "") />
-                        <label for="reg-remember">Remember me</label>
-                    </div>
-                </div>
-
-                <button type="submit" class="auth-btn" id="reg-submit-btn">Create Account <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i></button>
-            </form>
-        </div>
-    </div>
-
-    <!-- ═══════════ SLIDING OVERLAY CONTAINER ═══════════ -->
-    <div class="overlay-container">
-        <div class="overlay-content-wrapper">
-            
-            <!-- PANEL RIGHT CONTENT: Visible in Login mode (Overlay is on Right) -->
-            <div class="overlay-panel panel-login-branding">
-                <div class="stars" id="stars-login"></div>
-                <div class="brand-content">
-                    <a href="/" class="brand-logo">
-                        <div class="brand-logo-icon">
-                            <i class="fa-solid fa-bus"></i>
-                        </div>
-                        <span class="brand-logo-text">SRC <span>Travel</span></span>
-                    </a>
-
-                    <h2 class="brand-title">Your Journey<br><span>Starts Here</span></h2>
-                    <p class="brand-subtitle">Book bus tickets across the country with ease. Track your trips, manage bookings, and travel smarter.</p>
-
-                    <div class="brand-stats">
-                        <div class="stat-item">
-                            <span class="stat-number">@(ViewBag.RoutesCount ?? 0)</span>
-                            <span class="stat-label">Routes</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-number">@(ViewBag.TravelersCount ?? 0)</span>
-                            <span class="stat-label">Travelers</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-number">@((ViewBag.OnTimeRate ?? 99.0).ToString("0.0"))%</span>
-                            <span class="stat-label">On-Time</span>
-                        </div>
-                    </div>
-
-                    <button class="ghost-btn" onclick="toggleAuthMode('signup')">
-                        Create Account <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                </div>
+            <!-- Tab Switcher -->
+            <div class="auth-tabs" style="max-width:400px;">
+                <button class="auth-tab @(!showRegister ? "active" : "")" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
+                <button class="auth-tab @(showRegister ? "active" : "")"  id="tab-signup"  onclick="switchTab('signup')">Create Account</button>
             </div>
 
-            <!-- PANEL LEFT CONTENT: Visible in Register mode (Overlay is on Left) -->
-            <div class="overlay-panel panel-register-branding">
-                <div class="stars" id="stars-register"></div>
-                <div class="brand-content">
-                    <a href="/" class="brand-logo">
-                        <div class="brand-logo-icon">
-                            <i class="fa-solid fa-bus"></i>
-                        </div>
-                        <span class="brand-logo-text">SRC <span>Travel</span></span>
-                    </a>
+            <!-- ── SIGN IN FORM ── -->
+            <div class="auth-form-wrap @(!showRegister ? "active" : "")" id="form-signin">
+                <h2 class="form-title">Welcome back</h2>
+                <p class="form-subtitle">Don't have an account? <a href="#" onclick="switchTab('signup'); return false;">Sign up for free</a></p>
 
-                    <h2 class="brand-title">Welcome Back,<br><span>Traveler!</span></h2>
-                    <p class="brand-subtitle">To keep connected with us please login with your personal info, track your trips, and travel smarter.</p>
+                <a href="/Auth/GoogleLogin" class="google-btn">
+                    <svg viewBox="0 0 48 48" style="width:18px;height:18px;">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    </svg>
+                    Continue with Google
+                </a>
 
-                    <div class="brand-stats">
-                        <div class="stat-item">
-                            <span class="stat-number">@((ViewBag.SuccessRate ?? 100.0).ToString("0"))%</span>
-                            <span class="stat-label">Secure Pay</span>
+                <div class="divider"><span>or sign in with email</span></div>
+
+                <form asp-controller="Auth" asp-action="Login" method="POST">
+                    @Html.AntiForgeryToken()
+
+                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState["Login.Email"]?.Errors.Count > 0)
+                    {
+                        <div class="field-error" style="margin-bottom:0.75rem;">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            @ViewData.ModelState["Login.Email"]!.Errors[0].ErrorMessage
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-number">@(ViewBag.BusesCount > 0 ? ViewBag.BusesCount.ToString() : "150+")</span>
-                            <span class="stat-label">Buses</span>
+                    }
+
+                    <div class="input-group">
+                        <label class="input-label">Email address</label>
+                        <input type="email" name="Login.Email" placeholder="you@example.com" class="auth-input"
+                               value="@Model.Login.Email" required />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Password</label>
+                        <input type="password" name="Login.Password" placeholder="••••••••" class="auth-input" required />
+                    </div>
+
+                    <div class="remember-row">
+                        <div class="remember-check">
+                            <input type="checkbox" id="login-remember" name="Login.RememberMe" value="true" @(Model.Login.RememberMe ? "checked" : "") />
+                            <label for="login-remember">Remember me</label>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-number">@(ViewBag.SupportStaffCount > 0 ? $"{ViewBag.SupportStaffCount} Staff" : "24/7")</span>
-                            <span class="stat-label">Support</span>
+                        <a href="/Auth/ForgotPassword" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="auth-btn">Sign In <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i></button>
+                </form>
+            </div>
+
+            <!-- ── SIGN UP FORM ── -->
+            <div class="auth-form-wrap @(showRegister ? "active" : "")" id="form-signup">
+                <h2 class="form-title">Create account</h2>
+                <p class="form-subtitle">Already have an account? <a href="#" onclick="switchTab('signin'); return false;">Sign in</a></p>
+
+                <a href="/Auth/GoogleLogin" class="google-btn">
+                    <svg viewBox="0 0 48 48" style="width:18px;height:18px;">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    </svg>
+                    Continue with Google
+                </a>
+
+                <div class="divider"><span>or sign up with email</span></div>
+
+                <form asp-controller="Auth" asp-action="Register" method="POST">
+                    @Html.AntiForgeryToken()
+
+                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState["Register.Email"]?.Errors.Count > 0)
+                    {
+                        <div class="field-error" style="margin-bottom:0.75rem;">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            @ViewData.ModelState["Register.Email"]!.Errors[0].ErrorMessage
+                        </div>
+                    }
+
+                    <div class="input-group">
+                        <label class="input-label">Full name</label>
+                        <input type="text" name="Register.FullName" placeholder="John Doe" class="auth-input"
+                               value="@Model.Register.FullName" required />
+                        @if (ViewData.ModelState["Register.FullName"]?.Errors.Count > 0)
+                        {
+                            <div class="field-error"><i class="fa-solid fa-circle-exclamation"></i> @ViewData.ModelState["Register.FullName"]!.Errors[0].ErrorMessage</div>
+                        }
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Email address</label>
+                        <input type="email" name="Register.Email" placeholder="you@example.com" class="auth-input"
+                               value="@Model.Register.Email" required />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Password</label>
+                        <input type="password" id="reg-password" name="Register.Password" placeholder="Min. 8 characters" class="auth-input" required />
+                        <div class="strength-bar-wrapper">
+                            <div class="strength-bar-track">
+                                <div class="strength-bar-fill" id="strength-fill"></div>
+                            </div>
+                            <p class="strength-label" id="strength-label">Enter a password</p>
+                        </div>
+                        @if (ViewData.ModelState["Register.Password"]?.Errors.Count > 0)
+                        {
+                            <div class="field-error"><i class="fa-solid fa-circle-exclamation"></i> @ViewData.ModelState["Register.Password"]!.Errors[0].ErrorMessage</div>
+                        }
+                    </div>
+
+                    <div class="remember-row">
+                        <div class="remember-check">
+                            <input type="checkbox" id="reg-remember" name="Register.RememberMe" value="true" @(Model.Register.RememberMe ? "checked" : "") />
+                            <label for="reg-remember">Remember me</label>
                         </div>
                     </div>
 
-                    <button class="ghost-btn" onclick="toggleAuthMode('signin')">
-                        <i class="fa-solid fa-arrow-left"></i> Sign In
-                    </button>
-                </div>
+                    <button type="submit" class="auth-btn" id="reg-submit-btn">Create Account <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i></button>
+                </form>
             </div>
 
         </div>
@@ -907,48 +878,40 @@
 </div>
 
 <script>
-    // ── Sliding panel state toggler ─────────────────────────────
-    function toggleAuthMode(mode) {
-        const root = document.getElementById('auth-page-root');
-        if (!root) return;
+    // ── Tab Switcher ─────────────────────────────
+    function switchTab(tab) {
+        const signin = document.getElementById('form-signin');
+        const signup = document.getElementById('form-signup');
+        const tabSignin = document.getElementById('tab-signin');
+        const tabSignup = document.getElementById('tab-signup');
 
-        if (mode === 'signup') {
-            root.classList.add('signup-active');
-            const url = new URL(window.location.href);
-            url.searchParams.set('register', 'true');
-            window.history.replaceState({}, '', url);
+        if (tab === 'signin') {
+            signin.classList.add('active');
+            signup.classList.remove('active');
+            tabSignin.classList.add('active');
+            tabSignup.classList.remove('active');
         } else {
-            root.classList.remove('signup-active');
-            const url = new URL(window.location.href);
-            url.searchParams.delete('register');
-            window.history.replaceState({}, '', url);
+            signup.classList.add('active');
+            signin.classList.remove('active');
+            tabSignup.classList.add('active');
+            tabSignin.classList.remove('active');
         }
     }
 
-    // Enable transition transitions only after load to avoid page-load flash
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-            const root = document.getElementById('auth-page-root');
-            if (root) root.classList.add('auth-ready');
-        }, 100);
-    });
-
     // ── Auto-switch if ?register=true ────────────
     if (new URLSearchParams(window.location.search).get('register') === 'true') {
-        // Run immediately or after DOM loads
-        document.addEventListener('DOMContentLoaded', () => {
-            toggleAuthMode('signup');
-        });
+        switchTab('signup');
     }
 
-    // ── Animated Stars Generator ───────────────────────────
-    function makeStars(containerId, count) {
-        const container = document.getElementById(containerId);
+    // ── Animated Stars ───────────────────────────
+    (function generateStars() {
+        const container = document.getElementById('stars-container');
         if (!container) return;
 
         const layer = document.createElement('div');
         layer.className = 'stars-layer';
 
+        const count = 100;
         let shadowString = '';
         for (let i = 0; i < count; i++) {
             const x = Math.round(Math.random() * 100);
@@ -960,13 +923,7 @@
         layer.style.boxShadow = shadowString;
 
         container.appendChild(layer);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        makeStars('stars-login', 80);
-        makeStars('stars-register', 80);
-        makeStars('stars-mobile', 40);
-    });
+    })();
 
     // ── Password Strength Meter ───────────────────
     document.addEventListener('DOMContentLoaded', () => {
