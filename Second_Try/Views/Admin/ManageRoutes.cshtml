@@ -111,3 +111,101 @@
         }
     </div>
 </div>
+
+@section Scripts {
+<script>
+    const coordinates = {
+        "Karachi": { lat: 24.8607, lon: 67.0011 },
+        "Lahore": { lat: 31.5204, lon: 74.3587 },
+        "Islamabad": { lat: 33.6844, lon: 73.0479 },
+        "Peshawar": { lat: 34.0151, lon: 71.5249 },
+        "Quetta": { lat: 30.1798, lon: 66.9750 },
+        "Multan": { lat: 30.1575, lon: 71.5249 },
+        "Faisalabad": { lat: 31.4504, lon: 73.1350 },
+        "Rawalpindi": { lat: 33.5651, lon: 73.0169 },
+        "Hyderabad": { lat: 25.3960, lon: 68.3772 },
+        "Sialkot": { lat: 32.4972, lon: 74.5222 },
+        "Sukkur": { lat: 27.7244, lon: 68.8228 },
+        "Gujranwala": { lat: 32.1877, lon: 74.1945 }
+    };
+
+    const lookupTable = {
+        "Karachi-Lahore": 18.5,
+        "Islamabad-Lahore": 4.5,
+        "Islamabad-Multan": 8.0,
+        "Hyderabad-Karachi": 2.5,
+        "Islamabad-Rawalpindi": 0.5,
+        "Islamabad-Peshawar": 2.0,
+        "Faisalabad-Lahore": 2.5
+    };
+
+    function calculateDuration(origin, dest) {
+        if (!origin || !dest || origin === dest) return 0;
+        
+        const key = [origin, dest].sort().join("-");
+        if (lookupTable[key]) return lookupTable[key];
+        
+        const o = coordinates[origin];
+        const d = coordinates[dest];
+        if (!o || !d) return 0;
+        
+        // Haversine distance formula
+        const R = 6371; // Earth radius in km
+        const dLat = (d.lat - o.lat) * Math.PI / 180;
+        const dLon = (d.lon - o.lon) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(o.lat * Math.PI / 180) * Math.cos(d.lat * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const dist = R * c;
+        
+        // Apply routing factor 1.25x and speed 70 km/h
+        const duration = (dist * 1.25) / 70;
+        
+        // Round to nearest 0.5 hours
+        return Math.max(0.5, Math.round(duration * 2) / 2);
+    }
+
+    function updateDuration() {
+        const origin = document.querySelector('select[name="Origin"]').value;
+        const dest = document.querySelector('select[name="Destination"]').value;
+        const input = document.querySelector('input[name="EstimatedDurationHours"]');
+        
+        if (origin && dest && origin !== dest) {
+            const hours = calculateDuration(origin, dest);
+            input.value = hours;
+            
+            // Format hours and minutes
+            const h = Math.floor(hours);
+            const m = Math.round((hours - h) * 60);
+            let text = "";
+            if (h > 0) text += `${h} hour${h > 1 ? 's' : ''}`;
+            if (m > 0) text += ` ${m} minute${m > 1 ? 's' : ''}`;
+            
+            let hint = document.getElementById('duration-hint');
+            if (!hint) {
+                hint = document.createElement('span');
+                hint.id = 'duration-hint';
+                hint.style.fontSize = '0.78rem';
+                hint.style.color = 'var(--accent-cyan)';
+                hint.style.marginTop = '4px';
+                hint.style.display = 'block';
+                hint.style.fontWeight = '500';
+                input.parentNode.appendChild(hint);
+            }
+            hint.textContent = `Auto-calculated: ${text} (${hours} hrs)`;
+        } else {
+            const hint = document.getElementById('duration-hint');
+            if (hint) hint.remove();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const originSelect = document.querySelector('select[name="Origin"]');
+        const destSelect = document.querySelector('select[name="Destination"]');
+        
+        originSelect?.addEventListener('change', updateDuration);
+        destSelect?.addEventListener('change', updateDuration);
+    });
+</script>
+}

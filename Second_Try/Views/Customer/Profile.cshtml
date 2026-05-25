@@ -166,7 +166,8 @@
                         <div class="pf-input-icon-wrap">
                             <i class="pf-input-icon fa-solid fa-phone"></i>
                             <input type="tel" class="pf-input" name="PhoneNumber"
-                                   value="@phone" placeholder="+92 3XX XXXXXXX" />
+                                   id="PhoneNumber" value="@phone" placeholder="+92 3XX XXXXXXX"
+                                   oninput="this.value = this.value.replace(/[^0-9+]/g, '')" />
                         </div>
                     </div>
 

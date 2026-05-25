@@ -62,6 +62,27 @@ namespace Second_Try.Controllers
         [HttpPost][ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateEmployee(string FullName, string Email, string Password, EmployeeRole Role)
         {
+            if (string.IsNullOrWhiteSpace(FullName))
+            {
+                TempData["ErrorMessage"] = "Full name is required.";
+                return RedirectToAction(nameof(ManageEmployees));
+            }
+            if (string.IsNullOrWhiteSpace(Email))
+            {
+                TempData["ErrorMessage"] = "Email address is required.";
+                return RedirectToAction(nameof(ManageEmployees));
+            }
+            var emailAttr = new System.ComponentModel.DataAnnotations.EmailAddressAttribute();
+            if (!emailAttr.IsValid(Email))
+            {
+                TempData["ErrorMessage"] = "Please enter a valid email address.";
+                return RedirectToAction(nameof(ManageEmployees));
+            }
+            if (string.IsNullOrWhiteSpace(Password) || Password.Length < 8)
+            {
+                TempData["ErrorMessage"] = "Password must be at least 8 characters long.";
+                return RedirectToAction(nameof(ManageEmployees));
+            }
             if (await _context.Employees.AnyAsync(e => e.Email == Email))
             {
                 TempData["ErrorMessage"] = "An employee with this email already exists.";
@@ -151,6 +172,16 @@ namespace Second_Try.Controllers
         [HttpPost][ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateBus(string BusNumber, BusType Type, int Capacity, string? Amenities)
         {
+            if (string.IsNullOrWhiteSpace(BusNumber))
+            {
+                TempData["ErrorMessage"] = "Bus number is required.";
+                return RedirectToAction(nameof(ManageBuses));
+            }
+            if (Capacity < 10 || Capacity > 100)
+            {
+                TempData["ErrorMessage"] = "Capacity must be between 10 and 100 seats.";
+                return RedirectToAction(nameof(ManageBuses));
+            }
             var normalizedNumber = BusNumber.Trim().ToUpper();
             if (await _context.Buses.AnyAsync(b => b.BusNumber == normalizedNumber))
             {
@@ -168,6 +199,17 @@ namespace Second_Try.Controllers
         {
             var bus = await _context.Buses.FindAsync(id);
             if (bus == null) return NotFound();
+
+            if (string.IsNullOrWhiteSpace(BusNumber))
+            {
+                TempData["ErrorMessage"] = "Bus number is required.";
+                return RedirectToAction(nameof(ManageBuses));
+            }
+            if (Capacity < 10 || Capacity > 100)
+            {
+                TempData["ErrorMessage"] = "Capacity must be between 10 and 100 seats.";
+                return RedirectToAction(nameof(ManageBuses));
+            }
 
             var normalizedNumber = BusNumber.Trim().ToUpper();
             if (await _context.Buses.AnyAsync(b => b.BusNumber == normalizedNumber && b.Id != id))
@@ -209,6 +251,21 @@ namespace Second_Try.Controllers
         [HttpPost][ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateRoute(string Origin, string Destination, double EstimatedDurationHours)
         {
+            if (string.IsNullOrWhiteSpace(Origin) || string.IsNullOrWhiteSpace(Destination))
+            {
+                TempData["ErrorMessage"] = "Origin and destination cities are required.";
+                return RedirectToAction(nameof(ManageRoutes));
+            }
+            if (Origin.Trim().Equals(Destination.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "Origin and destination cities cannot be the same.";
+                return RedirectToAction(nameof(ManageRoutes));
+            }
+            if (EstimatedDurationHours <= 0)
+            {
+                TempData["ErrorMessage"] = "Estimated duration must be greater than zero.";
+                return RedirectToAction(nameof(ManageRoutes));
+            }
             bool exists = await _context.Routes.AnyAsync(r =>
                 r.Origin == Origin && r.Destination == Destination);
             if (exists) { TempData["ErrorMessage"] = "This route already exists."; return RedirectToAction(nameof(ManageRoutes)); }
@@ -245,6 +302,17 @@ namespace Second_Try.Controllers
         [HttpPost][ValidateAntiForgeryToken]
         public async Task<IActionResult> UpsertSchedule(int id, int RouteId, BusType BusType, TimeSpan DepartureTime, TimeSpan ArrivalTime)
         {
+            double durationMinutes = (ArrivalTime - DepartureTime).TotalMinutes;
+            if (durationMinutes < 0)
+            {
+                durationMinutes += 24 * 60; // account for midnight crossing
+            }
+
+            if (durationMinutes < 30)
+            {
+                TempData["ErrorMessage"] = "Arrival Time must be at least 30 minutes after Departure Time.";
+                return RedirectToAction(nameof(ManageSchedules));
+            }
             if (id == 0)
             {
                 _context.BusSchedules.Add(new BusSchedule
@@ -321,6 +389,11 @@ namespace Second_Try.Controllers
         [HttpPost][ValidateAntiForgeryToken]
         public async Task<IActionResult> UpsertPrice(int RouteId, BusType BusType, decimal FareAmount)
         {
+            if (FareAmount <= 0)
+            {
+                TempData["ErrorMessage"] = "Fare amount must be greater than zero.";
+                return RedirectToAction(nameof(ManagePriceList));
+            }
             var existing = await _context.PriceLists
                 .FirstOrDefaultAsync(p => p.RouteId == RouteId && p.BusType == BusType);
             if (existing != null)

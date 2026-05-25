@@ -52,6 +52,7 @@ namespace Second_Try.Controllers
             var requests = await _context.BookingRequests
                 .Where(r => r.CustomerId == customer.Id)
                 .Include(r => r.Route)
+                .Include(r => r.BusSchedule)
                 .ToListAsync();
 
             ViewBag.TotalRequests    = requests.Count;
@@ -64,7 +65,7 @@ namespace Second_Try.Controllers
             // Most recent active request
             ViewBag.ActiveRequest = requests
                 .Where(r => r.Status == BookingRequestStatus.Pending ||
-                            r.Status == BookingRequestStatus.Accepted)
+                            (r.Status == BookingRequestStatus.Accepted && r.TravelDate.Date >= DateTime.Today))
                 .OrderByDescending(r => r.RequestDate)
                 .FirstOrDefault();
 
@@ -156,7 +157,8 @@ namespace Second_Try.Controllers
 
             bool hasActive = await _context.BookingRequests.AnyAsync(r =>
                 r.CustomerId == customer.Id &&
-                (r.Status == BookingRequestStatus.Pending || r.Status == BookingRequestStatus.Accepted));
+                (r.Status == BookingRequestStatus.Pending || 
+                (r.Status == BookingRequestStatus.Accepted && r.TravelDate.Date >= DateTime.Today)));
 
             ViewBag.HasActiveRequest = hasActive;
 
@@ -191,7 +193,8 @@ namespace Second_Try.Controllers
             // Block if already has an active request
             bool hasActive = await _context.BookingRequests.AnyAsync(r =>
                 r.CustomerId == customer.Id &&
-                (r.Status == BookingRequestStatus.Pending || r.Status == BookingRequestStatus.Accepted));
+                (r.Status == BookingRequestStatus.Pending || 
+                (r.Status == BookingRequestStatus.Accepted && r.TravelDate.Date >= DateTime.Today)));
 
             if (hasActive)
             {
@@ -323,6 +326,7 @@ namespace Second_Try.Controllers
             var requests = await _context.BookingRequests
                 .Where(r => r.CustomerId == customer.Id)
                 .Include(r => r.Route)
+                .Include(r => r.BusSchedule)
                 .Include(r => r.AssignedBooking)
                 .OrderByDescending(r => r.RequestDate)
                 .ToListAsync();
@@ -483,6 +487,27 @@ namespace Second_Try.Controllers
                 TempData["ErrorMessage"] = "Full name and email are required.";
                 TempData["ActiveTab"] = "info";
                 return RedirectToAction(nameof(Profile));
+            }
+
+            // Email format check
+            var emailAttr = new System.ComponentModel.DataAnnotations.EmailAddressAttribute();
+            if (!emailAttr.IsValid(Email))
+            {
+                TempData["ErrorMessage"] = "Please enter a valid email address.";
+                TempData["ActiveTab"] = "info";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            // Phone format check (digits and optionally +)
+            if (!string.IsNullOrWhiteSpace(PhoneNumber))
+            {
+                var cleanedPhone = PhoneNumber.Trim();
+                if (!System.Text.RegularExpressions.Regex.IsMatch(cleanedPhone, @"^\+?[0-9]+$"))
+                {
+                    TempData["ErrorMessage"] = "Phone number must contain only numbers (and optional '+' prefix).";
+                    TempData["ActiveTab"] = "info";
+                    return RedirectToAction(nameof(Profile));
+                }
             }
 
             // Check email uniqueness (another account using same email)

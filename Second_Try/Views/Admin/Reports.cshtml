@@ -18,6 +18,16 @@
     <link rel="stylesheet" href="~/css/admin/reports.css" asp-append-version="true" />
 }
 
+<div class="adm-page-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+    <div>
+        <h2 class="adm-page-heading">Reports & Analytics</h2>
+        <p class="adm-page-sub">Comprehensive overview of system revenue, booking metrics, and top routes.</p>
+    </div>
+    <div>
+        <button id="btn-download-pdf" class="adm-btn adm-btn-primary" style="height: 42px; border-radius: 8px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="fa-solid fa-file-pdf"></i> Download PDF Report</button>
+    </div>
+</div>
+
 <!-- Stats Row -->
 <div class="adm-stats-grid" style="margin-bottom:1.5rem;">
     <div class="adm-stat-card">
@@ -102,3 +112,123 @@
         }
     </div>
 </div>
+
+@section Scripts {
+<script>
+    document.getElementById('btn-download-pdf')?.addEventListener('click', function() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+        // Draw header/title block
+        doc.setFillColor(26, 31, 46); // dark theme color
+        doc.rect(0, 0, 210, 40, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(22);
+        doc.text('SRC TRAVEL SYSTEM', 14, 18);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(12);
+        doc.setTextColor(200, 200, 200);
+        doc.text('Executive Reports & Analytics Summary', 14, 25);
+        doc.text('Date: ' + new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(), 14, 32);
+
+        // Section 1: KPI Overview
+        doc.setTextColor(26, 31, 46);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.text('1. KPI Overview', 14, 52);
+
+        const kpiHeaders = [['Metric', 'Value']];
+        const kpiBody = [
+            ['Total System Revenue', 'PKR ' + '@totalRevenue.ToString("N0")'],
+            ['Revenue This Month', 'PKR ' + '@revenueThisMonth.ToString("N0")'],
+            ['Total Tickets Issued', '@totalBookings'],
+            ['Registered Customers', '@totalCustomers'],
+            ['Booking Acceptance Rate', '@acceptRate%']
+        ];
+
+        doc.autoTable({
+            head: kpiHeaders,
+            body: kpiBody,
+            startY: 56,
+            theme: 'grid',
+            headStyles: { fillColor: [26, 31, 46], textColor: [255, 255, 255] },
+            styles: { fontSize: 10, cellPadding: 4 }
+        });
+
+        let currentY = doc.lastAutoTable.finalY + 12;
+
+        // Section 2: Request Status Breakdown
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.text('2. Request Status Breakdown', 14, currentY);
+
+        const breakHeaders = [['Status', 'Count', 'Percentage']];
+        const totalReqs = @acceptedCount + @rejectedCount + @pendingCount;
+        const acceptedPct = totalReqs > 0 ? Math.round((@acceptedCount / totalReqs) * 100) : 0;
+        const rejectedPct = totalReqs > 0 ? Math.round((@rejectedCount / totalReqs) * 100) : 0;
+        const pendingPct = totalReqs > 0 ? Math.round((@pendingCount / totalReqs) * 100) : 0;
+
+        const breakBody = [
+            ['Accepted', '@acceptedCount', acceptedPct + '%'],
+            ['Rejected', '@rejectedCount', rejectedPct + '%'],
+            ['Pending', '@pendingCount', pendingPct + '%'],
+            ['Total Booking Requests', totalReqs.toString(), '100%']
+        ];
+
+        doc.autoTable({
+            head: breakHeaders,
+            body: breakBody,
+            startY: currentY + 4,
+            theme: 'grid',
+            headStyles: { fillColor: [26, 31, 46], textColor: [255, 255, 255] },
+            styles: { fontSize: 10, cellPadding: 4 }
+        });
+
+        currentY = doc.lastAutoTable.finalY + 12;
+
+        // Section 3: Top Routes by Volume
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.text('3. Top Routes by Bookings', 14, currentY);
+
+        const routeHeaders = [['Rank', 'Route Name', 'Booking Count', 'Revenue Contribution']];
+        const routeBody = [];
+        @if (topRoutes != null)
+        {
+            int rnk = 1;
+            foreach (var tr in topRoutes)
+            {
+                <text>
+                routeBody.push([
+                    '#@rnk',
+                    '@Html.Raw(tr.Route)',
+                    '@tr.Count bookings',
+                    'PKR @(((decimal)tr.Revenue).ToString("N0"))'
+                ]);
+                </text>
+                rnk++;
+            }
+        }
+        else
+        {
+            <text>
+            routeBody.push(['-', 'No booking data available', '-', '-']);
+            </text>
+        }
+
+        doc.autoTable({
+            head: routeHeaders,
+            body: routeBody,
+            startY: currentY + 4,
+            theme: 'grid',
+            headStyles: { fillColor: [26, 31, 46], textColor: [255, 255, 255] },
+            styles: { fontSize: 10, cellPadding: 4 }
+        });
+
+        doc.save('SRCTravel_Executive_Report.pdf');
+    });
+</script>
+}

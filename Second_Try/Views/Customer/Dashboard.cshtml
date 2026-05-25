@@ -111,10 +111,25 @@
                                 <span style="color:var(--text-muted);">Bus Class</span>
                                 <span style="font-weight:600;color:var(--text-light);">@activeReq.PreferredBusType.ToString()</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;font-size:0.875rem;padding:0.5rem 0;">
+                            <div style="display:flex;justify-content:space-between;font-size:0.875rem;padding:0.5rem 0;border-bottom:1px solid var(--border-color);">
                                 <span style="color:var(--text-muted);">Seats</span>
                                 <span style="font-weight:600;color:var(--text-light);">@activeReq.NumberOfSeats</span>
                             </div>
+                            @if (activeReq.Status == BookingRequestStatus.Accepted)
+                            {
+                                <div style="display:flex;justify-content:space-between;font-size:0.875rem;padding:0.5rem 0;border-bottom:1px solid var(--border-color);">
+                                    <span style="color:var(--text-muted);">Submitted Date</span>
+                                    <span style="font-weight:600;color:var(--text-light);">@activeReq.RequestDate.ToString("dd MMM yyyy")</span>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;font-size:0.875rem;padding:0.5rem 0;border-bottom:1px solid var(--border-color);">
+                                    <span style="color:var(--text-muted);">Departure Time</span>
+                                    <span style="font-weight:600;color:var(--accent-cyan);">@(activeReq.BusSchedule != null ? DateTime.Today.Add(activeReq.BusSchedule.DepartureTime).ToString("hh:mm tt") : "—")</span>
+                                </div>
+                                <div style="display:flex;justify-content:space-between;font-size:0.875rem;padding:0.5rem 0;">
+                                    <span style="color:var(--text-muted);">Arrival Time</span>
+                                    <span style="font-weight:600;color:var(--accent-cyan);">@(activeReq.BusSchedule != null ? DateTime.Today.Add(activeReq.BusSchedule.ArrivalTime).ToString("hh:mm tt") : "—")</span>
+                                </div>
+                            }
                         </div>
 
                         <div style="margin-top:1rem;">
