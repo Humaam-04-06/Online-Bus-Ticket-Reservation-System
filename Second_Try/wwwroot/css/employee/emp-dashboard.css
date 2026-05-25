@@ -7,17 +7,17 @@
 :root {
     --emp-sidebar-width: 260px;
     --emp-topbar-height: 64px;
-    --emp-sidebar-bg: #5C7E8F;
-    --emp-sidebar-darker: #4a6878;
+    --emp-sidebar-bg: #141414;
+    --emp-sidebar-darker: #0A0A0A;
     --emp-sidebar-text: #ffffff;
     --emp-sidebar-muted: rgba(255, 255, 255, 0.65);
-    --emp-sidebar-hover: rgba(255, 255, 255, 0.12);
-    --emp-sidebar-active: rgba(255, 255, 255, 0.22);
+    --emp-sidebar-hover: rgba(226, 232, 0, 0.08);
+    --emp-sidebar-active: rgba(226, 232, 0, 0.15);
     --emp-card-bg: var(--bg-secondary);
-    --emp-card-shadow: 0 4px 24px rgba(92, 126, 143, 0.10);
+    --emp-card-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
     --emp-card-radius: 1.1rem;
     --emp-pending-color: #F59E0B;
-    --emp-accepted-color: #22C55E;
+    --emp-accepted-color: #E2E800;
     --emp-rejected-color: #EF4444;
     --emp-cancelled-color: #9CA3AF;
 }
@@ -600,7 +600,7 @@
 
 .emp-btn-primary {
     background: var(--accent-cyan);
-    color: #fff;
+    color: #222;
 }
 
 .emp-btn-primary:hover {
@@ -1014,13 +1014,14 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    background: linear-gradient(120deg, var(--emp-sidebar-bg) 0%, var(--accent-cyan) 100%);
+    background: linear-gradient(#333333 100%);
     border-radius: var(--emp-card-radius);
     padding: 1.5rem 1.75rem;
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
     box-shadow: 0 6px 24px rgba(30, 58, 71, 0.18);
     animation: emp-fadeIn 0.35s ease;
+    border-radius: 2rem;
 }
 
 .emp-welcome-heading {

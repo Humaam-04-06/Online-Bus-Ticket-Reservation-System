@@ -167,7 +167,7 @@
                 <form action="/Home/SearchBuses" method="get" class="flex flex-col md:flex-row gap-4 md:items-end">
                     <div class="w-full">
                         <label class="block text-slate-100 text-sm font-semibold mb-2 text-left"><i class="fa-solid fa-location-dot text-cyan mr-2"></i>From</label>
-                        <select name="origin" class="w-full bg-primary/80 border border-border rounded-xl px-4 py-3 text-light focus:outline-none focus:border-cyan focus:ring-1 focus:ring-cyan transition-all" required>
+                        <select name="origin" class="w-full bg-primary/80 border border-border rounded-xl px-4 py-3 text-[#1F2937] focus:outline-none focus:border-cyan focus:ring-1 focus:ring-cyan transition-all" required>
                             <option value="">Origin City</option>
                             @if(ViewBag.Locations != null)
                             {
@@ -187,7 +187,7 @@
 
                     <div class="w-full">
                         <label class="block text-slate-100 text-sm font-semibold mb-2 text-left"><i class="fa-solid fa-location-dot text-blue mr-2"></i>To</label>
-                        <select name="destination" class="w-full bg-primary/80 border border-border rounded-xl px-4 py-3 text-light focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all" required>
+                        <select name="destination" class="w-full bg-primary/80 border border-border rounded-xl px-4 py-3 text-[#1F2937] focus:outline-none focus:border-blue focus:ring-1 focus:ring-blue transition-all" required>
                             <option value="">Destination City</option>
                             @if(ViewBag.Locations != null)
                             {
@@ -351,7 +351,7 @@
                             <h4 class="text-light font-bold">Power Outlets</h4>
                         </div>
                         <div class="glass-panel p-6 rounded-3xl border border-border flex flex-col gap-4">
-                            <div class="w-12 h-12 rounded-xl bg-primary border border-border flex items-center justify-center text-success shadow-inner text-xl">
+                            <div class="w-12 h-12 rounded-xl bg-primary border border-border flex items-center justify-center text-purple shadow-inner text-xl">
                                 <i class="fa-solid fa-snowflake"></i>
                             </div>
                             <h4 class="text-light font-bold">Climate Control</h4>
@@ -434,7 +434,7 @@
                                 <span class="text-slate-200 font-medium">Free Lounge Access</span>
                             </div>
                             <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center text-success border border-success/30 shadow-[0_0_10px_rgba(63,185,80,0.2)]">
+                                <div class="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center text-purple border border-success/30 shadow-[0_0_10px_rgba(63,185,80,0.2)]">
                                     <i class="fa-solid fa-percent text-sm"></i>
                                 </div>
                                 <span class="text-slate-200 font-medium">Exclusive Discounts</span>
@@ -484,10 +484,10 @@
                                     <div class="w-8 h-8 rounded-full bg-cyan/20 text-cyan flex items-center justify-center text-xs border border-cyan/50"><i class="fa-solid fa-user"></i></div>
                                 </div>
                                 <div class="w-full h-28 rounded-2xl bg-gradient-to-br from-cyan to-blue mb-4 shadow-[0_0_15px_rgba(0,209,255,0.3)] relative overflow-hidden p-4 flex flex-col justify-between">
-                                    <div class="text-primary/80 text-xs font-bold uppercase tracking-wider">Upcoming Trip</div>
+                                    <div class="text-primary/80 text-[#1F2937] font-bold uppercase tracking-wider">Upcoming Trip</div>
                                     <div>
                                         <div class="text-primary font-black text-xl leading-tight">City A</div>
-                                        <div class="text-primary/70 text-xs mt-1"><i class="fa-solid fa-arrow-down"></i></div>
+                                        <div class="text-primary/70 text-success mt-1"><i class="fa-solid fa-arrow-down"></i></div>
                                         <div class="text-primary font-black text-xl leading-tight">City B</div>
                                     </div>
                                 </div>
@@ -568,7 +568,7 @@
                     <div class="absolute bottom-0 left-0 p-6 w-full">
                         <div class="flex justify-between items-end">
                             <div>
-                                <p class="text-success text-sm font-bold mb-1 uppercase tracking-wider">Economy</p>
+                                <p class="text-purple text-sm font-bold mb-1 uppercase tracking-wider">Economy</p>
                                 <h3 class="text-2xl font-bold text-white leading-tight">City G <br/><span class="text-slate-300 text-lg font-medium">to</span> City H</h3>
                             </div>
                         </div>

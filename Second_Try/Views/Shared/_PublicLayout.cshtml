@@ -168,14 +168,14 @@
                         text: message,
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#06b6d4',
+                        confirmButtonColor: '#E2E800',
                         cancelButtonColor: '#ef4444',
                         confirmButtonText: 'Yes, proceed',
-                        background: '#09090b',
-                        color: '#f8fafc'
+                        background: '#222222',
+                        color: '#F3F4F6'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            form.submit();
+                             form.submit();
                         }
                     });
                 });
@@ -192,8 +192,8 @@
                 text: '@Html.Raw(TempData["SuccessMessage"]?.ToString()?.Replace("'", "\\'") ?? "")',
                 timer: 3000,
                 showConfirmButton: false,
-                background: '#09090b',
-                color: '#f8fafc'
+                background: '#222222',
+                color: '#F3F4F6'
             });
             </text>
         }
@@ -204,8 +204,8 @@
                 icon: 'error',
                 title: 'Oops...',
                 text: '@Html.Raw(TempData["ErrorMessage"]?.ToString()?.Replace("'", "\\'") ?? "")',
-                background: '#09090b',
-                color: '#f8fafc'
+                background: '#222222',
+                color: '#F3F4F6'
             });
             </text>
         }
