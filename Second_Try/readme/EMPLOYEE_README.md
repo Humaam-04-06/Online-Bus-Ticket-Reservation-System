@@ -13,7 +13,8 @@ The Employee Portal is an operational hub designed for efficiency. Employees use
 
 ### 2. ⚡ Request Processing
 - **Review System**: Detailed view of customer booking details (Route, Date, Bus Type).
-- **Decision Engine**: Single-click "Accept" or "Reject" actions.
+- **Filtered Bus Selection**: Dropdowns dynamically filter available active buses by type based on the requested route to ensure operational compatibility.
+- **Decision Engine & Validations**: Single-click "Accept" or "Reject" actions, with server-side and client-side validations to ensure positive ticket pricing (`totalFare > 0`).
 - **Automation**: Accepting a request automatically generates a formal booking record and notifies the customer.
 
 ### 3. 🎫 Digital Ticketing
@@ -23,6 +24,7 @@ The Employee Portal is an operational hub designed for efficiency. Employees use
 ### 4. 📜 Booking History
 - **Audit Trail**: A complete, searchable log of all past bookings processed by the system.
 - **Status Tracking**: Filter by Completed, Accepted, or Rejected statuses.
+- **Landscape PDF Export**: Download filtered booking records directly to formatted PDF files for offline reporting.
 
 ---
 

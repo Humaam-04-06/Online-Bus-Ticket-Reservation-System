@@ -15,10 +15,11 @@ The public-facing side of SRCTravel is built to WOW users. It combines high-perf
 - **Performance Optimized**: Heavy animations are automatically disabled on mobile devices to ensure a smooth 60fps experience.
 
 ### 2. 🔐 Dual-Panel Auth System (Login & Sign Up)
-- **Glassmorphism Design**: Frosted glass panels with neon blue and purple accents.
+- **Urban Nocturne Theme Design**: Deep obsidian panels with electric neon lime green highlights.
 - **Sliding Interaction**: A smooth horizontal transition between "Sign In" and "Sign Up" forms on desktop.
 - **Intelligent Routing**: The "Sign Up" button in the navbar passes a `?register=true` parameter, which automatically slides the form to the registration panel on page load.
 - **Password Strength Meter**: A live, multi-color progress bar that validates password complexity (Weak → Fair → Good → Strong).
+- **Dynamic Live Statistics**: Key metrics on the signup panel (fleet size, active routes, customer satisfaction) are fetched dynamically in real-time from the database to present accurate data to prospective users.
 
 ### 3. 📱 Mobile-First Adaptation
 - **Vertical Stacking**: The complex horizontal sliding animation on the Login page is replaced by a smart vertical stack on mobile.
@@ -35,6 +36,6 @@ The public-facing side of SRCTravel is built to WOW users. It combines high-perf
 ---
 
 ## 🎨 Visual Identity
-- **Backgrounds**: Deep blacks and midnight blues (`#02040A`).
-- **Accents**: Neon Cyan (`#00D1FF`) and Electric Purple.
+- **Backgrounds**: Deep obsidian black (`#141414`) and charcoal dark surfaces (`#222222`).
+- **Accents**: Neon Lime Green (`#E2E800`).
 - **Typography**: The **Inter** font family provides a clean, modern, and professional look.

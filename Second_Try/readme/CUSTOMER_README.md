@@ -15,16 +15,16 @@ The Customer Portal is a premium traveler's dashboard. It provides a seamless in
 - **Split-screen Design**: A modern 60/40 layout for searching and selecting buses.
 - **Auto-Fill Logic**: If a user searches for a bus on the public homepage, their selection is automatically carried over to the booking form.
 - **Availability Filter**: Search by Origin, Destination, and Travel Date.
-
 ### 3. 📋 My Travel Requests
 - **Status Tracking**: Live tracking of requests through four states: `Pending`, `Accepted`, `Rejected`, and `Expired`.
-- **Filtering**: Quick filters to sort through your travel history.
-- **Cancellation**: Ability to cancel pending requests if plans change.
+- **Detailed Journey Cards**: Accepted bookings show full journey information including Submission Date, Scheduled Departure Time, Travel Date, and Estimated Arrival Time.
+- **Re-Request Logic**: Users can submit new booking requests once the travel date of their previously accepted booking has passed, releasing the system from indefinite locks.
+- **PDF Export**: Generate a clean, structured portrait layout PDF report of all your travel requests.
 
 ### 4. 🖼️ Profile & Personalization
 - **Dynamic Avatars**: Upload and update profile pictures.
 - **Banner Customization**: Set a custom cover photo for your profile.
-- **Security**: Update account details and passwords.
+- **Validation-Backed Security**: Update account details with client-side numeric phone checks and standard email/password format validations.
 
 ---
 
