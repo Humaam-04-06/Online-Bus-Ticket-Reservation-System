@@ -35,7 +35,7 @@
    ============================================================ */
 .cp-sidebar {
     width: var(--sidebar-width);
-    background: linear-gradient(160deg, #3d6677 0%, var(--accent-cyan) 60%, #4a7a8a 100%);
+    background: linear-gradient(180deg, var(--emp-sidebar-darker) 0%, var(--emp-sidebar-bg) 100%);
     position: fixed;
     top: 0;
     left: 0;
@@ -545,7 +545,7 @@
 
 .cp-btn-primary {
     background: var(--accent-cyan);
-    color: white;
+    color: #222;
 }
 
 .cp-btn-primary:hover {
@@ -657,7 +657,7 @@
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 1rem;
-    background: linear-gradient(135deg, var(--accent-cyan) 0%, #3d6677 100%);
+    background: linear-gradient(#333333 100%);
     border-radius: var(--card-radius);
     padding: 1.75rem 2rem;
     margin-bottom: 1.5rem;
