@@ -19,17 +19,14 @@ The Admin Portal is the central nervous system of the SRCTravel platform. It pro
 ### 3. 🗺️ Routes & Pricing
 - **Network Mapping**: Create origin and destination pairs.
 - **Dynamic Pricing**: Set specific fares for different bus classes on each route.
-- **Auto-Duration Calculation**: Instantly computes travel duration using coordinates of Pakistan's major cities and the Haversine formula upon route creation.
 
 ### 4. ⏰ Advanced Scheduling
 - **Time Management**: Set precise Departure and Arrival times.
-- **Spacing Validation**: Enforces that arrival times are at least 30 minutes after departure times to prevent scheduling overlaps (client-side and server-side checks).
 - **Schedule Toggle**: Activate or deactivate specific bus runs without deleting them.
 
 ### 5. 📊 Reports & Analytics
 - **Financial Tracking**: View total revenue and monthly earnings.
 - **Booking Trends**: Analyze data through visual stat cards and historical logs.
-- **Landscape PDF Reports**: Generate and download professional, formatted PDF logs for schedules, employee lists, and global revenue analytics with a single click.
 
 ---
 
