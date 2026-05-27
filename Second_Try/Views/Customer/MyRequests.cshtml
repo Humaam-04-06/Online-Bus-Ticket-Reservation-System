@@ -22,9 +22,12 @@
                 Track the status of all your booking requests.
             </p>
         </div>
-        <a href="/Customer/BookTrip" class="cp-btn cp-btn-primary">
-            <i class="fa-solid fa-plus"></i> New Request
-        </a>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+            <button id="btn-download-pdf" class="cp-btn cp-btn-outline" style="border: 1px solid var(--accent-cyan); color: var(--accent-cyan); display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="fa-solid fa-file-pdf"></i> Download PDF History</button>
+            <a href="/Customer/BookTrip" class="cp-btn cp-btn-primary">
+                <i class="fa-solid fa-plus"></i> New Request
+            </a>
+        </div>
     </div>
 
     <!-- Filter + Search bar -->
@@ -112,6 +115,28 @@
                             <div class="mr-detail-item">
                                 <i class="fa-solid fa-couch" style="color:var(--accent-cyan)"></i>
                                 <span>Seats: <strong style="color:var(--accent-cyan)">@req.SelectedSeatNumbers</strong></span>
+                            </div>
+                        }
+
+                        @if (req.Status == BookingRequestStatus.Accepted || req.Status == BookingRequestStatus.Completed)
+                        {
+                            <div class="mr-journey-details" style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed var(--border-color);display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:0.75rem;font-size:0.82rem;width:100%;">
+                                <div>
+                                    <span style="color:var(--text-muted);display:block;font-size:0.7rem;text-transform:uppercase;font-weight:600;margin-bottom:2px;">Submitted Date</span>
+                                    <strong style="color:var(--text-light)">@req.RequestDate.ToString("dd MMM yyyy")</strong>
+                                </div>
+                                <div>
+                                    <span style="color:var(--text-muted);display:block;font-size:0.7rem;text-transform:uppercase;font-weight:600;margin-bottom:2px;">Departure Time</span>
+                                    <strong style="color:var(--accent-cyan)">@(req.BusSchedule != null ? DateTime.Today.Add(req.BusSchedule.DepartureTime).ToString("hh:mm tt") : "—")</strong>
+                                </div>
+                                <div>
+                                    <span style="color:var(--text-muted);display:block;font-size:0.7rem;text-transform:uppercase;font-weight:600;margin-bottom:2px;">Travel Date</span>
+                                    <strong style="color:var(--text-light)">@req.TravelDate.ToString("dd MMM yyyy")</strong>
+                                </div>
+                                <div>
+                                    <span style="color:var(--text-muted);display:block;font-size:0.7rem;text-transform:uppercase;font-weight:600;margin-bottom:2px;">Estimated Arrival</span>
+                                    <strong style="color:var(--accent-cyan)">@(req.BusSchedule != null ? DateTime.Today.Add(req.BusSchedule.ArrivalTime).ToString("hh:mm tt") : "—")</strong>
+                                </div>
                             </div>
                         }
                     </div>
@@ -319,6 +344,82 @@
                 }
             });
         });
+    });
+
+    document.getElementById('btn-download-pdf')?.addEventListener('click', function() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+        // Draw header/title block
+        doc.setFillColor(26, 31, 46); // clean dark customer panel color
+        doc.rect(0, 0, 210, 40, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(20);
+        doc.text('SRC TRAVEL SYSTEM', 14, 18);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(11);
+        doc.setTextColor(200, 200, 200);
+        doc.text('My Booking Requests Report', 14, 25);
+        doc.text('Date Generated: ' + new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(), 14, 32);
+
+        // AutoTable headers & body
+        const headers = [['Request ID', 'Submitted Date', 'Route', 'Travel Date', 'Bus Class', 'Seats', 'Status']];
+        const body = [];
+        
+        const cards = document.querySelectorAll('.mr-card');
+        cards.forEach(card => {
+            if (card.style.display !== 'none') {
+                const reqId = card.querySelector('.mr-req-id')?.innerText.trim() || '';
+                const status = card.querySelector('.cp-badge')?.innerText.trim() || '';
+                const dateStr = card.querySelector('.mr-req-date')?.innerText.replace('Submitted:', '').trim() || '';
+                
+                // Details
+                let route = '';
+                let travelDate = '';
+                let busClass = '';
+                let seats = '—';
+                
+                const detailItems = card.querySelectorAll('.mr-detail-item');
+                detailItems.forEach(item => {
+                    const text = item.innerText.trim();
+                    if (item.querySelector('.fa-route')) {
+                        route = text;
+                    } else if (item.querySelector('.fa-calendar-day')) {
+                        travelDate = text.replace('Travel:', '').trim();
+                    } else if (item.querySelector('.fa-bus')) {
+                        busClass = text;
+                    } else if (item.querySelector('.fa-couch')) {
+                        seats = text.replace('Seats:', '').trim();
+                    }
+                });
+                
+                body.push([reqId, dateStr, route, travelDate, busClass, seats, status]);
+            }
+        });
+
+        doc.autoTable({
+            head: headers,
+            body: body,
+            startY: 45,
+            theme: 'striped',
+            headStyles: {
+                fillColor: [26, 31, 46],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold'
+            },
+            alternateRowStyles: {
+                fillColor: [245, 247, 250]
+            },
+            styles: {
+                fontSize: 10,
+                cellPadding: 4
+            }
+        });
+
+        doc.save('SRCTravel_My_Requests.pdf');
     });
 </script>
 }

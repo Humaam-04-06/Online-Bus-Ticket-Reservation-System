@@ -13,31 +13,8 @@
     <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
-    <!-- Tailwind CSS (via CDN for development, using requested color variables) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: 'var(--bg-primary)',
-                        secondary: 'var(--bg-secondary)',
-                        cyan: 'var(--accent-cyan)',
-                        purple: 'var(--accent-purple)',
-                        blue: 'var(--accent-blue)',
-                        light: 'var(--text-light)',
-                        muted: 'var(--text-muted)',
-                        border: 'var(--border-color)',
-                        success: 'var(--success)',
-                        danger: 'var(--danger)'
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Compiled static Tailwind CSS styles (Replacing dynamic CDN for premium performance) -->
+    <link rel="stylesheet" href="~/css/public.css" asp-append-version="true" />
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="~/css/variables.css" asp-append-version="true" />
@@ -99,16 +76,20 @@
     <!-- JS Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <!-- GSAP & ScrollTrigger -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     
     <script>
         // Preloader Animation Sequence
         document.addEventListener("DOMContentLoaded", () => {
             const preloader = document.getElementById('src-preloader');
             
-            // Check if preloader was already shown this session
-            if (sessionStorage.getItem('preloaderShown') === 'true') {
+            // Check if preloader was already shown this session or if it's a low-performance device
+            const isLowEnd = (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) ||
+                             (navigator.deviceMemory && navigator.deviceMemory < 4) ||
+                             /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (sessionStorage.getItem('preloaderShown') === 'true' || isLowEnd) {
                 preloader.style.display = 'none';
                 return; // Stop animation completely
             }
@@ -187,14 +168,14 @@
                         text: message,
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#06b6d4',
+                        confirmButtonColor: '#E2E800',
                         cancelButtonColor: '#ef4444',
                         confirmButtonText: 'Yes, proceed',
-                        background: '#09090b',
-                        color: '#f8fafc'
+                        background: '#222222',
+                        color: '#F3F4F6'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            form.submit();
+                             form.submit();
                         }
                     });
                 });
@@ -211,8 +192,8 @@
                 text: '@Html.Raw(TempData["SuccessMessage"]?.ToString()?.Replace("'", "\\'") ?? "")',
                 timer: 3000,
                 showConfirmButton: false,
-                background: '#09090b',
-                color: '#f8fafc'
+                background: '#222222',
+                color: '#F3F4F6'
             });
             </text>
         }
@@ -223,8 +204,8 @@
                 icon: 'error',
                 title: 'Oops...',
                 text: '@Html.Raw(TempData["ErrorMessage"]?.ToString()?.Replace("'", "\\'") ?? "")',
-                background: '#09090b',
-                color: '#f8fafc'
+                background: '#222222',
+                color: '#F3F4F6'
             });
             </text>
         }

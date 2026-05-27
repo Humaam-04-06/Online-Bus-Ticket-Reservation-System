@@ -1,0 +1,115 @@
+@{
+    ViewData["Title"] = "Contact Us";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+}
+
+<div class="relative min-h-screen py-24 bg-primary overflow-hidden">
+    <!-- Background Accents -->
+    <div class="absolute top-20 right-10 w-[600px] h-[600px] bg-cyan/10 rounded-full blur-[150px] pointer-events-none"></div>
+    <div class="absolute bottom-10 left-10 w-[500px] h-[500px] bg-purple/10 rounded-full blur-[150px] pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                Get in <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan to-purple">Touch</span>
+            </h1>
+            <p class="text-muted max-w-2xl mx-auto text-lg">
+                Have a question, feedback, or need assistance? We're here to help. Reach out to us using the form below.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            
+            <!-- Contact Info Sidebar -->
+            <div class="col-span-1 space-y-6">
+                <div class="bg-secondary/40 backdrop-blur-md border border-border rounded-2xl p-8 hover:border-cyan/50 transition-colors group">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan to-blue flex items-center justify-center text-primary mb-6 shadow-[0_0_15px_var(--accent-cyan)] group-hover:shadow-[0_0_25px_var(--accent-cyan)] transition-all">
+                        <i class="fa-solid fa-location-dot text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-light mb-2">Our Office</h3>
+                    <p class="text-muted leading-relaxed">
+                        123 SRC Avenue, Tech District<br />
+                        Karachi, PK 10020
+                    </p>
+                </div>
+
+                <div class="bg-secondary/40 backdrop-blur-md border border-border rounded-2xl p-8 hover:border-purple/50 transition-colors group">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple to-pink-500 flex items-center justify-center text-primary mb-6 shadow-[0_0_15px_var(--accent-purple)] group-hover:shadow-[0_0_25px_var(--accent-purple)] transition-all">
+                        <i class="fa-solid fa-phone text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-light mb-2">Call Us</h3>
+                    <p class="text-muted leading-relaxed">
+                        +92 (300) 123-4567<br />
+                        Mon - Sat, 9:00 AM to 6:00 PM
+                    </p>
+                </div>
+
+                <div class="bg-secondary/40 backdrop-blur-md border border-border rounded-2xl p-8 hover:border-blue/50 transition-colors group">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue to-cyan flex items-center justify-center text-primary mb-6 shadow-[0_0_15px_var(--accent-blue)] group-hover:shadow-[0_0_25px_var(--accent-blue)] transition-all">
+                        <i class="fa-solid fa-envelope text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-light mb-2">Email Us</h3>
+                    <p class="text-muted leading-relaxed">
+                        support@srctravel.pk<br />
+                        info@srctravel.pk
+                    </p>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="col-span-1 lg:col-span-2">
+                <div class="bg-secondary/40 backdrop-blur-md border border-border rounded-2xl p-8 lg:p-10 shadow-2xl relative">
+                    
+                    @if (TempData["SuccessMessage"] is string sm)
+                    {
+                        <div class="bg-success/20 border border-success/50 text-success px-4 py-3 rounded-xl mb-6 flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>@sm</span>
+                        </div>
+                    }
+                    @if (TempData["ErrorMessage"] is string em)
+                    {
+                        <div class="bg-danger/20 border border-danger/50 text-danger px-4 py-3 rounded-xl mb-6 flex items-center gap-3">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span>@em</span>
+                        </div>
+                    }
+
+                    <h2 class="text-2xl font-bold text-light mb-8">Send us a Message</h2>
+
+                    <form asp-action="SubmitContact" method="post" class="space-y-6">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-muted mb-2">Your Name</label>
+                                <input type="text" name="name" required class="w-full bg-primary/50 border border-border rounded-xl px-4 py-3 text-light focus:outline-none focus:border-cyan focus:ring-1 focus:ring-cyan transition-colors" placeholder="e.g. John Doe">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-muted mb-2">Email Address</label>
+                                <input type="email" name="email" required class="w-full bg-primary/50 border border-border rounded-xl px-4 py-3 text-light focus:outline-none focus:border-cyan focus:ring-1 focus:ring-cyan transition-colors" placeholder="e.g. john@example.com">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-muted mb-2">Subject</label>
+                            <input type="text" name="subject" class="w-full bg-primary/50 border border-border rounded-xl px-4 py-3 text-light focus:outline-none focus:border-cyan focus:ring-1 focus:ring-cyan transition-colors" placeholder="e.g. Booking Inquiry">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-muted mb-2">Message</label>
+                            <textarea name="message" required rows="5" class="w-full bg-primary/50 border border-border rounded-xl px-4 py-3 text-light focus:outline-none focus:border-cyan focus:ring-1 focus:ring-cyan transition-colors resize-none" placeholder="How can we help you today?"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full py-4 rounded-xl bg-gradient-to-r from-cyan to-blue text-primary font-bold tracking-wide hover:shadow-[0_0_20px_var(--accent-cyan)] transition-all duration-300 flex justify-center items-center gap-3">
+                            <span>Send Message</span>
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

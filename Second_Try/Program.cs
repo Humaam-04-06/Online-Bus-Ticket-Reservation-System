@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication.Google;
 using QuestPDF.Infrastructure;
 using Second_Try.Data;
 using Second_Try.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 
 // Configure QuestPDF community license (free for open-source / internal use)
 QuestPDF.Settings.License = LicenseType.Community;
@@ -24,6 +26,28 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath       = "/Auth/Login";
         options.AccessDeniedPath = "/Auth/Login";
         options.ExpireTimeSpan  = TimeSpan.FromDays(30);
+        options.Events = new CookieAuthenticationEvents
+        {
+            OnValidatePrincipal = async context =>
+            {
+                if (context.Principal == null) return;
+                
+                var email = context.Principal.FindFirstValue(ClaimTypes.Email);
+                if (string.IsNullOrEmpty(email)) return;
+
+                if (context.Principal.IsInRole("Admin") || context.Principal.IsInRole("Standard"))
+                {
+                    var dbContext = context.HttpContext.RequestServices.GetRequiredService<Second_Try.Data.ApplicationDbContext>();
+                    var user = await dbContext.Employees.FirstOrDefaultAsync(e => e.Email == email);
+                    
+                    if (user == null || !user.IsActive)
+                    {
+                        context.RejectPrincipal();
+                        await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    }
+                }
+            }
+        };
     })
     .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
     {

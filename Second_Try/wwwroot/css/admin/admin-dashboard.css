@@ -6,20 +6,20 @@
 :root {
     --adm-sidebar-width: 270px;
     --adm-topbar-height: 64px;
-    --adm-sidebar-bg: #5C7E8F;
-    --adm-sidebar-dark: #4a6878;
+    --adm-sidebar-bg: #141414;
+    --adm-sidebar-dark: #0A0A0A;
     --adm-sidebar-text: #ffffff;
     --adm-sidebar-muted: rgba(255, 255, 255, 0.65);
-    --adm-sidebar-hover: rgba(255, 255, 255, 0.12);
-    --adm-sidebar-active: rgba(255, 255, 255, 0.22);
+    --adm-sidebar-hover: rgba(226, 232, 0, 0.08);
+    --adm-sidebar-active: rgba(226, 232, 0, 0.15);
     --adm-card-bg: var(--bg-secondary);
-    --adm-card-shadow: 0 4px 24px rgba(92, 126, 143, 0.10);
+    --adm-card-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
     --adm-card-radius: 1.1rem;
     --adm-pending: #F59E0B;
-    --adm-success: #22C55E;
+    --adm-success: #E2E800;
     --adm-danger: #EF4444;
     --adm-info: var(--accent-cyan);
-    --adm-purple: #8B5CF6;
+    --adm-purple: #E2E800;
 }
 
 /* ── Animations ───────────────────────────────────────────── */
@@ -759,11 +759,11 @@
     justify-content: space-between;
     gap: 1rem;
     flex-wrap: wrap;
-    background: linear-gradient(120deg, var(--adm-sidebar-dark) 0%, var(--adm-sidebar-bg) 60%, #7fa8ba 100%);
+    background: linear-gradient(#333333 100%);
     border-radius: var(--adm-card-radius);
     padding: 1.5rem 1.75rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 6px 28px rgba(92, 126, 143, 0.22);
+    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.45);
     animation: adm-fadeIn 0.35s ease;
 }
 

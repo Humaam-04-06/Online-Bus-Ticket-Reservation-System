@@ -1,0 +1,12 @@
+{
+  "name": "second_try",
+  "version": "1.0.0",
+  "description": "Tailwind CSS compilation setup for Second_Try project",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "tailwindcss -i wwwroot/css/tailwind-input.css -o wwwroot/css/public.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.1"
+  }
+}

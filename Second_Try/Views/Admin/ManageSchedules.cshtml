@@ -160,5 +160,38 @@
             document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-save"></i> Save Schedule';
             document.getElementById('cancelBtn').style.display = 'none';
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.querySelector('form[action*="UpsertSchedule"]');
+            form?.addEventListener('submit', function(e) {
+                const depVal = document.getElementById('depTime').value;
+                const arrVal = document.getElementById('arrTime').value;
+                
+                if (depVal && arrVal) {
+                    const [depH, depM] = depVal.split(':').map(Number);
+                    const [arrH, arrM] = arrVal.split(':').map(Number);
+                    
+                    let depMin = depH * 60 + depM;
+                    let arrMin = arrH * 60 + arrM;
+                    
+                    let diff = arrMin - depMin;
+                    if (diff < 0) {
+                        diff += 24 * 60; // crossed midnight
+                    }
+                    
+                    if (diff < 30) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Validation Error',
+                            text: 'Arrival Time must be at least 30 minutes after Departure Time.',
+                            background: '#1a1f2e',
+                            color: '#f8fafc',
+                            confirmButtonColor: '#3085d6'
+                        });
+                    }
+                }
+            });
+        });
     </script>
 }

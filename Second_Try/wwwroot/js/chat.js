@@ -20,8 +20,8 @@
         panel.classList.toggle('open', isOpen);
         toggle.classList.toggle('open', isOpen);
         toggle.innerHTML = isOpen
-            ? '<i class="fa-solid fa-xmark"></i>'
-            : '<i class="fa-solid fa-robot"></i><span id="aria-badge" style="display:none"></span>';
+            ? '<i class="fa-solid fa-circle-xmark"></i>'
+            : '<i class="fa-solid fa-comment"></i><span id="aria-badge" style="display:none"></span>';
 
         if (isOpen) {
             badge.style.display = 'none';
@@ -39,7 +39,7 @@
         isOpen = false;
         panel.classList.remove('open');
         toggle.classList.remove('open');
-        toggle.innerHTML = '<i class="fa-solid fa-robot"></i>';
+        toggle.innerHTML = '<i class="fa-solid fa-comment"></i>';
     });
 
     // ── Chip click ────────────────────────────────────────────

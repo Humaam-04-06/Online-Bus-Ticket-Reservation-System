@@ -21,6 +21,7 @@ namespace Second_Try.Data
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<BusSchedule> BusSchedules { get; set; }
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<ContactMessage> ContactMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

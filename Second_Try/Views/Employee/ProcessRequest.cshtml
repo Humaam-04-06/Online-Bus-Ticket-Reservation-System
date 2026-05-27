@@ -152,7 +152,7 @@
                     <div class="emp-card-title"><i class="fa-solid fa-circle-check"></i> Accept Request</div>
                 </div>
 
-                <form asp-controller="Employee" asp-action="AcceptRequest" method="POST">
+                <form asp-controller="Employee" asp-action="AcceptRequest" method="POST" id="accept-form">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="requestId" value="@Model.Id" />
 
@@ -183,7 +183,7 @@
 
                     <div class="pr-form-group">
                         <label class="pr-label">Seat Numbers</label>
-                        <input type="text" name="seatNumbers" class="pr-input"
+                        <input type="text" name="seatNumbers" class="pr-input" id="seat-numbers"
                                placeholder="e.g. 12A, 12B, 13A" required
                                value="@(string.IsNullOrEmpty(Model.SelectedSeatNumbers) ? "" : Model.SelectedSeatNumbers)"
                                title="Enter comma-separated seat numbers" />
@@ -193,7 +193,7 @@
                     <div class="pr-form-group">
                         <label class="pr-label">Total Fare (PKR)</label>
                         <input type="number" name="totalFare" id="total-fare" class="pr-input"
-                               min="0" step="0.01" placeholder="e.g. 2500" required 
+                               min="0.01" step="0.01" placeholder="e.g. 2500" required 
                                value="@(ViewBag.CalculatedFare != null && ViewBag.CalculatedFare > 0 ? ViewBag.CalculatedFare : "")" />
                     </div>
 
@@ -209,18 +209,17 @@
                     <div class="emp-card-title"><i class="fa-solid fa-circle-xmark"></i> Reject Request</div>
                 </div>
 
-                <form asp-controller="Employee" asp-action="RejectRequest" method="POST">
+                <form asp-controller="Employee" asp-action="RejectRequest" method="POST" onsubmit="return confirm('Are you sure you want to reject this request?')">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="requestId" value="@Model.Id" />
 
                     <div class="pr-form-group">
-                        <label class="pr-label">Rejection Reason <span class="pr-optional">(optional)</span></label>
+                        <label class="pr-label">Rejection Reason</label>
                         <textarea name="remarks" class="pr-textarea" rows="3"
-                                  placeholder="e.g. No available bus on requested date..."></textarea>
+                                  placeholder="e.g. No available bus on requested date..." required></textarea>
                     </div>
 
-                    <button type="submit" class="emp-btn emp-btn-danger pr-submit-btn"
-                            onclick="return confirm('Are you sure you want to reject this request?')">
+                    <button type="submit" class="emp-btn emp-btn-danger pr-submit-btn">
                         <i class="fa-solid fa-circle-xmark"></i> Reject Request
                     </button>
                 </form>
@@ -280,6 +279,54 @@
 
     busSelect?.addEventListener('change', function() {
         // You can add dynamic fare calculation here if PriceList is available
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const acceptForm = document.getElementById('accept-form');
+        acceptForm?.addEventListener('submit', function(e) {
+            const busVal = document.getElementById('bus-select')?.value;
+            const seatVal = document.getElementById('seat-numbers')?.value;
+            const fareVal = parseFloat(document.getElementById('total-fare')?.value || '0');
+
+            if (!busVal) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Validation Error',
+                    text: 'Please select a bus to assign.',
+                    background: '#1a1f2e',
+                    color: '#f8fafc',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
+            }
+
+            if (!seatVal || !seatVal.trim()) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Validation Error',
+                    text: 'Please enter seat numbers.',
+                    background: '#1a1f2e',
+                    color: '#f8fafc',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
+            }
+
+            if (isNaN(fareVal) || fareVal <= 0) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Validation Error',
+                    text: 'Total fare must be greater than zero.',
+                    background: '#1a1f2e',
+                    color: '#f8fafc',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
+            }
+        });
     });
 </script>
 }

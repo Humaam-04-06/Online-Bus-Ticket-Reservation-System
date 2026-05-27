@@ -127,9 +127,15 @@ namespace Second_Try.Controllers
 
             if (request == null) return NotFound();
 
-            // Available buses of the preferred type
+            // Available buses of the preferred type that are assigned (scheduled) on the same route
+            var routeBusTypes = await _context.BusSchedules
+                .Where(s => s.RouteId == request.RouteId && s.IsActive)
+                .Select(s => s.BusType)
+                .Distinct()
+                .ToListAsync();
+
             ViewBag.AvailableBuses = await _context.Buses
-                .Where(b => b.Type == request.PreferredBusType && b.IsActive)
+                .Where(b => b.Type == request.PreferredBusType && b.IsActive && routeBusTypes.Contains(b.Type))
                 .ToListAsync();
 
             // Calculate auto-fare
@@ -156,6 +162,22 @@ namespace Second_Try.Controllers
         {
             var employee = await GetCurrentEmployeeAsync();
             if (employee == null) return RedirectToAction("Logout", "Auth");
+
+            if (busId <= 0)
+            {
+                TempData["ErrorMessage"] = "Please select a valid bus.";
+                return RedirectToAction(nameof(ProcessRequest), new { id = requestId });
+            }
+            if (string.IsNullOrWhiteSpace(seatNumbers))
+            {
+                TempData["ErrorMessage"] = "Seat numbers are required.";
+                return RedirectToAction(nameof(ProcessRequest), new { id = requestId });
+            }
+            if (totalFare <= 0)
+            {
+                TempData["ErrorMessage"] = "Total fare must be greater than zero.";
+                return RedirectToAction(nameof(ProcessRequest), new { id = requestId });
+            }
 
             var request = await _context.BookingRequests
                 .Include(r => r.Customer)
@@ -269,6 +291,12 @@ namespace Second_Try.Controllers
         {
             var employee = await GetCurrentEmployeeAsync();
             if (employee == null) return RedirectToAction("Logout", "Auth");
+
+            if (string.IsNullOrWhiteSpace(remarks))
+            {
+                TempData["ErrorMessage"] = "Rejection reason is required.";
+                return RedirectToAction(nameof(ProcessRequest), new { id = requestId });
+            }
 
             var request = await _context.BookingRequests
                 .Include(r => r.Customer)

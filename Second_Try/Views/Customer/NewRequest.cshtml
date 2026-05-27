@@ -157,7 +157,7 @@
     const travelDate = '@(ViewBag.PreDate ?? DateTime.Today.ToString("yyyy-MM-dd"))';
     const isLuxury   = @(isLuxury ? "true" : "false");
     const totalSeats = @totalSeats;
-    const maxSelect  = 6;
+    const maxSelect  = totalSeats;
 
     let selected = new Set();
     let booked   = new Set();
@@ -215,7 +215,7 @@
             el.classList.remove('selected');
         } else {
             if (selected.size >= maxSelect) {
-                showToast('You can select a maximum of 6 seats.', 'warning');
+                showToast(`You can select a maximum of ${maxSelect} seats.`, 'warning');
                 return;
             }
             selected.add(label);

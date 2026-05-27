@@ -268,14 +268,14 @@
                         text: message,
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#0ea5e9',
+                        confirmButtonColor: '#E2E800',
                         cancelButtonColor: '#ef4444',
                         confirmButtonText: 'Yes, proceed',
-                        background: '#151b23',
-                        color: '#f8fafc'
+                        background: '#222222',
+                        color: '#F3F4F6'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            form.submit();
+                             form.submit();
                         }
                     });
                 });
@@ -292,8 +292,8 @@
                 text: '@Html.Raw(TempData["SuccessMessage"]?.ToString()?.Replace("'", "\\'") ?? "")',
                 timer: 3000,
                 showConfirmButton: false,
-                background: '#151b23',
-                color: '#f8fafc'
+                background: '#222222',
+                color: '#F3F4F6'
             });
             </text>
         }
@@ -304,14 +304,16 @@
                 icon: 'error',
                 title: 'Oops...',
                 text: '@Html.Raw(TempData["ErrorMessage"]?.ToString()?.Replace("'", "\\'") ?? "")',
-                background: '#151b23',
-                color: '#f8fafc'
+                background: '#222222',
+                color: '#F3F4F6'
             });
             </text>
         }
     });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 @RenderSection("Scripts", required: false)
 
 @* ── ARIA AI Chat Widget ──────────────────────────────────── *@

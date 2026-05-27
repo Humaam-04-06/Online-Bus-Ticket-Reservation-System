@@ -52,6 +52,7 @@ namespace Second_Try.Controllers
             var requests = await _context.BookingRequests
                 .Where(r => r.CustomerId == customer.Id)
                 .Include(r => r.Route)
+                .Include(r => r.BusSchedule)
                 .ToListAsync();
 
             ViewBag.TotalRequests    = requests.Count;
@@ -64,7 +65,7 @@ namespace Second_Try.Controllers
             // Most recent active request
             ViewBag.ActiveRequest = requests
                 .Where(r => r.Status == BookingRequestStatus.Pending ||
-                            r.Status == BookingRequestStatus.Accepted)
+                            (r.Status == BookingRequestStatus.Accepted && r.TravelDate.Date >= DateTime.Today))
                 .OrderByDescending(r => r.RequestDate)
                 .FirstOrDefault();
 
@@ -96,22 +97,25 @@ namespace Second_Try.Controllers
             ViewBag.Destination = destination;
             ViewBag.TravelDate = travelDate?.ToString("yyyy-MM-dd");
 
-            if (string.IsNullOrEmpty(origin) || string.IsNullOrEmpty(destination) || travelDate == null)
-            {
-                return View(new List<BusSchedule>()); // Just show search form
-            }
-
-            if (travelDate.Value.Date < DateTime.Today)
+            if (travelDate.HasValue && travelDate.Value.Date < DateTime.Today)
             {
                 TempData["ErrorMessage"] = "Please select a future date.";
-                return View(new List<BusSchedule>());
             }
 
-            // Perform Search
-            var routeIds = await _context.Routes
-                .Where(r => r.IsActive && r.Origin.ToLower() == origin.ToLower() && r.Destination.ToLower() == destination.ToLower())
-                .Select(r => r.Id)
-                .ToListAsync();
+            // Perform dynamic search
+            var routeQuery = _context.Routes.Where(r => r.IsActive).AsQueryable();
+
+            if (!string.IsNullOrEmpty(origin))
+            {
+                routeQuery = routeQuery.Where(r => r.Origin.ToLower() == origin.ToLower());
+            }
+
+            if (!string.IsNullOrEmpty(destination))
+            {
+                routeQuery = routeQuery.Where(r => r.Destination.ToLower() == destination.ToLower());
+            }
+
+            var routeIds = await routeQuery.Select(r => r.Id).ToListAsync();
 
             var schedules = await _context.BusSchedules
                 .Include(s => s.Route)
@@ -122,11 +126,18 @@ namespace Second_Try.Controllers
             var prices = await _context.PriceLists
                 .Where(p => routeIds.Contains(p.RouteId))
                 .ToListAsync();
+            
             ViewBag.Prices = prices;
 
             if (!schedules.Any())
             {
                 ViewBag.NoResults = true;
+            }
+
+            // Ensure travel date is set so the booking link doesn't break
+            if (string.IsNullOrEmpty(ViewBag.TravelDate))
+            {
+                ViewBag.TravelDate = DateTime.Today.ToString("yyyy-MM-dd");
             }
 
             return View(schedules);
@@ -146,7 +157,8 @@ namespace Second_Try.Controllers
 
             bool hasActive = await _context.BookingRequests.AnyAsync(r =>
                 r.CustomerId == customer.Id &&
-                (r.Status == BookingRequestStatus.Pending || r.Status == BookingRequestStatus.Accepted));
+                (r.Status == BookingRequestStatus.Pending || 
+                (r.Status == BookingRequestStatus.Accepted && r.TravelDate.Date >= DateTime.Today)));
 
             ViewBag.HasActiveRequest = hasActive;
 
@@ -181,7 +193,8 @@ namespace Second_Try.Controllers
             // Block if already has an active request
             bool hasActive = await _context.BookingRequests.AnyAsync(r =>
                 r.CustomerId == customer.Id &&
-                (r.Status == BookingRequestStatus.Pending || r.Status == BookingRequestStatus.Accepted));
+                (r.Status == BookingRequestStatus.Pending || 
+                (r.Status == BookingRequestStatus.Accepted && r.TravelDate.Date >= DateTime.Today)));
 
             if (hasActive)
             {
@@ -217,6 +230,39 @@ namespace Second_Try.Controllers
                 }
                 RouteId = r.Id;
             }
+            if (string.IsNullOrWhiteSpace(SelectedSeatNumbers))
+            {
+                ModelState.AddModelError("", "Please select at least one seat.");
+                ViewBag.HasActiveRequest = false;
+                return View();
+            }
+
+            // Backend Double-Booking Validation
+            var requestedSeats = SelectedSeatNumbers.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+            
+            var alreadyBooked = await _context.BookingRequests
+                .Where(r => r.BusScheduleId == BusScheduleId
+                         && r.TravelDate.Date == TravelDate.Date
+                         && (r.Status == BookingRequestStatus.Pending ||
+                             r.Status == BookingRequestStatus.Accepted ||
+                             r.Status == BookingRequestStatus.Completed))
+                .Select(r => r.SelectedSeatNumbers)
+                .ToListAsync();
+
+            var allTaken = alreadyBooked
+                .SelectMany(s => s.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                .Select(s => s.Trim())
+                .ToHashSet();
+
+            foreach (var seat in requestedSeats)
+            {
+                if (allTaken.Contains(seat))
+                {
+                    ModelState.AddModelError("", $"Seat {seat} is already booked or requested by another user. Please select different seats.");
+                    ViewBag.HasActiveRequest = false;
+                    return View();
+                }
+            }
 
             var request = new BookingRequest
             {
@@ -243,24 +289,32 @@ namespace Second_Try.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetBookedSeats(int scheduleId, DateTime travelDate)
         {
-            var taken = await _context.BookingRequests
+            var requests = await _context.BookingRequests
+                .Include(r => r.AssignedBooking)
                 .Where(r => r.BusScheduleId == scheduleId
                          && r.TravelDate.Date == travelDate.Date
                          && (r.Status == BookingRequestStatus.Pending ||
                              r.Status == BookingRequestStatus.Accepted ||
-                             r.Status == BookingRequestStatus.Completed)
-                         && r.SelectedSeatNumbers != null
-                         && r.SelectedSeatNumbers != string.Empty)
-                .Select(r => r.SelectedSeatNumbers)
+                             r.Status == BookingRequestStatus.Completed))
                 .ToListAsync();
 
-            var allTaken = taken
-                .SelectMany(s => s.Split(',', StringSplitOptions.RemoveEmptyEntries))
-                .Select(s => s.Trim())
-                .Distinct()
-                .ToList();
+            var bookedSeats = new HashSet<string>();
+            foreach (var r in requests)
+            {
+                if (!string.IsNullOrEmpty(r.SelectedSeatNumbers))
+                {
+                    var seats = r.SelectedSeatNumbers.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var s in seats) bookedSeats.Add(s.Trim());
+                }
+                
+                if (r.AssignedBooking != null && !string.IsNullOrEmpty(r.AssignedBooking.SeatNumbers))
+                {
+                    var seats = r.AssignedBooking.SeatNumbers.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var s in seats) bookedSeats.Add(s.Trim());
+                }
+            }
 
-            return Json(allTaken);
+            return Json(bookedSeats.ToList());
         }
 
         // ── C-04: My Requests ─────────────────────────────────────────────
@@ -272,6 +326,7 @@ namespace Second_Try.Controllers
             var requests = await _context.BookingRequests
                 .Where(r => r.CustomerId == customer.Id)
                 .Include(r => r.Route)
+                .Include(r => r.BusSchedule)
                 .Include(r => r.AssignedBooking)
                 .OrderByDescending(r => r.RequestDate)
                 .ToListAsync();
@@ -353,33 +408,6 @@ namespace Second_Try.Controllers
             return RedirectToAction(nameof(MyRequests));
         }
 
-        // ── C-04: Get Booked Seats API ────────────────────────────────────
-        [HttpGet]
-        public async Task<IActionResult> GetBookedSeats(int scheduleId, string travelDate)
-        {
-            if (!DateTime.TryParse(travelDate, out DateTime parsedDate)) 
-                return Json(new List<string>());
-
-            var requests = await _context.BookingRequests
-                .Include(r => r.AssignedBooking)
-                .Where(r => r.BusScheduleId == scheduleId && 
-                            r.TravelDate.Date == parsedDate.Date && 
-                            (r.Status == BookingRequestStatus.Accepted || r.Status == BookingRequestStatus.Completed))
-                .ToListAsync();
-
-            var bookedSeats = new HashSet<string>();
-            foreach (var r in requests)
-            {
-                if (r.AssignedBooking != null && !string.IsNullOrEmpty(r.AssignedBooking.SeatNumbers))
-                {
-                    var seats = r.AssignedBooking.SeatNumbers.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var s in seats) bookedSeats.Add(s.Trim());
-                }
-            }
-            
-            return Json(bookedSeats.ToList());
-        }
-
         // ── Download Ticket ─────────────────────────────────────────────────
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -459,6 +487,27 @@ namespace Second_Try.Controllers
                 TempData["ErrorMessage"] = "Full name and email are required.";
                 TempData["ActiveTab"] = "info";
                 return RedirectToAction(nameof(Profile));
+            }
+
+            // Email format check
+            var emailAttr = new System.ComponentModel.DataAnnotations.EmailAddressAttribute();
+            if (!emailAttr.IsValid(Email))
+            {
+                TempData["ErrorMessage"] = "Please enter a valid email address.";
+                TempData["ActiveTab"] = "info";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            // Phone format check (digits and optionally +)
+            if (!string.IsNullOrWhiteSpace(PhoneNumber))
+            {
+                var cleanedPhone = PhoneNumber.Trim();
+                if (!System.Text.RegularExpressions.Regex.IsMatch(cleanedPhone, @"^\+?[0-9]+$"))
+                {
+                    TempData["ErrorMessage"] = "Phone number must contain only numbers (and optional '+' prefix).";
+                    TempData["ActiveTab"] = "info";
+                    return RedirectToAction(nameof(Profile));
+                }
             }
 
             // Check email uniqueness (another account using same email)

@@ -12,14 +12,17 @@
 }
 @if (TempData["SuccessMessage"] is string sm) {<div class="adm-toast adm-toast-success"><i class="fa-solid fa-circle-check"></i> @sm</div>}
 
-<div class="adm-page-header">
+<div class="adm-page-header" style="display:flex; justify-content:space-between; align-items:center;">
     <div>
         <h2 class="adm-page-heading">Booking History</h2>
         <p class="adm-page-sub">All confirmed bookings across the system. Total: <strong>@bookings.Count</strong></p>
     </div>
-    <div class="adm-search-wrapper">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="hist-search" class="adm-search-input" placeholder="Search customer or bus..." value="@search" />
+    <div style="display:flex; gap:10px; align-items:center;">
+        <button id="btn-download-pdf" class="adm-btn adm-btn-primary" style="height: 42px; border-radius: 8px;"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
+        <div class="adm-search-wrapper" style="margin: 0;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="hist-search" class="adm-search-input" placeholder="Search customer or bus..." value="@search" />
+        </div>
     </div>
 </div>
 
@@ -85,6 +88,87 @@
         document.querySelectorAll('#hist-table tbody tr').forEach(r => {
             r.style.display = (r.dataset.search ?? '').toLowerCase().includes(q) ? '' : 'none';
         });
+    });
+
+    document.getElementById('btn-download-pdf')?.addEventListener('click', function() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+        // Draw header/title block
+        doc.setFillColor(26, 31, 46); // dark theme color
+        doc.rect(0, 0, 297, 40, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(22);
+        doc.text('SRC TRAVEL SYSTEM', 14, 18);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(12);
+        doc.setTextColor(200, 200, 200);
+        doc.text('Booking History Report', 14, 25);
+        doc.text('Role: Admin | Date: ' + new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString(), 14, 32);
+
+        // AutoTable headers & body
+        const headers = [['BK #', 'Customer Name', 'Request ID', 'Route', 'Travel Date', 'Bus', 'Seats', 'Fare (PKR)', 'Status', 'Confirmed At']];
+        const body = [];
+        
+        // We only include visible rows!
+        const rows = document.querySelectorAll('#hist-table tbody tr');
+        rows.forEach(row => {
+            if (row.style.display !== 'none') {
+                const bkNum = row.cells[0].innerText.trim();
+                
+                // Name + request ID are inside the Customer cell
+                const nameEl = row.querySelector('.adm-cell-name');
+                const emailEl = row.querySelector('.adm-cell-email');
+                const custName = nameEl ? nameEl.innerText.trim() : '';
+                const reqId = emailEl ? emailEl.innerText.trim() : '';
+                
+                const route = row.cells[2].innerText.trim();
+                const travelDate = row.cells[3].innerText.trim();
+                const bus = row.cells[4].innerText.trim().replace(/\n/g, ' ');
+                const seats = row.cells[5].innerText.trim();
+                const fare = row.cells[6].innerText.trim();
+                const status = row.cells[7].innerText.trim();
+                const confirmed = row.cells[8].innerText.trim();
+                
+                body.push([bkNum, custName, reqId, route, travelDate, bus, seats, fare, status, confirmed]);
+            }
+        });
+
+        doc.autoTable({
+            head: headers,
+            body: body,
+            startY: 45,
+            theme: 'striped',
+            headStyles: {
+                fillColor: [26, 31, 46],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold'
+            },
+            alternateRowStyles: {
+                fillColor: [240, 243, 246]
+            },
+            styles: {
+                fontSize: 9,
+                cellPadding: 3
+            },
+            columnStyles: {
+                0: { cellWidth: 20 },
+                1: { cellWidth: 40 },
+                2: { cellWidth: 22 },
+                3: { cellWidth: 45 },
+                4: { cellWidth: 25 },
+                5: { cellWidth: 35 },
+                6: { cellWidth: 20 },
+                7: { cellWidth: 22 },
+                8: { cellWidth: 25 },
+                9: { cellWidth: 25 }
+            }
+        });
+
+        doc.save('SRCTravel_Booking_History.pdf');
     });
 </script>
 }
