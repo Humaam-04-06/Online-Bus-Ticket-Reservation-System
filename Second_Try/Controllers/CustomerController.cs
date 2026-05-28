@@ -77,6 +77,8 @@ namespace Second_Try.Controllers
                 .ToListAsync();
 
             SetCommonViewBag(customer, notifications);
+            ViewBag.IsElite = customer.IsElite;
+            ViewBag.LoyaltyPoints = customer.LoyaltyPoints;
             return View();
         }
 
@@ -172,7 +174,15 @@ namespace Second_Try.Controllers
                 ViewBag.PreScheduleId = sched.Id;
                 ViewBag.PreRouteId    = sched.RouteId;
                 ViewBag.BusType       = sched.BusType; // for seat map rendering
+
+                // Fetch base price
+                var price = await _context.PriceLists.FirstOrDefaultAsync(p => p.RouteId == sched.RouteId && p.BusType == sched.BusType);
+                ViewBag.BaseFare = price != null ? price.FareAmount : 0;
             }
+
+            ViewBag.ActiveVouchers = await _context.Vouchers
+                .Where(v => v.CustomerId == customer.Id && !v.IsUsed)
+                .ToListAsync();
 
             SetCommonViewBag(customer);
             return View();
@@ -185,7 +195,7 @@ namespace Second_Try.Controllers
             string Origin, string Destination,
             DateTime TravelDate, int NumberOfSeats,
             BusType PreferredBusType, int? BusScheduleId, int? RouteId,
-            string? SelectedSeatNumbers)
+            string? SelectedSeatNumbers, int? AppliedVoucherId)
         {
             var customer = await GetCurrentCustomerAsync();
             if (customer == null) return RedirectToAction("Logout", "Auth");
@@ -264,6 +274,16 @@ namespace Second_Try.Controllers
                 }
             }
 
+            // Validate Applied Voucher
+            if (AppliedVoucherId.HasValue && AppliedVoucherId.Value > 0)
+            {
+                var isVoucherValid = await _context.Vouchers.AnyAsync(v => v.Id == AppliedVoucherId.Value && v.CustomerId == customer.Id && !v.IsUsed);
+                if (!isVoucherValid)
+                {
+                    AppliedVoucherId = null;
+                }
+            }
+
             var request = new BookingRequest
             {
                 CustomerId          = customer.Id,
@@ -273,6 +293,7 @@ namespace Second_Try.Controllers
                 TravelDate          = TravelDate,
                 NumberOfSeats       = NumberOfSeats,
                 SelectedSeatNumbers = SelectedSeatNumbers ?? string.Empty,
+                AppliedVoucherId    = AppliedVoucherId,
                 Status              = BookingRequestStatus.Pending,
                 RequestDate         = DateTime.UtcNow
             };
@@ -697,6 +718,139 @@ namespace Second_Try.Controllers
 
             TempData["SuccessMessage"] = "Cover banner updated!";
             return RedirectToAction(nameof(Profile));
+        }
+
+        // ── GET /Customer/Elite ───────────────────────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> Elite()
+        {
+            var customer = await GetCurrentCustomerAsync();
+            if (customer == null) return RedirectToAction("Logout", "Auth");
+
+            // Real notifications
+            var notifications = await _context.Notifications
+                .Where(n => n.CustomerId == customer.Id)
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(6)
+                .ToListAsync();
+
+            SetCommonViewBag(customer, notifications);
+            ViewData["ActivePage"] = "Elite";
+
+            // Load vouchers
+            var vouchers = await _context.Vouchers
+                .Where(v => v.CustomerId == customer.Id)
+                .OrderByDescending(v => v.CreatedAt)
+                .ToListAsync();
+
+            ViewBag.Vouchers = vouchers;
+            ViewBag.IsElite = customer.IsElite;
+            ViewBag.LoyaltyPoints = customer.LoyaltyPoints;
+
+            return View(customer);
+        }
+
+        // ── POST /Customer/ActivateElite ──────────────────────────────────
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ActivateElite()
+        {
+            var customer = await GetCurrentCustomerAsync();
+            if (customer == null) return Json(new { success = false, message = "Session expired." });
+
+            if (customer.IsElite) return Json(new { success = false, message = "You are already an Elite member." });
+
+            customer.IsElite = true;
+            customer.EliteJoinDate = DateTime.UtcNow;
+            customer.LoyaltyPoints += 500; // 500 points Welcome Bonus!
+
+            _context.Notifications.Add(new Notification
+            {
+                CustomerId = customer.Id,
+                Title = "Welcome to SRC Elite",
+                Message = "Congratulations! You have successfully activated your SRC Elite membership. A 500 points Welcome Bonus has been credited to your account!",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Welcome to the Elite tier! 500 bonus points have been added." });
+        }
+
+        // ── POST /Customer/RedeemVoucher ──────────────────────────────────
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RedeemVoucher(int voucherType)
+        {
+            var customer = await GetCurrentCustomerAsync();
+            if (customer == null) return Json(new { success = false, message = "Session expired." });
+
+            int pointsCost = 0;
+            int discountAmt = 0;
+
+            if (voucherType == 1) // Rs 200 for 500 points
+            {
+                pointsCost = 500;
+                discountAmt = 200;
+            }
+            else if (voucherType == 2) // Rs 500 for 1000 points
+            {
+                pointsCost = 1000;
+                discountAmt = 500;
+            }
+            else if (voucherType == 3) // Rs 1000 for 1800 points
+            {
+                pointsCost = 1800;
+                discountAmt = 1000;
+            }
+            else
+            {
+                return Json(new { success = false, message = "Invalid voucher type." });
+            }
+
+            if (customer.LoyaltyPoints < pointsCost)
+            {
+                return Json(new { success = false, message = $"Insufficient points. You need {pointsCost} points to redeem this voucher." });
+            }
+
+            // Deduct points
+            customer.LoyaltyPoints -= pointsCost;
+
+            // Generate premium code: ELITE[Value]-[RandomString]
+            string randomStr = Guid.NewGuid().ToString("N").Substring(0, 4).ToUpper();
+            string voucherCode = $"ELITE{discountAmt}-{randomStr}";
+
+            var voucher = new Voucher
+            {
+                CustomerId = customer.Id,
+                Code = voucherCode,
+                DiscountAmount = discountAmt,
+                PointsCost = pointsCost,
+                IsUsed = false,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Vouchers.Add(voucher);
+
+            _context.Notifications.Add(new Notification
+            {
+                CustomerId = customer.Id,
+                Title = "Voucher Redeemed",
+                Message = $"You successfully redeemed a PKR {discountAmt} discount voucher (Code: {voucherCode}) for {pointsCost} points.",
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
+
+            return Json(new { 
+                success = true, 
+                message = "Voucher redeemed successfully!",
+                code = voucherCode,
+                discount = discountAmt,
+                remainingPoints = customer.LoyaltyPoints
+            });
         }
 
         // ── MarkNotificationsRead (POST) ──────────────────────────

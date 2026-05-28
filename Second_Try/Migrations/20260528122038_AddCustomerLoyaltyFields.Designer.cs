@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Second_Try.Data;
 
@@ -11,9 +12,11 @@ using Second_Try.Data;
 namespace Second_Try.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260528122038_AddCustomerLoyaltyFields")]
+    partial class AddCustomerLoyaltyFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,9 +73,6 @@ namespace Second_Try.Migrations
                     b.Property<string>("AdminRemarks")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("AppliedVoucherId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("BusScheduleId")
                         .HasColumnType("int");
 
@@ -103,8 +103,6 @@ namespace Second_Try.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AppliedVoucherId");
 
                     b.HasIndex("BusScheduleId");
 
@@ -483,11 +481,6 @@ namespace Second_Try.Migrations
 
             modelBuilder.Entity("Second_Try.Models.BookingRequest", b =>
                 {
-                    b.HasOne("Second_Try.Models.Voucher", "AppliedVoucher")
-                        .WithMany()
-                        .HasForeignKey("AppliedVoucherId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("Second_Try.Models.BusSchedule", "BusSchedule")
                         .WithMany("BookingRequests")
                         .HasForeignKey("BusScheduleId");
@@ -503,8 +496,6 @@ namespace Second_Try.Migrations
                         .HasForeignKey("RouteId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("AppliedVoucher");
 
                     b.Navigation("BusSchedule");
 

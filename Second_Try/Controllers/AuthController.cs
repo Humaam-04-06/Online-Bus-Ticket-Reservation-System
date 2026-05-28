@@ -30,7 +30,7 @@ namespace Second_Try.Controllers
 
         // ── GET /Auth/Login ───────────────────────────────────────
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
@@ -38,6 +38,7 @@ namespace Second_Try.Controllers
                 if (User.IsInRole("Employee")) return RedirectToAction("Dashboard", "Employee");
                 return RedirectToAction("Dashboard", "Customer");
             }
+            ViewBag.ReturnUrl = returnUrl;
             PopulateAuthStats();
             return View(new AuthPageViewModel());
         }
@@ -45,7 +46,7 @@ namespace Second_Try.Controllers
         // ── POST /Auth/Register ───────────────────────────────────
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(AuthPageViewModel pageModel)
+        public async Task<IActionResult> Register(AuthPageViewModel pageModel, string? returnUrl = null)
         {
             var model = pageModel.Register;
 
@@ -59,6 +60,7 @@ namespace Second_Try.Controllers
                 {
                     ModelState.AddModelError("Register.Email", "This email is already registered.");
                     TempData["ShowRegister"] = true;
+                    ViewBag.ReturnUrl = returnUrl;
                     PopulateAuthStats();
                     return View("Login", new AuthPageViewModel { Register = model });
                 }
@@ -80,10 +82,16 @@ namespace Second_Try.Controllers
 
                 await SignInUser(customer.Email, "Customer", customer.FullName, model.RememberMe);
                 TempData["WelcomeMessage"] = $"Welcome to SRC Travel, {customer.FullName}!";
+                
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                {
+                    return Redirect(returnUrl);
+                }
                 return RedirectToAction("Dashboard", "Customer");
             }
 
             TempData["ShowRegister"] = true;
+            ViewBag.ReturnUrl = returnUrl;
             PopulateAuthStats();
             return View("Login", new AuthPageViewModel { Register = model });
         }
@@ -91,7 +99,7 @@ namespace Second_Try.Controllers
         // ── POST /Auth/Login ──────────────────────────────────────
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(AuthPageViewModel pageModel)
+        public async Task<IActionResult> Login(AuthPageViewModel pageModel, string? returnUrl = null)
         {
             var model = pageModel.Login;
 
@@ -105,6 +113,11 @@ namespace Second_Try.Controllers
                     BCrypt.Net.BCrypt.Verify(model.Password, customer.PasswordHash))
                 {
                     await SignInUser(customer.Email, "Customer", customer.FullName, model.RememberMe);
+                    
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    {
+                        return Redirect(returnUrl);
+                    }
                     return RedirectToAction("Dashboard", "Customer");
                 }
 
@@ -120,24 +133,25 @@ namespace Second_Try.Controllers
                 ModelState.AddModelError("Login.Email", "Invalid email or password.");
             }
 
+            ViewBag.ReturnUrl = returnUrl;
             PopulateAuthStats();
             return View("Login", new AuthPageViewModel { Login = model });
         }
 
         // ── GET /Auth/GoogleLogin — redirects to Google ───────────
         [HttpGet]
-        public IActionResult GoogleLogin()
+        public IActionResult GoogleLogin(string? returnUrl = null)
         {
             var props = new AuthenticationProperties
             {
-                RedirectUri = Url.Action(nameof(GoogleCallback), "Auth", null, Request.Scheme)
+                RedirectUri = Url.Action(nameof(GoogleCallback), "Auth", new { returnUrl }, Request.Scheme)
             };
             return Challenge(props, GoogleDefaults.AuthenticationScheme);
         }
 
         // ── GET /signin-google — Google calls this back ───────────
         [HttpGet]
-        public async Task<IActionResult> GoogleCallback()
+        public async Task<IActionResult> GoogleCallback(string? returnUrl = null)
         {
             // Extract the Google identity
             var result = await HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
@@ -145,7 +159,7 @@ namespace Second_Try.Controllers
             if (!result.Succeeded || result.Principal == null)
             {
                 TempData["ErrorMessage"] = "Google sign-in failed. Please try again.";
-                return RedirectToAction(nameof(Login));
+                return RedirectToAction(nameof(Login), new { returnUrl });
             }
 
             string? googleId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -157,14 +171,14 @@ namespace Second_Try.Controllers
             if (string.IsNullOrEmpty(email))
             {
                 TempData["ErrorMessage"] = "Could not retrieve email from Google. Please try again.";
-                return RedirectToAction(nameof(Login));
+                return RedirectToAction(nameof(Login), new { returnUrl });
             }
 
             // Block Google login for Employee / Admin accounts
             if (_context.Employees.Any(e => e.Email == email))
             {
                 TempData["ErrorMessage"] = "Staff accounts must log in with email and password.";
-                return RedirectToAction(nameof(Login));
+                return RedirectToAction(nameof(Login), new { returnUrl });
             }
 
             // Find or create customer
@@ -200,6 +214,10 @@ namespace Second_Try.Controllers
                 ? $"Welcome to SRC Travel, {customer.FullName}! 🎉"
                 : $"Welcome back, {customer.FullName}!";
 
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
             return RedirectToAction("Dashboard", "Customer");
         }
 

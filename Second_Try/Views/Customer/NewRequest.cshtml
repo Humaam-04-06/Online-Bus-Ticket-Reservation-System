@@ -99,6 +99,7 @@
                     <input type="hidden" name="PreferredBusType" value="@((int)busType)" />
                     <input type="hidden" name="NumberOfSeats" id="hiddenSeatCount" value="0" />
                     <input type="hidden" name="SelectedSeatNumbers" id="hiddenSeatNumbers" value="" />
+                    <input type="hidden" name="AppliedVoucherId" id="hiddenVoucherId" value="" />
 
                     <div style="padding:1.25rem;">
                         <!-- Trip Info -->
@@ -131,10 +132,46 @@
                             <span id="seatNumbers" style="color:var(--text-light);font-size:0.8rem;font-weight:600;">—</span>
                         </div>
 
+                        @if (ViewBag.ActiveVouchers is List<Voucher> activeVouchers && activeVouchers.Any())
+                        {
+                            <div style="margin-bottom: 1rem; border-top:1px solid var(--border-color); padding-top:0.75rem;">
+                                <label style="display:block; font-size:0.8rem; font-weight:600; color:var(--text-muted); margin-bottom:0.4rem;">Apply Discount Voucher</label>
+                                <select id="voucher-select" style="width:100%; background:#222222; border:1px solid var(--border-color); border-radius:8px; padding:0.6rem 0.5rem; color:var(--text-light); font-size:0.85rem; outline:none; font-family:'Inter',sans-serif;">
+                                    <option value="" data-discount="0">— No Voucher Applied —</option>
+                                    @foreach (var v in activeVouchers)
+                                    {
+                                        <option value="@v.Id" data-discount="@v.DiscountAmount">
+                                            @v.Code (PKR @v.DiscountAmount Off)
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                        }
+
+                        <!-- Price Breakdown -->
+                        <div style="background:var(--bg-primary); border-radius:10px; padding:0.9rem; margin-bottom:1.25rem; border:1px solid var(--border-color); font-size:0.825rem;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
+                                <span style="color:var(--text-muted);">Base Fare (per seat)</span>
+                                <span style="color:var(--text-light); font-weight:600;">PKR @(((decimal)ViewBag.BaseFare).ToString("N0"))</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;">
+                                <span style="color:var(--text-muted);">Subtotal</span>
+                                <span style="color:var(--text-light); font-weight:600;">PKR <span id="subtotal-val">0</span></span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem; color:#ef4444;">
+                                <span>Discount Voucher</span>
+                                <span>- PKR <span id="discount-val">0</span></span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; border-top:1px solid var(--border-color); padding-top:0.4rem; font-weight:800; color:#E2E800; font-size:0.95rem;">
+                                <span>Net Payable</span>
+                                <span>PKR <span id="total-val">0</span></span>
+                            </div>
+                        </div>
+
                         <div style="border-top:1px solid var(--border-color);padding-top:0.75rem;margin-bottom:1rem;">
                             <p style="font-size:0.75rem;color:var(--text-muted);margin:0;line-height:1.6;">
                                 <i class="fa-solid fa-info-circle" style="color:var(--accent-cyan);margin-right:0.35rem;"></i>
-                                Your request will be reviewed by an employee. You will receive a notification once it is accepted or rejected.
+                                Your request will be reviewed by an employee. The discount voucher will be permanently claimed once your request is accepted.
                             </p>
                         </div>
 
@@ -233,6 +270,21 @@
         document.getElementById('hiddenSeatCount').value    = count;
         document.getElementById('hiddenSeatNumbers').value  = nums;
 
+        // Dynamic price calculations
+        const baseFare = parseFloat('@ViewBag.BaseFare') || 0;
+        const subtotal = count * baseFare;
+
+        const voucherSelect = document.getElementById('voucher-select');
+        const selectedOpt = voucherSelect ? voucherSelect.options[voucherSelect.selectedIndex] : null;
+        const discount = (selectedOpt && count > 0) ? parseFloat(selectedOpt.getAttribute('data-discount')) || 0 : 0;
+        const voucherId = (selectedOpt && count > 0) ? selectedOpt.value : "";
+        const total = Math.max(0, subtotal - discount);
+
+        if (document.getElementById('subtotal-val')) document.getElementById('subtotal-val').textContent = subtotal.toLocaleString();
+        if (document.getElementById('discount-val')) document.getElementById('discount-val').textContent = discount.toLocaleString();
+        if (document.getElementById('total-val')) document.getElementById('total-val').textContent = total.toLocaleString();
+        if (document.getElementById('hiddenVoucherId')) document.getElementById('hiddenVoucherId').value = voucherId;
+
         const btn = document.getElementById('submitBtn');
         btn.disabled = count === 0;
         btn.style.opacity = count > 0 ? '1' : '0.5';
@@ -255,6 +307,11 @@
                 strip.appendChild(chip);
             });
         }
+    }
+
+    const voucherSelect = document.getElementById('voucher-select');
+    if (voucherSelect) {
+        voucherSelect.addEventListener('change', updateSummary);
     }
 
     function showToast(msg, type) {

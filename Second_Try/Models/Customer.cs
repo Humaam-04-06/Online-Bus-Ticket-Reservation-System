@@ -32,8 +32,14 @@ namespace Second_Try.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        // Loyalty Program & Elite Status
+        public bool IsElite { get; set; } = false;
+        public int LoyaltyPoints { get; set; } = 0;
+        public DateTime? EliteJoinDate { get; set; }
+
         // Navigation Properties
         public ICollection<BookingRequest> BookingRequests { get; set; } = new List<BookingRequest>();
         public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+        public ICollection<Voucher> Vouchers { get; set; } = new List<Voucher>();
     }
 }

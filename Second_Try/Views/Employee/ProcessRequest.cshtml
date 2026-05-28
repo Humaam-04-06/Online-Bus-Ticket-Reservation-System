@@ -67,6 +67,44 @@
                     <span class="pr-info-label">Phone</span>
                     <span class="pr-info-val">@(string.IsNullOrEmpty(Model.Customer?.PhoneNumber) ? "Not provided" : Model.Customer.PhoneNumber)</span>
                 </div>
+                <div class="pr-info-row">
+                    <span class="pr-info-label">Membership Tier</span>
+                    <span class="pr-info-val">
+                        @if (Model.Customer?.IsElite == true)
+                        {
+                            <span class="emp-badge" style="background:#E2E800; color:#141414; font-weight:800; border:none; box-shadow:0 0 10px rgba(226,232,0,0.5); display:inline-flex; align-items:center; gap:4px;">
+                                <i class="fa-solid fa-crown" style="font-size:0.6rem;"></i> SRC ELITE
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="emp-badge emp-badge-outline" style="color:var(--text-muted); border-color:var(--border-color);">Standard Member</span>
+                        }
+                    </span>
+                </div>
+                @if (Model.Customer?.IsElite == true)
+                {
+                    <div class="pr-info-row">
+                        <span class="pr-info-label">Loyalty Points</span>
+                        <span class="pr-info-val" style="color:#E2E800; font-weight:700;">@Model.Customer.LoyaltyPoints pts</span>
+                    </div>
+                    var activeVouchers = ViewBag.ActiveVouchers as List<Voucher> ?? new List<Voucher>();
+                    if (activeVouchers.Any())
+                    {
+                        <div class="pr-info-row" style="flex-direction:column; align-items:flex-start; gap:0.5rem; border-top:1px solid var(--border-color); padding-top:0.75rem; margin-top:0.25rem; width:100%;">
+                            <span class="pr-info-label" style="font-size:0.75rem; color:#E2E800; display:block; margin-bottom:0.25rem;">Available Discount Vouchers</span>
+                            <div style="width:100%; display:flex; flex-direction:column; gap:0.4rem;">
+                                @foreach (var v in activeVouchers)
+                                {
+                                    <div style="background:#222222; border:1px solid #333333; border-radius:6px; padding:0.4rem 0.6rem; display:flex; justify-content:space-between; align-items:center; width:100%; box-sizing:border-box;">
+                                        <span style="font-family:monospace; color:#E2E800; font-weight:700; font-size:0.8rem;">@v.Code</span>
+                                        <span style="color:#10B981; font-weight:700; font-size:0.8rem;">- PKR @v.DiscountAmount</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
             </div>
         </div>
 
@@ -190,11 +228,50 @@
                         <span class="pr-hint">Customer selected: @(string.IsNullOrEmpty(Model.SelectedSeatNumbers) ? "None" : Model.SelectedSeatNumbers)</span>
                     </div>
 
+                    @if (Model.Customer?.IsElite == true || Model.AppliedVoucherId != null)
+                    {
+                        var activeVouchers = ViewBag.ActiveVouchers as List<Voucher> ?? new List<Voucher>();
+                        if (activeVouchers.Any())
+                        {
+                            <div class="pr-form-group">
+                                <label class="pr-label">Apply Discount Voucher</label>
+                                <select name="appliedVoucherId" class="pr-select" id="voucher-select">
+                                    <option value="" data-discount="0">— No Voucher Applied —</option>
+                                    @foreach (var v in activeVouchers)
+                                    {
+                                        <option value="@v.Id" data-discount="@v.DiscountAmount" selected="@(Model.AppliedVoucherId == v.Id ? "selected" : null)">
+                                            @v.Code (PKR @v.DiscountAmount Off)
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                        }
+                    }
+
                     <div class="pr-form-group">
-                        <label class="pr-label">Total Fare (PKR)</label>
+                        <label class="pr-label">
+                            Total Fare (PKR) 
+                            @if (ViewBag.IsUsingFallbackFare == true)
+                            {
+                                <span style="font-size:0.75rem; color:#EF4444; font-weight:normal; margin-left:0.5rem;">
+                                    (Estimated base: PKR @(((decimal)ViewBag.BaseFarePerSeat).ToString("N0"))/seat)
+                                </span>
+                            }
+                            else
+                            {
+                                <span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal; margin-left:0.5rem;">
+                                    (Base: PKR @(((decimal)ViewBag.BaseFarePerSeat).ToString("N0"))/seat)
+                                </span>
+                            }
+                        </label>
                         <input type="number" name="totalFare" id="total-fare" class="pr-input"
-                               min="0.01" step="0.01" placeholder="e.g. 2500" required 
+                               style="background-color: #1a1a1a; color: #a0a0a0; cursor: not-allowed;"
+                               min="0.01" step="0.01" placeholder="e.g. 2500" required readonly
                                value="@(ViewBag.CalculatedFare != null && ViewBag.CalculatedFare > 0 ? ViewBag.CalculatedFare : "")" />
+                        <span class="pr-hint" id="fare-calc-hint" style="margin-top:0.4rem; display:block; font-size:0.75rem; color:var(--text-muted);">
+                            Calculation: <span id="hint-seat-count">@Model.NumberOfSeats</span> seat(s) &times; PKR @(((decimal)ViewBag.BaseFarePerSeat).ToString("N0")) 
+                            <span id="hint-discount-section" style="display:none;"> - PKR <span id="hint-discount-val">0</span> (Voucher)</span>
+                        </span>
                     </div>
 
                     <button type="submit" class="emp-btn emp-btn-success pr-submit-btn" @(buses.Any() ? "" : "disabled")>
@@ -273,13 +350,59 @@
 
 @section Scripts {
 <script>
-    // Auto-calculate fare hint based on bus capacity (optional UX helper)
-    const busSelect  = document.getElementById('bus-select');
+    // Auto-calculate fare based on seat count and voucher discount
     const fareInput  = document.getElementById('total-fare');
+    const voucherSelect = document.getElementById('voucher-select');
+    const seatInput = document.getElementById('seat-numbers');
 
-    busSelect?.addEventListener('change', function() {
-        // You can add dynamic fare calculation here if PriceList is available
-    });
+    const baseFarePerSeat = parseFloat('@(ViewBag.BaseFarePerSeat ?? 0)');
+
+    function calculateTotalFare() {
+        if (!fareInput) return;
+
+        // 1. Calculate seats from comma-separated input
+        const seatVal = seatInput?.value || '';
+        const seats = seatVal.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        const seatCount = seats.length;
+
+        // 2. Subtotal
+        const subtotal = seatCount * baseFarePerSeat;
+
+        // 3. Discount
+        let discount = 0;
+        if (voucherSelect) {
+            const selectedOpt = voucherSelect.options[voucherSelect.selectedIndex];
+            discount = parseFloat(selectedOpt?.getAttribute('data-discount')) || 0;
+        }
+
+        // 4. Final Fare
+        const finalFare = Math.max(0, subtotal - discount);
+        fareInput.value = finalFare.toFixed(2);
+
+        // 5. Update UI Hint
+        const hintSeatCount = document.getElementById('hint-seat-count');
+        const hintDiscountSection = document.getElementById('hint-discount-section');
+        const hintDiscountVal = document.getElementById('hint-discount-val');
+
+        if (hintSeatCount) hintSeatCount.textContent = seatCount;
+        if (hintDiscountSection && hintDiscountVal) {
+            if (discount > 0 && seatCount > 0) {
+                hintDiscountVal.textContent = discount.toLocaleString();
+                hintDiscountSection.style.display = 'inline';
+            } else {
+                hintDiscountSection.style.display = 'none';
+            }
+        }
+    }
+
+    // Attach listeners
+    seatInput?.addEventListener('input', calculateTotalFare);
+    if (voucherSelect) {
+        voucherSelect.addEventListener('change', calculateTotalFare);
+    }
+
+    // Initial calculation on load
+    calculateTotalFare();
 
     document.addEventListener('DOMContentLoaded', () => {
         const acceptForm = document.getElementById('accept-form');
@@ -294,9 +417,9 @@
                     icon: 'warning',
                     title: 'Validation Error',
                     text: 'Please select a bus to assign.',
-                    background: '#1a1f2e',
-                    color: '#f8fafc',
-                    confirmButtonColor: '#3085d6'
+                    background: '#222222',
+                    color: '#F3F4F6',
+                    confirmButtonColor: '#E2E800'
                 });
                 return;
             }
@@ -307,9 +430,9 @@
                     icon: 'warning',
                     title: 'Validation Error',
                     text: 'Please enter seat numbers.',
-                    background: '#1a1f2e',
-                    color: '#f8fafc',
-                    confirmButtonColor: '#3085d6'
+                    background: '#222222',
+                    color: '#F3F4F6',
+                    confirmButtonColor: '#E2E800'
                 });
                 return;
             }
@@ -320,9 +443,9 @@
                     icon: 'warning',
                     title: 'Validation Error',
                     text: 'Total fare must be greater than zero.',
-                    background: '#1a1f2e',
-                    color: '#f8fafc',
-                    confirmButtonColor: '#3085d6'
+                    background: '#222222',
+                    color: '#F3F4F6',
+                    confirmButtonColor: '#E2E800'
                 });
                 return;
             }
