@@ -153,6 +153,40 @@
                 }
             </div>
 
+            <!-- SRC Elite Membership Status -->
+            <div class="cp-card" style="margin-top:1.25rem; background: linear-gradient(135deg, rgba(34,34,34,0.95), rgba(20,20,20,0.95)); border: 1px solid @(ViewBag.IsElite == true ? "#E2E800" : "var(--border-color)"); box-shadow: @(ViewBag.IsElite == true ? "0 0 15px rgba(226,232,0,0.15)" : "none");">
+                <div class="cp-card-header" style="padding-bottom:0.75rem;">
+                    <div class="cp-card-title"><i class="fa-solid fa-crown" style="color:@(ViewBag.IsElite == true ? "#E2E800" : "var(--text-muted)");"></i> SRC Elite Loyalty</div>
+                </div>
+                <div style="padding: 0 1.25rem 1.25rem;">
+                    @if (ViewBag.IsElite == true)
+                    {
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <span style="font-size:0.8rem; color:#9CA3AF;">Membership Tier</span>
+                            <span style="background:#E2E800; color:#141414; font-size:0.75rem; font-weight:800; padding:0.25rem 0.6rem; border-radius:30px; display:inline-flex; align-items:center; gap:4px; box-shadow:0 0 8px rgba(226,232,0,0.4);">
+                                <i class="fa-solid fa-crown" style="font-size:0.6rem;"></i> ELITE MEMBER
+                            </span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.8rem; color:#9CA3AF;">Loyalty Points Balance</span>
+                            <span style="font-size:1.2rem; font-weight:900; color:#E2E800; text-shadow:0 0 10px rgba(226,232,0,0.3);">@ViewBag.LoyaltyPoints pts</span>
+                        </div>
+                        <a href="/Customer/Elite" class="cp-btn cp-btn-outline" style="margin-top:1rem; border-color:#E2E800; color:#E2E800; justify-content:center; gap:0.5rem; font-size:0.8rem; padding:0.4rem 1rem;">
+                            <i class="fa-solid fa-gem"></i> Manage Rewards & Vouchers &rarr;
+                        </a>
+                    }
+                    else
+                    {
+                        <p style="font-size:0.8rem; color:#9CA3AF; margin-bottom:1rem; line-height:1.5;">
+                            Unlock double reward points, complimentary terminal lounge access, priority seat selection, and exclusive discounts!
+                        </p>
+                        <a href="/Customer/Elite" class="cp-btn" style="background:#E2E800; color:#141414; font-weight:800; justify-content:center; gap:0.5rem; font-size:0.8rem; padding:0.5rem 1rem; width:100%; text-align:center; border:none; box-shadow:0 4px 12px rgba(226,232,0,0.2); transition:all 0.2s;" onmouseover="this.style.background='#b4b800'; this.style.boxShadow='0 6px 16px rgba(226,232,0,0.35)';" onmouseout="this.style.background='#E2E800'; this.style.boxShadow='0 4px 12px rgba(226,232,0,0.2)';">
+                            <i class="fa-solid fa-star"></i> Join SRC Elite for Free &rarr;
+                        </a>
+                    }
+                </div>
+            </div>
+
             <!-- Quick Actions -->
             <div class="cp-card" style="margin-top:1.25rem;">
                 <div class="cp-card-header">

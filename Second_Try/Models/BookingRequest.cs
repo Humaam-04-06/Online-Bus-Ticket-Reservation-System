@@ -46,6 +46,8 @@ namespace Second_Try.Models
 
         public string? AdminRemarks { get; set; } // e.g., Reason if rejected
 
+        public int? AppliedVoucherId { get; set; }
+
         // Navigation Properties
         [ForeignKey(nameof(CustomerId))]
         public Customer? Customer { get; set; }
@@ -55,6 +57,9 @@ namespace Second_Try.Models
 
         [ForeignKey(nameof(BusScheduleId))]
         public BusSchedule? BusSchedule { get; set; }
+
+        [ForeignKey(nameof(AppliedVoucherId))]
+        public Voucher? AppliedVoucher { get; set; }
 
         public Booking? AssignedBooking { get; set; } // Will be populated if accepted
     }

@@ -121,6 +121,7 @@ namespace Second_Try.Controllers
             var request = await _context.BookingRequests
                 .Include(r => r.Customer)
                 .Include(r => r.Route)
+                .Include(r => r.AppliedVoucher)
                 .Include(r => r.AssignedBooking)
                     .ThenInclude(b => b != null ? b.Bus : null)
                 .FirstOrDefaultAsync(r => r.Id == id);
@@ -142,12 +143,48 @@ namespace Second_Try.Controllers
             var price = await _context.PriceLists
                 .FirstOrDefaultAsync(p => p.RouteId == request.RouteId && p.BusType == request.PreferredBusType);
             
-            decimal calculatedFare = 0;
-            if (price != null)
+            decimal baseFarePerSeat = price != null ? price.FareAmount : 0;
+            bool isUsingFallbackFare = false;
+
+            if (baseFarePerSeat <= 0)
             {
-                calculatedFare = price.FareAmount * request.NumberOfSeats;
+                double duration = request.Route?.EstimatedDurationHours ?? 0;
+                if (duration > 0)
+                {
+                    decimal multiplier = request.PreferredBusType switch
+                    {
+                        BusType.Economy => 400,
+                        BusType.Standard => 600,
+                        BusType.Luxury => 800,
+                        BusType.Express => 1000,
+                        _ => 600
+                    };
+                    baseFarePerSeat = (decimal)Math.Round(duration * (double)multiplier);
+                }
+                
+                if (baseFarePerSeat <= 0)
+                {
+                    baseFarePerSeat = request.PreferredBusType switch
+                    {
+                        BusType.Economy => 1000,
+                        BusType.Standard => 1500,
+                        BusType.Luxury => 2500,
+                        BusType.Express => 3000,
+                        _ => 1500
+                    };
+                }
+                isUsingFallbackFare = true;
             }
+
+            decimal calculatedFare = baseFarePerSeat * request.NumberOfSeats;
+            
+            ViewBag.BaseFarePerSeat = baseFarePerSeat;
+            ViewBag.IsUsingFallbackFare = isUsingFallbackFare;
             ViewBag.CalculatedFare = calculatedFare;
+
+            ViewBag.ActiveVouchers = await _context.Vouchers
+                .Where(v => v.CustomerId == request.CustomerId && !v.IsUsed)
+                .ToListAsync();
 
             ViewBag.Employee = employee;
             return View(request);
@@ -158,7 +195,7 @@ namespace Second_Try.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AcceptRequest(
             int requestId, int busId,
-            string seatNumbers, decimal totalFare)
+            string seatNumbers, decimal totalFare, int? appliedVoucherId)
         {
             var employee = await GetCurrentEmployeeAsync();
             if (employee == null) return RedirectToAction("Logout", "Auth");
@@ -187,6 +224,33 @@ namespace Second_Try.Controllers
             {
                 TempData["ErrorMessage"] = "Request not found or already processed.";
                 return RedirectToAction(nameof(BookingRequests));
+            }
+
+            // Apply voucher discount if selected
+            request.AppliedVoucherId = (appliedVoucherId.HasValue && appliedVoucherId.Value > 0) ? appliedVoucherId : null;
+            if (appliedVoucherId.HasValue && appliedVoucherId.Value > 0)
+            {
+                var voucher = await _context.Vouchers.FirstOrDefaultAsync(v => v.Id == appliedVoucherId.Value && v.CustomerId == request.CustomerId && !v.IsUsed);
+                if (voucher != null)
+                {
+                    voucher.IsUsed = true;
+                }
+            }
+
+            // Award loyalty points to the customer
+            if (request.Customer != null)
+            {
+                int pointsEarned = (int)Math.Round(totalFare * (request.Customer.IsElite ? 0.10m : 0.05m));
+                request.Customer.LoyaltyPoints += pointsEarned;
+
+                _context.Notifications.Add(new Notification
+                {
+                    CustomerId = request.CustomerId,
+                    Title      = "Loyalty Points Credited",
+                    Message    = $"You have earned {pointsEarned} loyalty points from your trip REQ-{request.Id:D4}! Current balance: {request.Customer.LoyaltyPoints} points.",
+                    IsRead     = false,
+                    CreatedAt  = DateTime.UtcNow
+                });
             }
 
             // Create Booking record

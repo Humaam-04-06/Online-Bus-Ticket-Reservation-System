@@ -1,0 +1,520 @@
+@model Second_Try.Models.Customer
+@{
+    ViewData["Title"] = "SRC Elite Loyalty";
+    ViewData["ActivePage"] = "Elite";
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+    var vouchers = ViewBag.Vouchers as List<Voucher> ?? new List<Voucher>();
+    var unusedVouchers = vouchers.Where(v => !v.IsUsed).ToList();
+    var usedVouchers = vouchers.Where(v => v.IsUsed).ToList();
+}
+
+@section Styles {
+    <style>
+        .elite-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        @@media (min-width: 992px) {
+            .elite-grid {
+                grid-template-columns: 320px 1fr;
+            }
+        }
+        
+        .elite-card-container {
+            perspective: 1000px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .elite-member-card {
+            background: linear-gradient(135deg, #1f1f1f 0%, #0c0c0c 100%);
+            border: 2px solid #E2E800;
+            border-radius: 20px;
+            aspect-ratio: 1.58 / 1;
+            padding: 1.5rem 1.75rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 25px rgba(226, 232, 0, 0.15);
+            width: 100%;
+            max-width: 320px;
+            cursor: pointer;
+            will-change: transform;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+        }
+
+        .elite-member-card * {
+            transform-style: preserve-3d;
+        }
+
+        .elite-member-card .depth-logo {
+            transform: translateZ(25px);
+        }
+        .elite-member-card .depth-crown {
+            transform: translateZ(35px);
+        }
+        .elite-member-card .depth-number {
+            transform: translateZ(30px);
+        }
+        .elite-member-card .depth-details {
+            transform: translateZ(20px);
+        }
+
+        .card-glare {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            mix-blend-mode: overlay;
+            z-index: 2;
+        }
+    </style>
+}
+
+<div class="cp-shell-content">
+    
+    <!-- Page Header -->
+    <div style="margin-bottom:2rem;">
+        <h2 style="font-size:1.6rem;font-weight:800;color:var(--text-light);margin:0 0 0.25rem; display:flex; align-items:center; gap:0.5rem;">
+            <i class="fa-solid fa-crown" style="color:#E2E800; text-shadow:0 0 10px rgba(226,232,0,0.5);"></i>
+            SRC Elite Membership
+        </h2>
+        <p style="color:var(--text-muted);font-size:0.875rem;margin:0;">
+            Elevate your travel experience with exclusive rewards, lounge access, and double points.
+        </p>
+    </div>
+
+    @if (!ViewBag.IsElite)
+    {
+        <!-- INACTIVE MEMBERSHIP VIEW -->
+        <div style="max-w: 800px; margin: 0 auto; text-align: center; padding: 3rem 1.5rem;" class="cp-card">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(226, 232, 0, 0.1); border: 2px solid #E2E800; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; box-shadow: 0 0 20px rgba(226, 232, 0, 0.3);">
+                <i class="fa-solid fa-star" style="font-size: 2.2rem; color: #E2E800;"></i>
+            </div>
+            
+            <h1 style="font-size: 2.2rem; font-weight: 800; color: #F3F4F6; margin-bottom: 1rem; letter-spacing: -0.03em;">
+                Join <span style="color: #E2E800;">SRC Elite</span> Today
+            </h1>
+            <p style="color: #9CA3AF; font-size: 1.1rem; line-height: 1.6; max-width: 550px; margin: 0 auto 3rem;">
+                Unlock our exclusive premium loyalty program. Earn points on every journey, get priority boarding, and enjoy complimentary lounge access at major terminals.
+            </p>
+
+            <!-- Perks Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; text-align: left; margin-bottom: 4rem;">
+                <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; display: flex; gap: 1rem; align-items: flex-start;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(226, 232, 0, 0.1); border: 1px solid rgba(226, 232, 0, 0.3); display: flex; align-items: center; justify-content: center; color: #E2E800; flex-shrink: 0;">
+                        <i class="fa-solid fa-gem"></i>
+                    </div>
+                    <div>
+                        <h4 style="font-weight: 700; color: #F3F4F6; margin: 0 0 0.25rem; font-size: 0.95rem;">Double Points</h4>
+                        <p style="font-size: 0.8rem; color: #9CA3AF; margin: 0; line-height: 1.4;">Earn points at 2x the standard rate on all ticket bookings.</p>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; display: flex; gap: 1rem; align-items: flex-start;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(147, 51, 234, 0.1); border: 1px solid rgba(147, 51, 234, 0.3); display: flex; align-items: center; justify-content: center; color: #A855F7; flex-shrink: 0;">
+                        <i class="fa-solid fa-couch"></i>
+                    </div>
+                    <div>
+                        <h4 style="font-weight: 700; color: #F3F4F6; margin: 0 0 0.25rem; font-size: 0.95rem;">Priority Seats</h4>
+                        <p style="font-size: 0.8rem; color: #9CA3AF; margin: 0; line-height: 1.4;">Select preferred rows and window seats at no extra charge.</p>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; display: flex; gap: 1rem; align-items: flex-start;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); display: flex; align-items: center; justify-content: center; color: #3B82F6; flex-shrink: 0;">
+                        <i class="fa-solid fa-mug-hot"></i>
+                    </div>
+                    <div>
+                        <h4 style="font-weight: 700; color: #F3F4F6; margin: 0 0 0.25rem; font-size: 0.95rem;">Lounge Access</h4>
+                        <p style="font-size: 0.8rem; color: #9CA3AF; margin: 0; line-height: 1.4;">Complimentary access to VIP lounges at major bus terminals.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activation button -->
+            <form id="activate-form" style="display: inline-block;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="cp-btn" style="background:#E2E800; color:#141414; font-weight:800; font-size:1.1rem; padding:1rem 3rem; border:none; border-radius:50px; cursor:pointer; display:flex; align-items:center; gap:0.75rem; box-shadow:0 10px 25px rgba(226,232,0,0.3); transition:all 0.3s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 15px 30px rgba(226,232,0,0.5)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px rgba(226,232,0,0.3)';">
+                    <i class="fa-solid fa-circle-check"></i> Activate My Elite Membership
+                </button>
+            </form>
+            <p style="font-size: 0.8rem; color: #9CA3AF; margin-top: 1rem;">
+                <i class="fa-solid fa-gift" style="color:#E2E800; margin-right:4px;"></i> Activate now to get a **500 Loyalty Points** welcome bonus instantly!
+            </p>
+        </div>
+    }
+    else
+    {
+        <!-- ACTIVE MEMBERSHIP VIEW -->
+        <div class="elite-grid">
+            
+            <!-- LEFT COLUMN: Virtual Card & Points -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem; align-items: center;">
+                <!-- Glowing Member Card -->
+                <div class="elite-card-container">
+                    <div class="elite-member-card">
+                        <div class="card-glare"></div>
+                        <!-- Glowing blob background -->
+                        <div style="position: absolute; top: -50px; right: -50px; width: 180px; height: 180px; background: radial-gradient(circle, rgba(226, 232, 0, 0.15) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
+                        
+                        <div class="depth-logo" style="display:flex; justify-content:space-between; align-items:flex-start; z-index:1; width: 100%;">
+                            <div>
+                                <div style="font-weight: 800; font-size: 1.25rem; color: #F3F4F6; letter-spacing: -0.02em;">
+                                    SRC <span style="color: #E2E800;">ELITE</span>
+                                </div>
+                                <div style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.15em; color: #9CA3AF; margin-top: 2px;">
+                                    Loyalty Member Card
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-crown depth-crown" style="font-size: 2rem; color: #E2E800; filter: drop-shadow(0 0 8px rgba(226,232,0,0.6));"></i>
+                        </div>
+
+                        <div class="depth-details" style="z-index:1; width: 100%;">
+                            <div class="depth-number" style="font-family: monospace; font-size: 1.25rem; letter-spacing: 0.15em; color: #F3F4F6; text-shadow: 0 2px 4px rgba(0,0,0,0.8); margin-bottom: 0.75rem;">
+                                SRC-EL-@(Model.Id.ToString("D5"))
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                                <div>
+                                    <span style="font-size:0.6rem; text-transform:uppercase; color:#9CA3AF; display:block; letter-spacing:0.05em; margin-bottom:2px;">Cardholder</span>
+                                    <span style="font-weight:700; color:#F3F4F6; font-size:0.9rem; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">@Model.FullName</span>
+                                </div>
+                                <div style="text-align:right;">
+                                    <span style="font-size:0.6rem; text-transform:uppercase; color:#9CA3AF; display:block; letter-spacing:0.05em; margin-bottom:2px;">Member Since</span>
+                                    <span style="font-weight:700; color:#F3F4F6; font-size:0.8rem;">@(Model.EliteJoinDate?.ToString("MMM yyyy") ?? DateTime.UtcNow.ToString("MMM yyyy"))</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Points Balance Board -->
+                <div class="cp-card" style="padding: 1.5rem; text-align: center; border-color: rgba(226, 232, 0, 0.25);">
+                    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);">Points Balance</span>
+                    <div style="font-size: 3rem; font-weight: 900; color: #E2E800; margin: 0.5rem 0; text-shadow: 0 0 15px rgba(226,232,0,0.3);" id="loyalty-pts">
+                        @ViewBag.LoyaltyPoints
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0; line-height: 1.5;">
+                        <i class="fa-solid fa-circle-info" style="color:#E2E800; margin-right:4px;"></i> You are currently earning **Double Points (10% of total fare)** on every booking request!
+                    </p>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Redemption Center -->
+            <div class="cp-card" style="padding: 1.5rem;">
+                <div class="cp-card-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                    <div class="cp-card-title"><i class="fa-solid fa-gift" style="color:#E2E800;"></i> Loyalty Voucher Rewards</div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <!-- Reward 1 -->
+                    <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s;" onmouseover="this.style.borderColor='rgba(226,232,0,0.3)';" onmouseout="this.style.borderColor='var(--border-color)';">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <div style="width: 50px; height: 50px; border-radius: 10px; background: rgba(226, 232, 0, 0.1); border: 1px solid rgba(226, 232, 0, 0.2); display: flex; flex-direction: column; justify-content: center; align-items: center; color: #E2E800; font-weight: 800; font-size: 0.65rem;">
+                                <i class="fa-solid fa-tags" style="font-size: 1rem; margin-bottom: 2px;"></i>
+                                PKR 200
+                            </div>
+                            <div>
+                                <h4 style="margin:0 0 0.15rem; font-weight:700; color:#F3F4F6;">PKR 200 Ticket Voucher</h4>
+                                <span style="font-size:0.75rem; color:#E2E800; font-weight:600;"><i class="fa-solid fa-coins"></i> 500 Loyalty Points</span>
+                            </div>
+                        </div>
+                        <button onclick="redeemVoucher(1, 500)" class="cp-btn cp-btn-primary" style="background:#E2E800; color:#141414; border:none; padding:0.5rem 1.25rem; font-size:0.8rem; border-radius:8px; font-weight:700; cursor:pointer;">
+                            Redeem
+                        </button>
+                    </div>
+
+                    <!-- Reward 2 -->
+                    <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s;" onmouseover="this.style.borderColor='rgba(226,232,0,0.3)';" onmouseout="this.style.borderColor='var(--border-color)';">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <div style="width: 50px; height: 50px; border-radius: 10px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.2); display: flex; flex-direction: column; justify-content: center; align-items: center; color: #A855F7; font-weight: 800; font-size: 0.65rem;">
+                                <i class="fa-solid fa-tags" style="font-size: 1rem; margin-bottom: 2px;"></i>
+                                PKR 500
+                            </div>
+                            <div>
+                                <h4 style="margin:0 0 0.15rem; font-weight:700; color:#F3F4F6;">PKR 500 Ticket Voucher</h4>
+                                <span style="font-size:0.75rem; color:#A855F7; font-weight:600;"><i class="fa-solid fa-coins"></i> 1000 Loyalty Points</span>
+                            </div>
+                        </div>
+                        <button onclick="redeemVoucher(2, 1000)" class="cp-btn cp-btn-primary" style="background:#A855F7; color:#fff; border:none; padding:0.5rem 1.25rem; font-size:0.8rem; border-radius:8px; font-weight:700; cursor:pointer;">
+                            Redeem
+                        </button>
+                    </div>
+
+                    <!-- Reward 3 -->
+                    <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; transition: border-color 0.2s;" onmouseover="this.style.borderColor='rgba(226,232,0,0.3)';" onmouseout="this.style.borderColor='var(--border-color)';">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <div style="width: 50px; height: 50px; border-radius: 10px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); display: flex; flex-direction: column; justify-content: center; align-items: center; color: #3B82F6; font-weight: 800; font-size: 0.65rem;">
+                                <i class="fa-solid fa-tags" style="font-size: 1rem; margin-bottom: 2px;"></i>
+                                PKR 1000
+                            </div>
+                            <div>
+                                <h4 style="margin:0 0 0.15rem; font-weight:700; color:#F3F4F6;">PKR 1000 Ticket Voucher</h4>
+                                <span style="font-size:0.75rem; color:#3B82F6; font-weight:600;"><i class="fa-solid fa-coins"></i> 1800 Loyalty Points</span>
+                            </div>
+                        </div>
+                        <button onclick="redeemVoucher(3, 1800)" class="cp-btn cp-btn-primary" style="background:#3B82F6; color:#fff; border:none; padding:0.5rem 1.25rem; font-size:0.8rem; border-radius:8px; font-weight:700; cursor:pointer;">
+                            Redeem
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- MY ACTIVE VOUCHERS LEDGER -->
+        <div class="cp-card" style="margin-bottom: 2rem;">
+            <div class="cp-card-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                <div class="cp-card-title"><i class="fa-solid fa-ticket-simple" style="color:#E2E800;"></i> Active Vouchers</div>
+            </div>
+            
+            <div style="padding:0 1.25rem 1.25rem;">
+                @if (unusedVouchers.Any())
+                {
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem;">
+                        @foreach (var v in unusedVouchers)
+                        {
+                            <div style="background:#222222; border:1px solid #333333; border-radius:12px; padding:1rem; display:flex; flex-direction:column; justify-content:space-between; gap:0.5rem; position:relative; overflow:hidden;">
+                                <!-- Glowing green line -->
+                                <div style="position:absolute; left:0; top:0; bottom:0; width:4px; background:#10B981;"></div>
+                                
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; padding-left:0.5rem;">
+                                    <div>
+                                        <span style="font-family:monospace; color:#E2E800; font-weight:700; font-size:1.05rem;">@v.Code</span>
+                                        <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:2px;">Redeemed @v.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                    </div>
+                                    <span style="background:rgba(16,185,129,0.15); color:#10B981; font-weight:800; font-size:0.75rem; padding:0.2rem 0.5rem; border-radius:6px; text-transform:uppercase;">
+                                        Unused
+                                    </span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #333333; padding-top:0.5rem; margin-top:0.25rem; padding-left:0.5rem;">
+                                    <span style="font-size:0.8rem; color:var(--text-muted);">Discount Value</span>
+                                    <span style="font-weight:800; color:#10B981;">PKR @v.DiscountAmount</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div style="text-align:center; padding:2rem 0; color:var(--text-muted);">
+                        <i class="fa-solid fa-tags" style="font-size:2rem; color:#333333; margin-bottom:0.75rem; display:block;"></i>
+                        No active vouchers. Redeem points above to generate a ticket discount code!
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- HISTORY LEDGER -->
+        <div class="cp-card">
+            <div class="cp-card-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                <div class="cp-card-title"><i class="fa-solid fa-history"></i> Loyalty Rewards History</div>
+            </div>
+            
+            <div style="padding:0 1.25rem 1.25rem;">
+                @if (usedVouchers.Any())
+                {
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.875rem;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--border-color); color:var(--text-muted);">
+                                    <th style="padding:0.75rem 0.5rem; font-weight:600;">Voucher Code</th>
+                                    <th style="padding:0.75rem 0.5rem; font-weight:600;">Value</th>
+                                    <th style="padding:0.75rem 0.5rem; font-weight:600;">Points Redeemed</th>
+                                    <th style="padding:0.75rem 0.5rem; font-weight:600;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var v in usedVouchers)
+                                {
+                                    <tr style="border-bottom: 1px solid #222222; color:var(--text-light);">
+                                        <td style="padding:0.75rem 0.5rem; font-family:monospace; font-weight:600; color:#9CA3AF;">@v.Code</td>
+                                        <td style="padding:0.75rem 0.5rem; font-weight:700; color:#EF4444;">PKR @v.DiscountAmount</td>
+                                        <td style="padding:0.75rem 0.5rem;">@v.PointsCost pts</td>
+                                        <td style="padding:0.75rem 0.5rem;">
+                                            <span style="background:rgba(239,68,68,0.15); color:#EF4444; font-weight:700; font-size:0.75rem; padding:0.15rem 0.4rem; border-radius:4px; text-transform:uppercase;">
+                                                Applied
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p style="text-align:center; padding:1rem 0; color:var(--text-muted); margin:0;">No voucher usage history.</p>
+                }
+            </div>
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+<script>
+    // ── AJAX ACTIVATION ────────────────────────────
+    const actForm = document.getElementById('activate-form');
+    if (actForm) {
+        actForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const response = await fetch('/Customer/ActivateElite', {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Congratulations! 🎉',
+                        text: result.message,
+                        background: '#222222',
+                        color: '#F3F4F6',
+                        confirmButtonColor: '#E2E800'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: result.message,
+                        background: '#222222',
+                        color: '#F3F4F6',
+                        confirmButtonColor: '#E2E800'
+                    });
+                }
+            } catch(err) {
+                console.error(err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An unexpected error occurred. Please try again.',
+                    background: '#222222',
+                    color: '#F3F4F6',
+                    confirmButtonColor: '#E2E800'
+                });
+            }
+        });
+    }
+
+    // ── AJAX REDEMPTION ────────────────────────────
+    async function redeemVoucher(type, cost) {
+        const confirmRes = await Swal.fire({
+            title: 'Redeem Voucher?',
+            text: `Are you sure you want to exchange ${cost} loyalty points for this voucher?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#E2E800',
+            cancelButtonColor: '#ef4444',
+            confirmButtonText: 'Yes, Redeem!',
+            background: '#222222',
+            color: '#F3F4F6'
+        });
+
+        if (!confirmRes.isConfirmed) return;
+
+        try {
+            const tokenEl = document.querySelector('input[name="__RequestVerificationToken"]');
+            const tokenVal = tokenEl ? tokenEl.value : '';
+            
+            const formData = new FormData();
+            formData.append('voucherType', type);
+            if (tokenVal) {
+                formData.append('__RequestVerificationToken', tokenVal);
+            }
+
+            const response = await fetch('/Customer/RedeemVoucher', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Voucher Redeemed! 🏷️',
+                    html: `<p>${result.message}</p><p style="margin-top:1rem; font-size:1.1rem; font-weight:800;">Code: <span style="font-family:monospace; color:#E2E800; border:1px dashed #E2E800; padding:0.25rem 0.5rem; border-radius:4px;">${result.code}</span></p>`,
+                    background: '#222222',
+                    color: '#F3F4F6',
+                    confirmButtonColor: '#E2E800'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Redemption Failed',
+                    text: result.message,
+                    background: '#222222',
+                    color: '#F3F4F6',
+                    confirmButtonColor: '#E2E800'
+                });
+            }
+        } catch(err) {
+            console.error(err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An unexpected error occurred. Please try again.',
+                background: '#222222',
+                color: '#F3F4F6',
+                confirmButtonColor: '#E2E800'
+            });
+        }
+    }
+
+    // ── MAGNET HOVER EFFECT FOR ELITE CARD ────────────────────
+    const eliteCard = document.querySelector('.elite-member-card');
+    if (eliteCard) {
+        const glare = eliteCard.querySelector('.card-glare');
+        
+        eliteCard.addEventListener('mousemove', function(e) {
+            const rect = eliteCard.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+            
+            // 3D rotation based on mouse position
+            const rotateX = -y * 0.12;
+            const rotateY = x * 0.12;
+            
+            // Translate slightly towards cursor (magnetic effect)
+            const transX = x * 0.06;
+            const transY = y * 0.06;
+            
+            eliteCard.style.transform = `rotateY(${rotateY}deg) rotateX(${rotateX}deg) translate3d(${transX}px, ${transY}px, 15px) scale(1.05)`;
+            eliteCard.style.boxShadow = `0 30px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(226, 232, 0, 0.35), ${-x * 0.2}px ${-y * 0.2}px 30px rgba(226, 232, 0, 0.1)`;
+            
+            if (glare) {
+                glare.style.opacity = '1';
+                const mouseXPct = ((e.clientX - rect.left) / rect.width) * 100;
+                const mouseYPct = ((e.clientY - rect.top) / rect.height) * 100;
+                glare.style.background = `radial-gradient(circle at ${mouseXPct}% ${mouseYPct}%, rgba(255, 255, 255, 0.25) 0%, transparent 60%)`;
+            }
+        });
+        
+        eliteCard.addEventListener('mouseleave', function() {
+            eliteCard.style.transform = 'rotateY(0deg) rotateX(0deg) translate3d(0, 0, 0) scale(1)';
+            eliteCard.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.5), 0 0 25px rgba(226, 232, 0, 0.15)';
+            if (glare) {
+                glare.style.opacity = '0';
+            }
+        });
+    }
+</script>
+}
