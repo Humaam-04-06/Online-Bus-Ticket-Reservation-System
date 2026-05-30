@@ -247,6 +247,43 @@
             chevron.style.transform = 'rotate(0)';
         });
 
+        // AJAX mark all notifications read
+        const markReadForm = document.querySelector('.cp-notif-dd-header form');
+        markReadForm?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const response = await fetch('/Customer/MarkNotificationsRead', {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Update badge
+                    const badge = document.getElementById('cp-notif-badge');
+                    if (badge) badge.remove();
+                    
+                    // Mark all notification items as read
+                    document.querySelectorAll('.cp-notif-dd-item.unread').forEach(item => {
+                        item.classList.remove('unread');
+                        const dot = item.querySelector('.cp-notif-dot');
+                        if (dot) {
+                            dot.classList.remove('pending');
+                            dot.classList.add('grey');
+                        }
+                    });
+                    
+                    // Remove the "Mark all read" form
+                    markReadForm.remove();
+                }
+            } catch (err) {
+                console.error('Failed to mark notifications as read:', err);
+            }
+        });
+
         // Close both dropdowns when clicking outside
         document.addEventListener('click', () => {
             dropdown?.classList.remove('open');
