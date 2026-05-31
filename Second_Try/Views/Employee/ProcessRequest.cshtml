@@ -265,8 +265,8 @@
                         </label>
                         <input type="number" name="totalFare" id="total-fare" class="pr-input"
                                style="background-color: #1a1a1a; color: #a0a0a0; cursor: not-allowed;"
-                               min="0.01" step="0.01" placeholder="e.g. 2500" required readonly
-                               value="@(ViewBag.CalculatedFare != null && ViewBag.CalculatedFare > 0 ? ViewBag.CalculatedFare : "")" />
+                               min="0.00" step="0.01" placeholder="e.g. 2500" required readonly
+                               value="@(ViewBag.CalculatedFare != null ? ((decimal)ViewBag.CalculatedFare).ToString("F2") : "")" />
                         <span class="pr-hint" id="fare-calc-hint" style="margin-top:0.4rem; display:block; font-size:0.75rem; color:var(--text-muted);">
                             Calculation: <span id="hint-seat-count">@Model.NumberOfSeats</span> seat(s) &times; PKR @(((decimal)ViewBag.BaseFarePerSeat).ToString("N0")) 
                             <span id="hint-discount-section" style="display:none;"> - PKR <span id="hint-discount-val">0</span> (Voucher)</span>
@@ -426,7 +426,9 @@
                 return;
             }
 
-            if (isNaN(fareVal) || fareVal <= 0) {
+            const hasVoucher = '@(Model.AppliedVoucherId.HasValue && Model.AppliedVoucherId.Value > 0 ? "true" : "false")' === 'true';
+
+            if (isNaN(fareVal) || fareVal < 0 || (fareVal === 0 && !hasVoucher)) {
                 e.preventDefault();
                 Swal.fire({
                     icon: 'warning',
