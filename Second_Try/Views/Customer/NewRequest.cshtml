@@ -140,8 +140,8 @@
                                     <option value="" data-discount="0">— No Voucher Applied —</option>
                                     @foreach (var v in activeVouchers)
                                     {
-                                        <option value="@v.Id" data-discount="@v.DiscountAmount">
-                                            @v.Code (PKR @v.DiscountAmount Off)
+                                        <option value="@v.Id" data-discount="@v.DiscountAmount" data-minfare="@v.MinimumFareRequired">
+                                            @v.Code (PKR @v.DiscountAmount Off) @(v.MinimumFareRequired > 0 ? $"· Min Fare: PKR {v.MinimumFareRequired:N0}" : "")
                                         </option>
                                     }
                                 </select>
@@ -276,8 +276,19 @@
 
         const voucherSelect = document.getElementById('voucher-select');
         const selectedOpt = voucherSelect ? voucherSelect.options[voucherSelect.selectedIndex] : null;
-        const discount = (selectedOpt && count > 0) ? parseFloat(selectedOpt.getAttribute('data-discount')) || 0 : 0;
-        const voucherId = (selectedOpt && count > 0) ? selectedOpt.value : "";
+        let discount = 0;
+        let voucherId = "";
+
+        if (selectedOpt && count > 0 && selectedOpt.value !== "") {
+            const minFare = parseFloat(selectedOpt.getAttribute('data-minfare')) || 0;
+            if (subtotal < minFare) {
+                showToast(`This voucher requires a minimum total fare of PKR ${minFare.toLocaleString()}. Your current trip subtotal is PKR ${subtotal.toLocaleString()}.`, 'warning');
+                voucherSelect.value = "";
+            } else {
+                discount = parseFloat(selectedOpt.getAttribute('data-discount')) || 0;
+                voucherId = selectedOpt.value;
+            }
+        }
         const total = Math.max(0, subtotal - discount);
 
         if (document.getElementById('subtotal-val')) document.getElementById('subtotal-val').textContent = subtotal.toLocaleString();

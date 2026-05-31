@@ -301,6 +301,13 @@
                                     <span style="font-size:0.8rem; color:var(--text-muted);">Discount Value</span>
                                     <span style="font-weight:800; color:#10B981;">PKR @v.DiscountAmount</span>
                                 </div>
+                                @if (v.MinimumFareRequired > 0)
+                                {
+                                    <div style="display:flex; justify-content:space-between; align-items:center; padding-left:0.5rem; font-size:0.75rem; margin-top:0.25rem;">
+                                        <span style="color:var(--text-muted);">Min Trip Fare</span>
+                                        <span style="font-weight:600; color:#F3F4F6;">PKR @v.MinimumFareRequired.ToString("N0")</span>
+                                    </div>
+                                }
                             </div>
                         }
                     </div>

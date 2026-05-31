@@ -277,10 +277,74 @@ namespace Second_Try.Controllers
             // Validate Applied Voucher
             if (AppliedVoucherId.HasValue && AppliedVoucherId.Value > 0)
             {
-                var isVoucherValid = await _context.Vouchers.AnyAsync(v => v.Id == AppliedVoucherId.Value && v.CustomerId == customer.Id && !v.IsUsed);
-                if (!isVoucherValid)
+                var voucher = await _context.Vouchers.FirstOrDefaultAsync(v => v.Id == AppliedVoucherId.Value && v.CustomerId == customer.Id && !v.IsUsed);
+                if (voucher == null)
                 {
                     AppliedVoucherId = null;
+                }
+                else
+                {
+                    // Calculate trip fare to validate minimum fare requirement
+                    var price = await _context.PriceLists.FirstOrDefaultAsync(p => p.RouteId == RouteId.Value && p.BusType == PreferredBusType);
+                    decimal baseFarePerSeat = price != null ? price.FareAmount : 0;
+                    if (baseFarePerSeat <= 0)
+                    {
+                        var route = await _context.Routes.FindAsync(RouteId.Value);
+                        double duration = route?.EstimatedDurationHours ?? 0;
+                        if (duration > 0)
+                        {
+                            decimal multiplier = PreferredBusType switch
+                            {
+                                BusType.Economy => 400,
+                                BusType.Standard => 600,
+                                BusType.Luxury => 800,
+                                BusType.Express => 1000,
+                                _ => 600
+                            };
+                            baseFarePerSeat = (decimal)Math.Round(duration * (double)multiplier);
+                        }
+                        
+                        if (baseFarePerSeat <= 0)
+                        {
+                            baseFarePerSeat = PreferredBusType switch
+                            {
+                                BusType.Economy => 1000,
+                                BusType.Standard => 1500,
+                                BusType.Luxury => 2500,
+                                BusType.Express => 3000,
+                                _ => 1500
+                            };
+                        }
+                    }
+                    
+                    decimal tripFare = baseFarePerSeat * NumberOfSeats;
+                    if (tripFare < voucher.MinimumFareRequired)
+                    {
+                        ModelState.AddModelError("", $"This voucher ({voucher.Code}) requires a minimum total fare of PKR {voucher.MinimumFareRequired:N0}. Your trip fare is PKR {tripFare:N0}.");
+                        ViewBag.HasActiveRequest = false;
+                        
+                        // Re-fetch active vouchers and pre-selected details to render back to View layout
+                        ViewBag.ActiveVouchers = await _context.Vouchers
+                            .Where(v => v.CustomerId == customer.Id && !v.IsUsed)
+                            .ToListAsync();
+                        if (BusScheduleId.HasValue)
+                        {
+                            var sched = await _context.BusSchedules.Include(s => s.Route).FirstOrDefaultAsync(s => s.Id == BusScheduleId);
+                            if (sched != null)
+                            {
+                                ViewBag.PreOrigin     = sched.Route!.Origin;
+                                ViewBag.PreDest       = sched.Route!.Destination;
+                                ViewBag.PreDate       = TravelDate.ToString("yyyy-MM-dd");
+                                ViewBag.PreBusType    = sched.BusType.ToString();
+                                ViewBag.PreScheduleId = sched.Id;
+                                ViewBag.PreRouteId    = sched.RouteId;
+                                ViewBag.BusType       = sched.BusType;
+                                ViewBag.BaseFare      = baseFarePerSeat;
+                            }
+                        }
+                        SetCommonViewBag(customer);
+                        return View();
+                    }
                 }
             }
 
@@ -788,21 +852,25 @@ namespace Second_Try.Controllers
 
             int pointsCost = 0;
             int discountAmt = 0;
+            int minimumFareRequired = 0;
 
             if (voucherType == 1) // Rs 200 for 500 points
             {
                 pointsCost = 500;
                 discountAmt = 200;
+                minimumFareRequired = 500;
             }
             else if (voucherType == 2) // Rs 500 for 1000 points
             {
                 pointsCost = 1000;
                 discountAmt = 500;
+                minimumFareRequired = 1200;
             }
             else if (voucherType == 3) // Rs 1000 for 1800 points
             {
                 pointsCost = 1800;
                 discountAmt = 1000;
+                minimumFareRequired = 2500;
             }
             else
             {
@@ -827,6 +895,7 @@ namespace Second_Try.Controllers
                 Code = voucherCode,
                 DiscountAmount = discountAmt,
                 PointsCost = pointsCost,
+                MinimumFareRequired = minimumFareRequired,
                 IsUsed = false,
                 CreatedAt = DateTime.UtcNow
             };

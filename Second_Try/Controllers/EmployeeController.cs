@@ -176,7 +176,8 @@ namespace Second_Try.Controllers
                 isUsingFallbackFare = true;
             }
 
-            decimal calculatedFare = baseFarePerSeat * request.NumberOfSeats;
+            decimal discount = request.AppliedVoucher != null ? request.AppliedVoucher.DiscountAmount : 0;
+            decimal calculatedFare = Math.Max(0, baseFarePerSeat * request.NumberOfSeats - discount);
             
             ViewBag.BaseFarePerSeat = baseFarePerSeat;
             ViewBag.IsUsingFallbackFare = isUsingFallbackFare;
@@ -210,7 +211,7 @@ namespace Second_Try.Controllers
                 TempData["ErrorMessage"] = "Seat numbers are required.";
                 return RedirectToAction(nameof(ProcessRequest), new { id = requestId });
             }
-            if (totalFare <= 0)
+            if (totalFare < 0 || (totalFare == 0 && (!appliedVoucherId.HasValue || appliedVoucherId.Value <= 0)))
             {
                 TempData["ErrorMessage"] = "Total fare must be greater than zero.";
                 return RedirectToAction(nameof(ProcessRequest), new { id = requestId });
@@ -233,6 +234,12 @@ namespace Second_Try.Controllers
                 var voucher = await _context.Vouchers.FirstOrDefaultAsync(v => v.Id == appliedVoucherId.Value && v.CustomerId == request.CustomerId && !v.IsUsed);
                 if (voucher != null)
                 {
+                    decimal fareBeforeDiscount = totalFare + voucher.DiscountAmount;
+                    if (fareBeforeDiscount < voucher.MinimumFareRequired)
+                    {
+                        TempData["ErrorMessage"] = $"Voucher {voucher.Code} requires a minimum fare of PKR {voucher.MinimumFareRequired:N0}.";
+                        return RedirectToAction(nameof(ProcessRequest), new { id = requestId });
+                    }
                     voucher.IsUsed = true;
                 }
             }
@@ -266,8 +273,9 @@ namespace Second_Try.Controllers
 
             _context.Bookings.Add(booking);
 
-            // Update request status
+            // Update request status and seat numbers to release any orphaned seats
             request.Status = BookingRequestStatus.Accepted;
+            request.SelectedSeatNumbers = seatNumbers.Trim();
 
             // Write notification to customer
             _context.Notifications.Add(new Notification

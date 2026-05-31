@@ -21,6 +21,9 @@ namespace Second_Try.Models
         [Required]
         public int PointsCost { get; set; }
 
+        [Required]
+        public int MinimumFareRequired { get; set; } = 0;
+
         public bool IsUsed { get; set; } = false;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
