@@ -17,16 +17,17 @@ The Admin Portal is the central nervous system of the SRCTravel platform. It pro
 - **Tracking**: Assign unique license plates and seating capacities.
 
 ### 3. 🗺️ Routes & Pricing
-- **Network Mapping**: Create origin and destination pairs.
+- **Network Mapping**: Create origin and destination pairs with automated trip duration estimation based on coordinates distance formula.
 - **Dynamic Pricing**: Set specific fares for different bus classes on each route.
 
 ### 4. ⏰ Advanced Scheduling
-- **Time Management**: Set precise Departure and Arrival times.
+- **Time Management**: Set precise Departure and Arrival times. Requires a minimum arrival gap limit of at least 30 minutes.
 - **Schedule Toggle**: Activate or deactivate specific bus runs without deleting them.
 
 ### 5. 📊 Reports & Analytics
 - **Financial Tracking**: View total revenue and monthly earnings.
 - **Booking Trends**: Analyze data through visual stat cards and historical logs.
+- **PDF Exporter**: Exclude redundant elements and download high-contrast landscape PDF layouts of booking histories and metrics directly in-browser.
 
 ---
 

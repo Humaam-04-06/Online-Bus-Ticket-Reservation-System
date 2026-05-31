@@ -20,8 +20,14 @@ The Customer Portal is a premium traveler's dashboard. It provides a seamless in
 - **Status Tracking**: Live tracking of requests through four states: `Pending`, `Accepted`, `Rejected`, and `Expired`.
 - **Filtering**: Quick filters to sort through your travel history.
 - **Cancellation**: Ability to cancel pending requests if plans change.
+- **PDF Export**: Generate clean formatted PDF document grids of requests history logs.
 
-### 4. 🖼️ Profile & Personalization
+### 4. 💎 "SRC Elite" Loyalty Rewards
+- **Membership**: Opt-in to receive a welcome bonus of 500 points and access a high-performance 3D magnetic hover card.
+- **Points Accumulation**: Earn points on regular rides (5%) and double points (10%) once Elite membership is active.
+- **Redemption**: Convert points to ticket vouchers (PKR 200, 500, or 1,000) that carry minimum fare limits (Min PKR 500, 1,200, or 2,500) to keep usage realistic.
+
+### 5. 🖼️ Profile & Personalization
 - **Dynamic Avatars**: Upload and update profile pictures.
 - **Banner Customization**: Set a custom cover photo for your profile.
 - **Security**: Update account details and passwords.

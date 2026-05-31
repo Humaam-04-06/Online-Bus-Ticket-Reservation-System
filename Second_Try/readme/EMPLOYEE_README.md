@@ -14,7 +14,9 @@ The Employee Portal is an operational hub designed for efficiency. Employees use
 ### 2. ⚡ Request Processing
 - **Review System**: Detailed view of customer booking details (Route, Date, Bus Type).
 - **Decision Engine**: Single-click "Accept" or "Reject" actions.
-- **Automation**: Accepting a request automatically generates a formal booking record and notifies the customer.
+- **Seat Conflict Resolution**: Accepting a request auto-cancels other overlapping pending requests requesting the same seats on the same schedule/date.
+- **Seat Sync & Release**: If the employee alters seat numbers from the user's initial selection, original requested seats are automatically released so they don't block the seat map.
+- **Auto-Calculated Fares**: System locks fare fields and dynamically calculates totals (number of assigned seats * base route fare, minus pre-applied customer voucher discounts). Prevents employee voucher alteration.
 
 ### 3. 🎫 Digital Ticketing
 - **Ticket Generation**: Instant HTML ticket creation for every accepted booking.
@@ -23,6 +25,7 @@ The Employee Portal is an operational hub designed for efficiency. Employees use
 ### 4. 📜 Booking History
 - **Audit Trail**: A complete, searchable log of all past bookings processed by the system.
 - **Status Tracking**: Filter by Completed, Accepted, or Rejected statuses.
+- **Landscape PDF Exports**: Download fully structured layout grids of booking logs.
 
 ---
 

@@ -29,12 +29,14 @@ The public-facing side of SRCTravel is built to WOW users. It combines high-perf
 
 ## 🛠️ How It Works
 - **GSAP & ScrollTrigger**: The landing page uses the GSAP library to track scroll progress and trigger animations based on the user's position.
-- **Tailwind CSS**: Fast, utility-first styling ensures consistent spacing and colors across all public pages.
-- **JavaScript Query Handling**: The Login page uses `URLSearchParams` to detect if a user wants to register or log in and adjusts the UI accordingly.
+- **Compiled Tailwind CSS Styles**: Replaced Play CDN with local static compilation (`wwwroot/css/public.css`) to improve page load speed, bypass DOM layout shifts, and eliminate in-browser JIT overhead.
+- **JavaScript Query & Redirection Handling**: The Login page uses `URLSearchParams` to toggle sliding panels on page load (e.g. `?register=true`) and supports returning parameters (`returnUrl`) to direct users to modules (e.g., the Elite Rewards Center) after authentication.
 
 ---
 
 ## 🎨 Visual Identity
-- **Backgrounds**: Deep blacks and midnight blues (`#02040A`).
-- **Accents**: Neon Cyan (`#00D1FF`) and Electric Purple.
-- **Typography**: The **Inter** font family provides a clean, modern, and professional look.
+- **Theme**: Urban Nocturne (Premium Dark Mode)
+- **Backgrounds**: Obsidian Black (`#141414`) and Charcoal Card panels (`#222222`).
+- **Accents**: Neon Lime Green (`#E2E800`).
+- **Alert Controls**: Standardized SweetAlert2 alert panels configured in deep charcoal background and neon lime green buttons.
+- **Typography**: The **Inter** and **Outfit** font families provide a clean, modern, and professional look.
