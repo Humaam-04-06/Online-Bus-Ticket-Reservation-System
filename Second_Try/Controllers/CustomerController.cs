@@ -240,6 +240,13 @@ namespace Second_Try.Controllers
                 }
                 RouteId = r.Id;
             }
+            if (TravelDate.Date < DateTime.Today)
+            {
+                ModelState.AddModelError("", "Travel date cannot be in the past.");
+                ViewBag.HasActiveRequest = false;
+                return View();
+            }
+
             if (string.IsNullOrWhiteSpace(SelectedSeatNumbers))
             {
                 ModelState.AddModelError("", "Please select at least one seat.");
@@ -249,6 +256,13 @@ namespace Second_Try.Controllers
 
             // Backend Double-Booking Validation
             var requestedSeats = SelectedSeatNumbers.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+
+            if (requestedSeats.Count != NumberOfSeats)
+            {
+                ModelState.AddModelError("", "Selected seat count does not match the requested number of seats.");
+                ViewBag.HasActiveRequest = false;
+                return View();
+            }
             
             var alreadyBooked = await _context.BookingRequests
                 .Where(r => r.BusScheduleId == BusScheduleId
