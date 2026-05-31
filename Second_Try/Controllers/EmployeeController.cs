@@ -234,6 +234,12 @@ namespace Second_Try.Controllers
                 var voucher = await _context.Vouchers.FirstOrDefaultAsync(v => v.Id == appliedVoucherId.Value && v.CustomerId == request.CustomerId && !v.IsUsed);
                 if (voucher != null)
                 {
+                    decimal fareBeforeDiscount = totalFare + voucher.DiscountAmount;
+                    if (fareBeforeDiscount < voucher.MinimumFareRequired)
+                    {
+                        TempData["ErrorMessage"] = $"Voucher {voucher.Code} requires a minimum fare of PKR {voucher.MinimumFareRequired:N0}.";
+                        return RedirectToAction(nameof(ProcessRequest), new { id = requestId });
+                    }
                     voucher.IsUsed = true;
                 }
             }
