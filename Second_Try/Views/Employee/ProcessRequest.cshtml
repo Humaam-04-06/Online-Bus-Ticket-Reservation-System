@@ -228,25 +228,24 @@
                         <span class="pr-hint">Customer selected: @(string.IsNullOrEmpty(Model.SelectedSeatNumbers) ? "None" : Model.SelectedSeatNumbers)</span>
                     </div>
 
-                    @if (Model.Customer?.IsElite == true || Model.AppliedVoucherId != null)
-                    {
-                        var activeVouchers = ViewBag.ActiveVouchers as List<Voucher> ?? new List<Voucher>();
-                        if (activeVouchers.Any())
+                    <!-- Applied Voucher (Read-Only) -->
+                    <input type="hidden" name="appliedVoucherId" value="@Model.AppliedVoucherId" />
+                    <div class="pr-form-group">
+                        <label class="pr-label">Applied Discount Voucher</label>
+                        @if (Model.AppliedVoucher != null)
                         {
-                            <div class="pr-form-group">
-                                <label class="pr-label">Apply Discount Voucher</label>
-                                <select name="appliedVoucherId" class="pr-select" id="voucher-select">
-                                    <option value="" data-discount="0">— No Voucher Applied —</option>
-                                    @foreach (var v in activeVouchers)
-                                    {
-                                        <option value="@v.Id" data-discount="@v.DiscountAmount" selected="@(Model.AppliedVoucherId == v.Id ? "selected" : null)">
-                                            @v.Code (PKR @v.DiscountAmount Off)
-                                        </option>
-                                    }
-                                </select>
+                            <div style="background: rgba(226, 232, 0, 0.05); border: 1px solid rgba(226, 232, 0, 0.25); border-radius: 8px; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem; color: #E2E800; font-weight: 700; font-size: 0.9rem;">
+                                <i class="fa-solid fa-ticket-simple" style="font-size: 1.1rem;"></i>
+                                <span>@Model.AppliedVoucher.Code (PKR @Model.AppliedVoucher.DiscountAmount Off)</span>
                             </div>
                         }
-                    }
+                        else
+                        {
+                            <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem 1rem; color: var(--text-muted); font-size: 0.875rem;">
+                                <i class="fa-solid fa-ticket-simple" style="margin-right: 0.5rem; color: var(--text-muted);"></i> No Voucher Applied
+                            </div>
+                        }
+                    </div>
 
                     <div class="pr-form-group">
                         <label class="pr-label">
@@ -352,10 +351,10 @@
 <script>
     // Auto-calculate fare based on seat count and voucher discount
     const fareInput  = document.getElementById('total-fare');
-    const voucherSelect = document.getElementById('voucher-select');
     const seatInput = document.getElementById('seat-numbers');
 
     const baseFarePerSeat = parseFloat('@(ViewBag.BaseFarePerSeat ?? 0)');
+    const discount = parseFloat('@(Model.AppliedVoucher?.DiscountAmount ?? 0)');
 
     function calculateTotalFare() {
         if (!fareInput) return;
@@ -368,18 +367,11 @@
         // 2. Subtotal
         const subtotal = seatCount * baseFarePerSeat;
 
-        // 3. Discount
-        let discount = 0;
-        if (voucherSelect) {
-            const selectedOpt = voucherSelect.options[voucherSelect.selectedIndex];
-            discount = parseFloat(selectedOpt?.getAttribute('data-discount')) || 0;
-        }
-
-        // 4. Final Fare
+        // 3. Final Fare
         const finalFare = Math.max(0, subtotal - discount);
         fareInput.value = finalFare.toFixed(2);
 
-        // 5. Update UI Hint
+        // 4. Update UI Hint
         const hintSeatCount = document.getElementById('hint-seat-count');
         const hintDiscountSection = document.getElementById('hint-discount-section');
         const hintDiscountVal = document.getElementById('hint-discount-val');
@@ -397,9 +389,6 @@
 
     // Attach listeners
     seatInput?.addEventListener('input', calculateTotalFare);
-    if (voucherSelect) {
-        voucherSelect.addEventListener('change', calculateTotalFare);
-    }
 
     // Initial calculation on load
     calculateTotalFare();
