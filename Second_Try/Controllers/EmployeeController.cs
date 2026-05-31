@@ -227,6 +227,49 @@ namespace Second_Try.Controllers
                 return RedirectToAction(nameof(BookingRequests));
             }
 
+            // 1. Fetch Bus and validate capacity
+            var bus = await _context.Buses.FindAsync(busId);
+            if (bus == null)
+            {
+                TempData["ErrorMessage"] = "Assigned bus not found.";
+                return RedirectToAction(nameof(ProcessRequest), new { id = requestId });
+            }
+
+            var assignedSeats = seatNumbers.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+            if (assignedSeats.Count > bus.Capacity)
+            {
+                TempData["ErrorMessage"] = $"The number of assigned seats ({assignedSeats.Count}) exceeds the bus capacity ({bus.Capacity}).";
+                return RedirectToAction(nameof(ProcessRequest), new { id = requestId });
+            }
+
+            // 2. Validate seat double-booking (including Pending, Accepted, and Completed requests)
+            if (request.BusScheduleId.HasValue)
+            {
+                var otherConfirmedOrPending = await _context.BookingRequests
+                    .Where(r => r.Id != request.Id &&
+                                r.BusScheduleId == request.BusScheduleId &&
+                                r.TravelDate.Date == request.TravelDate.Date &&
+                                (r.Status == BookingRequestStatus.Pending ||
+                                 r.Status == BookingRequestStatus.Accepted ||
+                                 r.Status == BookingRequestStatus.Completed))
+                    .Select(r => r.SelectedSeatNumbers)
+                    .ToListAsync();
+
+                var alreadyTakenSeats = otherConfirmedOrPending
+                    .SelectMany(s => s.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                    .Select(s => s.Trim())
+                    .ToHashSet();
+
+                foreach (var seat in assignedSeats)
+                {
+                    if (alreadyTakenSeats.Contains(seat))
+                    {
+                        TempData["ErrorMessage"] = $"Seat {seat} is already booked or temporarily reserved in another pending request. Please select different seats.";
+                        return RedirectToAction(nameof(ProcessRequest), new { id = requestId });
+                    }
+                }
+            }
+
             // Apply voucher discount if selected
             request.AppliedVoucherId = (appliedVoucherId.HasValue && appliedVoucherId.Value > 0) ? appliedVoucherId : null;
             if (appliedVoucherId.HasValue && appliedVoucherId.Value > 0)
